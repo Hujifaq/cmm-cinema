@@ -1,0 +1,72 @@
+/* The static selection stays readable before initialization and without JS. */
+[data-gooey-nav]:not([data-gooey-ready]) [aria-pressed="true"] {
+  background: #fffde6;
+  color: #000;
+}
+
+
+[data-gooey-overlay] span { color: inherit; }
+
+[data-cinema-nav][data-menu-open] { background-color: rgb(7 33 35 / 90%); }
+[data-mobile-index][aria-pressed="true"] { color: var(--color-cinema-cyan); }
+
+@media (max-width: 767px) {
+  /* The bounded menu owns its slide; the bar stays still above it. */
+  [data-cinema-nav][data-mobile-ready] { overflow: visible; }
+  [data-cinema-nav][data-mobile-ready] [data-nav-top] { flex-wrap: nowrap; }
+  [data-cinema-nav][data-mobile-ready] [data-desktop-nav] { display: none; }
+  [data-cinema-nav][data-mobile-ready] [data-nav-toggle] { display: inline-flex; }
+}
+
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-cinema-nav] {
+    animation: cinema-nav-open 850ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  [data-cinema-nav] [data-nav-logo] {
+    animation: cinema-nav-content 450ms cubic-bezier(0.22, 1, 0.36, 1) 320ms backwards;
+  }
+
+  [data-cinema-nav] [data-gooey-nav] {
+    animation: cinema-nav-content 450ms cubic-bezier(0.22, 1, 0.36, 1) 400ms backwards;
+  }
+
+  /* Both label layers share the same opacity stagger; positions stay aligned. */
+  [data-cinema-nav] [data-gooey-list] > li,
+  [data-cinema-nav] [data-gooey-overlay] > li {
+    animation: cinema-nav-label 350ms ease-out backwards;
+    animation-delay: calc(440ms + var(--nav-item) * 65ms);
+  }
+
+  /* A keyboard interaction ends the entrance immediately. */
+  [data-cinema-nav]:focus-within,
+  [data-cinema-nav]:focus-within [data-nav-logo],
+  [data-cinema-nav]:focus-within [data-gooey-nav],
+  [data-cinema-nav]:focus-within li {
+    animation: none;
+  }
+}
+
+@keyframes cinema-nav-open {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+    clip-path: inset(0 44% 0 44% round 999px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 0 0 round 999px);
+  }
+}
+
+@keyframes cinema-nav-content {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cinema-nav-label {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

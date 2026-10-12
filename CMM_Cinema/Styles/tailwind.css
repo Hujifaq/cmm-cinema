@@ -1,0 +1,19 @@
+@layer theme, base, components, utilities;
+
+/* Bootstrap provides the reset, so omit Tailwind's Preflight. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+@source "../Views";
+@source "../wwwroot/js";
+
+@theme {
+  --color-cinema-cream: #fffde6;
+  --color-cinema-deep: #103d3e;
+  --color-cinema-cyan: #29d9dd;
+}
+
+/* The standalone hero has no Bootstrap reset. */
+@layer base {
+  *, ::before, ::after { box-sizing: border-box; }
+}
