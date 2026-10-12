@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" class="m-0 min-w-[280px] bg-cinema-deep p-0 scheme-dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#103d3e" />
+    <meta name="description" content="CMM Cinema. A little movie magic." />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/hero.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cinema-nav.css" asp-append-version="true" />
+</head>
+<body class="m-0 min-w-[280px] p-0">
+    @await Html.PartialAsync("_CinemaNav")
+    <main class="m-0 p-0">@RenderBody()</main>
+    <script src="~/lib/gsap/gsap.min.js" asp-append-version="true" defer></script>
+    <script src="~/lib/gsap/SplitText.min.js" asp-append-version="true" defer></script>
+    <script src="~/js/hero-physics.js" asp-append-version="true" defer></script>
+    <script src="~/js/hero.js" asp-append-version="true" defer></script>
+    <script src="~/js/gooey-nav.js" asp-append-version="true" defer></script>
+    <script src="~/js/cinema-nav.js" asp-append-version="true" defer></script>
+</body>
+</html>

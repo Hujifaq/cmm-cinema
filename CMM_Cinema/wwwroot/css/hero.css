@@ -1,0 +1,93 @@
+
+.cinema-hero {
+  container-type: size;
+  background: linear-gradient(128deg, #020c0d 2%, #124d4e 38%, #218e91 70%, #29d9dd 100%);
+}
+
+.hero-line--large {
+  width: max(180cqw, 165cqh);
+  aspect-ratio: 700 / 693;
+  left: 45%;
+  top: 15%;
+  transform: translate(-50%, -50%);
+}
+.hero-line--small {
+  width: max(36cqw, 44cqh);
+  aspect-ratio: 700 / 721;
+  right: 0;
+  bottom: 0;
+  transform: translate(28%, 35%);
+}
+
+/* Art-directed title and prop coordinates. */
+.hero-title {
+  --hero-outline-width: 1.25px;
+  width: 55%;
+  left: 22.5%;
+  top: 30.4%;
+}
+
+.hero-title text,
+.hero-title__split {
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+}
+
+.hero-title--outline text {
+  stroke-width: var(--hero-outline-width);
+  paint-order: stroke;
+}
+
+/* SplitText's HTML letters live in the same SVG coordinate system as the
+   original type, so the fill and foreground outline stay registered. */
+.hero-title--outline .hero-title__split {
+  color: transparent;
+  -webkit-text-stroke: var(--hero-outline-width) var(--color-cinema-cream);
+}
+
+.hero-title__split { transform-origin: 50% 0; }
+
+.hero-prop--glasses { width: 20%; left: 15.2%; top: 24%; }
+.hero-prop--star { width: 20%; left: 62.7%; top: 13.2%; }
+.hero-prop--clapper { width: 16%; left: 7.4%; top: 58.4%; }
+.hero-prop--popcorn { width: 18.5%; left: 77.2%; top: 50.7%; }
+
+/* Added only after GSAP is available, removed as soon as the entrance starts. */
+.cinema-hero[data-entering] .hero-line,
+.cinema-hero[data-entering] .hero-prop,
+.cinema-hero[data-entering] .hero-title svg { visibility: hidden; }
+
+/* Responsive artwork composition: phone, tablet, wide and phone landscape. */
+@media (max-width: 700px) {
+  .hero-title { width: 94%; left: 3%; top: 37%; }
+  .hero-title { --hero-outline-width: 1.8px; }
+  .hero-prop--glasses { width: 36%; left: 4%; top: 27%; }
+  .hero-prop--star { width: 34%; left: 64%; top: 27%; }
+  .hero-prop--clapper { width: 30%; left: 6%; top: 65%; }
+  .hero-prop--popcorn { width: 34%; left: 62%; top: 65%; }
+}
+
+@media (min-width: 701px) and (max-aspect-ratio: 4/3) {
+  .hero-title { width: 68%; left: 16%; top: 35%; }
+  .hero-prop--glasses { width: 24%; left: 8%; top: 28%; }
+  .hero-prop--star { width: 24%; left: 67%; top: 24%; }
+  .hero-prop--clapper { width: 20%; left: 5%; top: 61%; }
+  .hero-prop--popcorn { width: 23%; left: 73%; top: 60%; }
+}
+
+@media (min-width: 701px) and (min-aspect-ratio: 2/1) {
+  .hero-title { width: 47%; left: 26.5%; top: 27%; }
+  .hero-prop--glasses { width: 17%; left: 20%; top: 17%; }
+  .hero-prop--star { width: 17%; left: 61%; top: 5%; }
+  .hero-prop--clapper { width: 13%; left: 10%; top: 54%; }
+  .hero-prop--popcorn { width: 15%; left: 77%; top: 43%; }
+}
+
+/* Short landscape phones need the wide composition rather than the portrait
+   arrangement selected by width alone. */
+@media (max-width: 700px) and (min-aspect-ratio: 4/3) {
+  .hero-title { width: 55%; left: 22.5%; top: 28%; }
+  .hero-prop--glasses { width: 20%; left: 15.2%; top: 17%; }
+  .hero-prop--star { width: 20%; left: 62.7%; top: 9%; }
+  .hero-prop--clapper { width: 16%; left: 7.4%; top: 57%; }
+  .hero-prop--popcorn { width: 18.5%; left: 77.2%; top: 49%; }
+}

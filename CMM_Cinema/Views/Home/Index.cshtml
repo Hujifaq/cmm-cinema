@@ -1,8 +1,81 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = "CMM Cinema";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="cinema-hero relative isolate h-dvh w-full overflow-hidden" aria-labelledby="cinema-title">
+  
+    <div class="hero-line hero-line--large pointer-events-none absolute -z-1" aria-hidden="true">
+        <svg class="block h-auto w-full overflow-visible" viewBox="0 0 700 693" fill="none" focusable="false" data-independent-lines>
+            <defs>
+                <mask id="clay-large-up-reveal" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="-180" y="-180" width="1060" height="1053" style="mask-type: alpha">
+                    <path class="hero-line__independent-trace" data-duration="1.8" data-delay="0" pathLength="1000" d="M 55 542 C 238 550 390 463 364 303 C 349 196 310 80 295 -70" stroke="white" stroke-width="160" stroke-linecap="round" stroke-linejoin="round" />
+                </mask>
+                <mask id="clay-large-down-right-reveal" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="-180" y="-180" width="1060" height="1053" style="mask-type: alpha">
+                    <path class="hero-line__independent-trace" data-duration="2" data-delay="0.12" pathLength="1000" d="M 153 -70 C 110 65 99 240 244 327 C 375 407 510 371 625 267" stroke="white" stroke-width="160" stroke-linecap="round" stroke-linejoin="round" />
+                </mask>
+            </defs>
+            @await Html.PartialAsync("_ClayLineLargeGeometry")
+            <g opacity="0.61">
+                <use href="#clay-large-up-surface" data-independent-reveal="clay-large-up-reveal" />
+                <use href="#clay-large-front-layer" data-independent-reveal="clay-large-down-right-reveal" />
+            </g>
+        </svg>
+    </div>
+
+    <div class="hero-line hero-line--small pointer-events-none absolute -z-1" aria-hidden="true">
+        <svg class="block h-auto w-full overflow-visible" viewBox="0 0 700 721" fill="none" focusable="false" data-line-duration="1.25" data-line-delay="0.2">
+            <defs>
+                <mask id="clay-small-rear-reveal" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="-180" y="-180" width="1060" height="1081" style="mask-type: alpha">
+                    <path class="hero-line__trace" data-start="0" data-end="0.20149645" pathLength="1000" d="M 648 139 C 478 159 368 231 313 304" stroke="white" stroke-width="176" stroke-linecap="round" stroke-linejoin="round" />
+                </mask>
+                <mask id="clay-small-front-reveal" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="-180" y="-180" width="1060" height="1081" style="mask-type: alpha">
+                    <path class="hero-line__trace" data-start="0.20149645" data-end="1" pathLength="1000" d="M 313 304 C 243 399 330 463 413 377 C 531 252 463 66 302 58 C 124 46 40 203 49 358 C 57 514 137 617 267 666" stroke="white" stroke-width="176" stroke-linecap="round" stroke-linejoin="round" />
+                </mask>
+            </defs>
+            @await Html.PartialAsync("_ClayLineSmallGeometry")
+            <g opacity="0.65">
+                <use href="#clay-small-segment-0" data-reveal-mask="clay-small-rear-reveal" />
+                <use href="#clay-small-segment-1" data-reveal-mask="clay-small-front-reveal" />
+            </g>
+        </svg>
+    </div>
+
+   
+    <h1 class="hero-title pointer-events-none absolute z-1 m-0" id="cinema-title">
+        <span class="sr-only">CMM Cinema</span>
+        <svg class="block h-auto w-full overflow-visible" viewBox="0 0 790 330" aria-hidden="true" focusable="false">
+            <g class="hero-title__row hero-title__row--cmm">
+                <text class="fill-cinema-cream text-[200px] font-black tracking-[-12px]" x="395" y="145" text-anchor="middle" textLength="520" lengthAdjust="spacingAndGlyphs">CMM</text>
+            </g>
+            <g class="hero-title__row hero-title__row--cinema">
+                <text class="fill-cinema-cream text-[200px] font-black tracking-[-12px]" x="395" y="310" text-anchor="middle" textLength="770" lengthAdjust="spacingAndGlyphs">CINEMA</text>
+            </g>
+        </svg>
+    </h1>
+
+   
+    <div class="hero-prop hero-prop--glasses pointer-events-none absolute z-2" aria-hidden="true">
+        <img class="block h-auto w-full select-none" src="~/images/hero/glasses.svg" asp-append-version="true" width="577" height="522" alt="" fetchpriority="high" draggable="false" />
+    </div>
+    <div class="hero-prop hero-prop--star pointer-events-none absolute z-2" aria-hidden="true">
+        <img class="block h-auto w-full select-none" src="~/images/hero/star.svg" asp-append-version="true" width="290" height="292" alt="" fetchpriority="high" draggable="false" />
+    </div>
+    <div class="hero-prop hero-prop--clapper pointer-events-none absolute z-2" aria-hidden="true">
+        <img class="block h-auto w-full select-none" src="~/images/hero/clapperboard.svg" asp-append-version="true" width="232" height="245" alt="" draggable="false" />
+    </div>
+    <div class="hero-prop hero-prop--popcorn pointer-events-none absolute z-2" aria-hidden="true">
+        <img class="block h-auto w-full select-none" src="~/images/hero/popcorn.svg" asp-append-version="true" width="592" height="610" alt="" draggable="false" />
+    </div>
+
+    <div class="hero-title hero-title--outline pointer-events-none absolute z-3 m-0" aria-hidden="true">
+        <svg class="block h-auto w-full overflow-visible" viewBox="0 0 790 330" focusable="false">
+            <g class="hero-title__row hero-title__row--cmm">
+                <text class="fill-none stroke-cinema-cream text-[200px] font-black tracking-[-12px]" x="395" y="145" text-anchor="middle" textLength="520" lengthAdjust="spacingAndGlyphs">CMM</text>
+            </g>
+            <g class="hero-title__row hero-title__row--cinema">
+                <text class="fill-none stroke-cinema-cream text-[200px] font-black tracking-[-12px]" x="395" y="310" text-anchor="middle" textLength="770" lengthAdjust="spacingAndGlyphs">CINEMA</text>
+            </g>
+        </svg>
+    </div>
+</section>
