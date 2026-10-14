@@ -49,7 +49,7 @@
     const aa = axes(a), ba = axes(b);
     let overlap = Infinity, nx = 0, ny = 0;
     for (const axis of [...aa, ...ba]) {
-      // Insets approximate the solid clay inside each trimmed image rectangle.
+    
       const radius = (body, basis) => 0.8 * (
         body.halfWidth * Math.abs(axis[0] * basis[0][0] + axis[1] * basis[0][1]) +
         body.halfHeight * Math.abs(axis[0] * basis[1][0] + axis[1] * basis[1][1]));
@@ -87,20 +87,18 @@
       const phase = body.phase;
       if (body.entrance) {
         if (time < body.entrance.delay) continue;
-        // Launch velocity supplies the throw; damped springs catch each prop at
-        // its art-directed home, allowing a small overshoot and angular wobble.
+        
         body.vx += ((body.homeX - body.x) * 36 - body.vx * 8) * dt;
         body.vy += ((body.homeY - body.y) * 36 - body.vy * 8) * dt;
         body.omega += (-body.angle * 26 - body.omega * 7) * dt;
         body.x += body.vx * dt;
         body.y += body.vy * dt;
         body.angle += body.omega * dt;
-        // Keep walls and pointer impulses out of the launch, including its
-        // off-screen start. Resume the same simulation once it has settled.
+        
         if (time >= body.entrance.delay + 2.2) body.entrance = null;
         continue;
       }
-      // Let thrown props coast and rebound before gently settling into their float.
+    
       if (time - body.lastHit > 6) {
         const tx = body.homeX + Math.sin(time * 0.65 + phase) * 8;
         const ty = body.homeY + Math.sin(time * 0.85 + phase) * 12;
@@ -124,7 +122,7 @@
         if (!bodies[i].entrance && !bodies[j].entrance) collide(bodies[i], bodies[j], time);
       }
     }
-    // Pair separation cannot push an object outside the visible hero.
+ 
     for (const body of bodies) if (!body.entrance) wall(body, bounds, time);
   }
 
@@ -142,7 +140,7 @@
       const dx = b.x - a.x, dy = b.y - a.y;
       const t = clamp(-(a.x * dx + a.y * dy) / (dx * dx + dy * dy || 1), 0, 1);
       const px = a.x + dx * t, py = a.y + dy * t;
-      // Sweep the entire pointer segment, so a fast swipe cannot tunnel through.
+      
       if (px * px + py * py > 1) continue;
       const pointX = from.x + (to.x - from.x) * t;
       const pointY = from.y + (to.y - from.y) * t;
@@ -197,7 +195,7 @@
         if (body.entrance) {
           if (!ready) {
             const side = x < bounds.width / 2 ? 1 : -1;
-            // A diagonal radius keeps even the rotated artwork fully off-screen.
+           
             const radius = Math.hypot(body.halfWidth, body.halfHeight) + 24;
             body.x = side > 0 ? -radius : bounds.width + radius;
             body.y = y + bounds.height * 0.1;
