@@ -18,6 +18,10 @@
     let animation;
     let disposed = false;
 
+    const alignPanel = () => {
+      if (!mobile.matches || panel.hidden) return;
+      panel.style.setProperty('--nav-viewport-top', `${nav.getBoundingClientRect().top}px`);
+    };
     const stop = () => { animation?.kill(); animation = null; };
     const clearSurface = () => {
       if (gsap) {
@@ -54,6 +58,7 @@
       if (immediate || motion.matches || !gsap || document.hidden) {
         panel.hidden = !open;
         panel.inert = !open;
+        alignPanel();
         clearSurface();
         return;
       }
@@ -65,6 +70,7 @@
         gsap.set(labels, { yPercent: 140, rotation: 8 });
       }
       panel.inert = !open;
+      alignPanel();
     
       animation = gsap.timeline({ onComplete: () => {
         if (!open) panel.hidden = true;
@@ -145,6 +151,8 @@
     document.addEventListener('visibilitychange', onHidden);
     mobile.addEventListener('change', onBreakpoint);
     motion.addEventListener('change', onMotion);
+    window.addEventListener('scroll', alignPanel, { passive: true });
+    window.addEventListener('resize', alignPanel);
 
     return () => {
       disposed = true;
@@ -159,6 +167,8 @@
       document.removeEventListener('visibilitychange', onHidden);
       mobile.removeEventListener('change', onBreakpoint);
       motion.removeEventListener('change', onMotion);
+      window.removeEventListener('scroll', alignPanel);
+      window.removeEventListener('resize', alignPanel);
       delete nav.dataset.mobileReady;
     };
   };

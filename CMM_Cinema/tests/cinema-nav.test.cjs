@@ -14,7 +14,10 @@ function setup({ reduced = false, animate = false } = {}) {
       this.attributes = new Map();
       this.children = [];
       this.dataset = {};
-      this.style = { removeProperty(name) { delete this[name]; } };
+      this.style = {
+        setProperty(name, value) { this[name] = value; },
+        removeProperty(name) { delete this[name]; }
+      };
     }
     addEventListener(name, callback) {
       const callbacks = this.listeners.get(name) ?? new Set();
@@ -34,7 +37,7 @@ function setup({ reduced = false, animate = false } = {}) {
     focus() { document.activeElement = this; }
     querySelector(selector) { return this.selectors[selector]; }
     querySelectorAll(selector) { return this.collections?.[selector] ?? this.children; }
-    getBoundingClientRect() { return { height: 280 }; }
+    getBoundingClientRect() { return { top: 12, height: 280 }; }
   }
   document = new Element();
   document.hidden = false;
@@ -88,6 +91,23 @@ test('closed controls are hidden and inert; opening works without GSAP', () => {
   ui.document.emit('keydown', { key: 'Escape', preventDefault() {} });
   assert.equal(ui.panel.hidden, true);
   assert.equal(ui.document.activeElement, ui.toggle);
+});
+
+test('the sidebar stays at the viewport top as the navbar becomes sticky', () => {
+  const ui = setup();
+  let top = 108;
+  ui.nav.getBoundingClientRect = () => ({ top });
+  ui.toggle.emit('click');
+  assert.equal(ui.panel.style['--nav-viewport-top'], '108px');
+  top = 12;
+  ui.window.emit('scroll');
+  assert.equal(ui.panel.style['--nav-viewport-top'], '12px');
+  top = 20;
+  ui.window.emit('resize');
+  assert.equal(ui.panel.style['--nav-viewport-top'], '20px');
+  ui.window.emit('pagehide');
+  assert.equal(ui.window.listeners.get('scroll').size, 0);
+  assert.equal(ui.window.listeners.get('resize').size, 0);
 });
 
 test('rapid open-close-open keeps the latest state and ignores killed completions', () => {

@@ -6,18 +6,27 @@
     <meta name="theme-color" content="#103d3e" />
     <meta name="description" content="CMM Cinema. A little movie magic." />
     <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/swiper/swiper-bundle.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/hero.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/cinema-nav.css" asp-append-version="true" />
 </head>
 <body class="m-0 min-w-[280px] p-0">
+    @await RenderSectionAsync("TopBanner", required: false)
     @await Html.PartialAsync("_CinemaNav")
     <main class="m-0 p-0">@RenderBody()</main>
+    <div id="cinema-search-root"></div>
     <script src="~/lib/gsap/gsap.min.js" asp-append-version="true" defer></script>
     <script src="~/lib/gsap/SplitText.min.js" asp-append-version="true" defer></script>
     <script src="~/js/hero-physics.js" asp-append-version="true" defer></script>
     <script src="~/js/hero.js" asp-append-version="true" defer></script>
     <script src="~/js/gooey-nav.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-nav.js" asp-append-version="true" defer></script>
+    <script src="~/js/cinema-nav-actions.js" asp-append-version="true" defer></script>
+    <script src="~/js/cinema-search.bundle.js" asp-append-version="true" defer></script>
+    <script src="~/js/cinema-marquee.js" asp-append-version="true" defer></script>
+    <script src="~/lib/swiper/swiper-bundle.min.js" asp-append-version="true" defer></script>
+    <script src="~/js/cinema-promos.js" asp-append-version="true" defer></script>
+    <script src="~/js/cinema-magnetic.js" asp-append-version="true" defer></script>
 </body>
 </html>

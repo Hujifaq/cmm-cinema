@@ -1,6 +1,32 @@
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "CMM Cinema";
+    var promotions = new[] {
+        "Movie night, made better — tickets from ฿150",
+        "Double the fun — buy 1 ticket, get 1 free on Wednesdays",
+        "Free popcorn upgrade with every combo",
+        "Student perks — save 20% on your next screening"
+    };
+}
+
+@section TopBanner {
+    <section class="cinema-marquee relative overflow-hidden bg-black py-2 font-sans text-[13px] font-semibold leading-5 text-white sm:text-sm" aria-label="Cinema promotions" data-marquee>
+        <div class="cinema-marquee__track flex w-max" data-marquee-track>
+            @for (var copy = 0; copy < 2; copy++)
+            {
+                <div class="cinema-marquee__group flex min-w-[100vw] shrink-0 items-center justify-around" aria-hidden="@(copy == 1 ? "true" : "false")">
+                    @foreach (var promotion in promotions)
+                    {
+                        <span class="inline-flex shrink-0 items-center gap-8 whitespace-nowrap pr-8 sm:gap-12 sm:pr-12">
+                            <span>@promotion</span>
+                            <span aria-hidden="true">✦</span>
+                        </span>
+                    }
+                </div>
+            }
+        </div>
+       
+    </section>
 }
 
 <section class="cinema-hero relative isolate h-dvh w-full overflow-hidden" aria-labelledby="cinema-title">
@@ -79,3 +105,5 @@
         </svg>
     </div>
 </section>
+
+@await Html.PartialAsync("_CinemaPromos")

@@ -6,14 +6,109 @@
 
 @source "../Views";
 @source "../wwwroot/js";
+@source not "../wwwroot/js/cinema-search.bundle.js";
+@source "../components";
+@source "../Client";
 
 @theme {
   --color-cinema-cream: #fffde6;
   --color-cinema-deep: #103d3e;
   --color-cinema-cyan: #29d9dd;
+  --color-cinema-ink: #071c1e;
+  --color-cinema-spotlight: #1c2c2e;
+  --color-cinema-nav-hover: rgba(255, 255, 255, 0.08);
 }
 
-/* The standalone hero has no Bootstrap reset. */
+
 @layer base {
   *, ::before, ::after { box-sizing: border-box; }
+}
+
+/* One moving surface connects the navbar's search and account actions. */
+[data-nav-action-pill] {
+  background: var(--color-cinema-nav-hover);
+  transform-origin: 0 0;
+  transition: opacity 120ms ease;
+}
+[data-nav-action] { transition: color 180ms ease; }
+[data-nav-action-active] { color: var(--color-white); }
+[data-nav-actions]:not([data-actions-ready]) [data-nav-action]:focus-visible {
+  background: var(--color-cinema-nav-hover);
+  color: var(--color-white);
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-nav-actions]:not([data-actions-ready]) [data-nav-action]:hover {
+    background: var(--color-cinema-nav-hover);
+    color: var(--color-white);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-nav-action-pill], [data-nav-action] { transition: none; }
+}
+
+/* The Spotlight is portaled outside the sticky/filtered navbar. */
+[data-cinema-nav][data-search-mode],
+[data-cinema-nav][data-search-mode] * { animation: none !important; }
+.cinema-spotlight { color-scheme: dark; }
+.cinema-spotlight button, .cinema-spotlight input { font: inherit; }
+.cinema-spotlight p { margin: 0; }
+.cinema-spotlight input { font-size: inherit; }
+.cinema-spotlight svg { flex-shrink: 0; }
+.cinema-spotlight-stage { translate: -50% 0; }
+/* The copied component expects Tailwind Preflight; bridge only that reset. */
+.cinema-spotlight-source a { color: inherit; text-decoration: none; }
+.cinema-spotlight-source input { border: 0; padding: 0; min-width: 0; }
+.cinema-spotlight-source [role="search"] > .flex-1 { min-width: 0; }
+@media (max-width: 639px) {
+  .cinema-spotlight-shortcuts { display: none; }
+}
+
+.cinema-marquee__track {
+  animation: cinema-marquee-scroll 40s linear infinite;
+}
+
+.cinema-marquee [hidden] { display: none; }
+
+.cinema-marquee[data-paused] .cinema-marquee__track {
+  animation-play-state: paused;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cinema-marquee:hover .cinema-marquee__track { animation-play-state: paused; }
+}
+
+@keyframes cinema-marquee-scroll {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinema-marquee__track { width: 100%; animation: none; }
+  .cinema-marquee__group { min-width: 0; width: 100%; flex-wrap: wrap; row-gap: 4px; }
+  .cinema-marquee__group > span { max-width: 100%; white-space: normal; padding-inline: 16px; }
+  .cinema-marquee__group[aria-hidden="true"] { display: none; }
+}
+
+/* Banner composition and Swiper state overrides; vendor files stay unchanged. */
+.cinema-promos {
+  /* Circular corners finish within the overlap without exposing the page background. */
+  --promo-overlap: clamp(24px, 3vw, 48px);
+  margin-top: calc(-1 * var(--promo-overlap));
+  border-radius: var(--promo-overlap) var(--promo-overlap) 0 0;
+}
+.promo-swiper.swiper { overflow: visible; }
+/* Preserve the complete artwork and its lettering at every viewport width. */
+.promo-slide { height: auto; }
+.promo-swiper .swiper-wrapper { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+.promo-controls[hidden] { display: none; }
+.promo-swiper:not(.swiper-initialized) .swiper-wrapper { display: grid; gap: 24px; }
+
+/* Keep the hit target still while the cream surface follows the pointer. */
+.promo-arrow { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.promo-arrow [data-magnetic-body] { transition: opacity 160ms ease; }
+.promo-arrow:active [data-magnetic-body] { opacity: .82; }
+.promo-arrow:not([data-magnetic-ready]) [data-magnetic-visual] {
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .promo-arrow:not([data-magnetic-ready]):active [data-magnetic-visual] { transform: scale(.97); }
 }
