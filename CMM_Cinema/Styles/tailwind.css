@@ -16,6 +16,10 @@
   --color-cinema-cyan: #29d9dd;
   --color-cinema-ink: #071c1e;
   --color-cinema-spotlight: #1c2c2e;
+  --color-cinema-paper: #fffdf5;
+  --color-cinema-sky: #6fd8e4;
+  --color-cinema-sun: #ecc861;
+  --color-cinema-brick: #b94734;
   --color-cinema-nav-hover: rgba(255, 255, 255, 0.08);
 }
 
@@ -96,6 +100,53 @@
   border-radius: var(--promo-overlap) var(--promo-overlap) 0 0;
 }
 .promo-swiper.swiper { overflow: visible; }
+/* Movie cards bleed to the screen edges; the section clips them. */
+.movie-swiper.swiper { overflow: visible; }
+.movie-poster__inner {
+  transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.movie-poster__base {
+  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1), filter 720ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.movie-glass {
+  border-radius: 42%;
+  clip-path: inset(43% round 42%);
+  filter: blur(3px);
+  opacity: 0;
+  transform: scale(0.86) rotate(2deg);
+  transform-origin: 50% 50%;
+  transition: clip-path 720ms cubic-bezier(0.22, 1, 0.36, 1), transform 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 720ms cubic-bezier(0.22, 1, 0.36, 1), filter 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 720ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.movie-glare {
+  background: radial-gradient(circle 180px at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.05) 48%, transparent 78%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .movie-poster:hover .movie-poster__inner { transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) scale(1.012); transition-duration: 220ms; }
+  .movie-poster:hover .movie-poster__base { transform: scale(1.025); filter: brightness(0.86) saturate(0.88); }
+  .movie-poster:hover .movie-glass { border-radius: 0; clip-path: inset(0% round 0%); filter: blur(0); opacity: 1; transform: none; }
+  .movie-poster:hover .movie-glare { opacity: 0.16; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .movie-poster__inner, .movie-poster__base, .movie-glass, .movie-glare { transition: none; }
+  .movie-poster__inner { transform: none !important; }
+}
+.movie-highlight {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 650ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-movie-card]:hover .movie-highlight { clip-path: inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .movie-highlight { transition: none; }
+}
 /* Preserve the complete artwork and its lettering at every viewport width. */
 .promo-slide { height: auto; }
 .promo-swiper .swiper-wrapper { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
@@ -111,4 +162,26 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .promo-arrow:not([data-magnetic-ready]):active [data-magnetic-visual] { transform: scale(.97); }
+}
+
+/* News & blog: a hand-drawn double underline that melts into the full highlight on hover. */
+.news-link { --highlight-color: #34d399; }
+.news-underline { color: var(--highlight-color); transition: opacity 250ms, transform 450ms cubic-bezier(0.22, 0.61, 0.36, 1); transform-origin: 50% 100%; }
+.news-link .movie-highlight {
+  clip-path: inset(0 0 0 0);
+  opacity: 0;
+  transform: scaleY(0.15);
+  transform-origin: 50% 100%;
+  transition: transform 450ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 250ms;
+}
+.news-link:hover .news-underline, .news-link:focus-visible .news-underline { opacity: 0; transform: scaleY(0.2); }
+.news-link:hover .movie-highlight, .news-link:focus-visible .movie-highlight { opacity: 1; transform: scaleY(1); }
+/* Cards bleed to the screen edges so the returning story can enter from off-screen. */
+.news-swiper.swiper { overflow: visible; }
+.news-thumb__image { transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1); }
+@media (hover: hover) and (pointer: fine) {
+  .news-thumb:hover .news-thumb__image { transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .news-underline, .news-link .movie-highlight, .news-thumb__image { transition: none; }
 }

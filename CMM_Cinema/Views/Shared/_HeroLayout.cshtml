@@ -7,6 +7,7 @@
     <meta name="description" content="CMM Cinema. A little movie magic." />
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/swiper/swiper-bundle.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/lenis/lenis.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/hero.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/cinema-nav.css" asp-append-version="true" />
@@ -16,6 +17,8 @@
     @await Html.PartialAsync("_CinemaNav")
     <main class="m-0 p-0">@RenderBody()</main>
     <div id="cinema-search-root"></div>
+    <script src="~/lib/lenis/lenis.min.js" asp-append-version="true" defer></script>
+    <script src="~/js/smooth-scroll.js" asp-append-version="true" defer></script>
     <script src="~/lib/gsap/gsap.min.js" asp-append-version="true" defer></script>
     <script src="~/lib/gsap/SplitText.min.js" asp-append-version="true" defer></script>
     <script src="~/js/hero-physics.js" asp-append-version="true" defer></script>
@@ -24,9 +27,12 @@
     <script src="~/js/cinema-nav.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-nav-actions.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-search.bundle.js" asp-append-version="true" defer></script>
+    <script src="~/js/now-showing-title.bundle.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-marquee.js" asp-append-version="true" defer></script>
     <script src="~/lib/swiper/swiper-bundle.min.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-promos.js" asp-append-version="true" defer></script>
+    <script src="~/js/now-showing.js" asp-append-version="true" defer></script>
+    <script src="~/js/news.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-magnetic.js" asp-append-version="true" defer></script>
 </body>
 </html>

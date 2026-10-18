@@ -56,8 +56,28 @@ function animationContract(path) {
   return contract;
 }
 
+// Deliberate departures from the source, all in service of the glass panel and a softer entrance:
+// - the gooey `url(#blob)` filter is dropped (a CSS filter on an ancestor stops backdrop blur from
+//   seeing the page) and cleared once the entrance settles;
+// - the entrance uses a slower, bouncier spring, with opacity and blur on plain tweens so they never
+//   overshoot, and the exit stays a quick tween;
+// - shortcut circles fade as they slide, since without the gooey merge they would pile up as dark
+//   discs at the end of the pill.
+// Every other motion prop must still match.
+const departures = [
+  [' url(#blob)', ''],
+  ['filter:\\"blur(0px)\\",scaleX:1,scaleY:1,y:0}}', 'filter:\\"blur(0px)\\",scaleX:1,scaleY:1,y:0,transitionEnd:{filter:\\"none\\"}}}'],
+  ['y:10}}', 'y:10,transition:{duration:.3,ease:\\"easeIn\\"}}}'],
+  ['{{stiffness:550,damping:50,type:\\"spring\\"}}', '{{type:\\"spring\\",stiffness:170,damping:17,opacity:{duration:.5,ease:\\"easeOut\\"},filter:{duration:.6,ease:\\"easeOut\\"}}}'],
+  ['{{scale:.7,x:-1*(64*(index+1))}}', '{{scale:.7,x:-1*(64*(index+1)),opacity:0}}'],
+  ['{{scale:1,x:0}}', '{{scale:1,x:0,opacity:1}}'],
+  ['index-1))}}', 'index-1)),opacity:0}}'],
+  ['delay:index*.05}}', 'delay:index*.05,opacity:{duration:.3,ease:\\"easeOut\\",delay:index*.05}}}'],
+];
+const glass = contract => JSON.parse(departures.reduce((json, [from, to]) => json.replaceAll(from, to), JSON.stringify(contract)));
+
 test('every Spotlight motion prop and presence mode matches the supplied source exactly', () => {
   const reference = animationContract(require.resolve('./fixtures/apple-spotlight-source.tsx.txt'));
   const component = animationContract(require.resolve('../components/ui/apple-spotlight.tsx'));
-  assert.deepEqual(component, reference);
+  assert.deepEqual(component, glass(reference));
 });
