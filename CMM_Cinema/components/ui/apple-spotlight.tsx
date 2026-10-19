@@ -38,26 +38,6 @@ export interface SearchResult {
   link: string;
 }
 
-const SVGFilter = () => {
-  return (
-    <svg width="0" height="0">
-      <filter id="blob">
-        <feGaussianBlur stdDeviation="10" in="SourceGraphic" />
-        <feColorMatrix
-          values="
-      1 0 0 0 0
-      0 1 0 0 0
-      0 0 1 0 0
-      0 0 0 18 -9
-    "
-          result="blob"
-        />
-        <feBlend in="SourceGraphic" in2="blob" />
-      </filter>
-    </svg>
-  );
-};
-
 interface ShortcutButtonProps {
   onSelect?: () => void;
   icon: React.ReactNode;
@@ -67,7 +47,7 @@ interface ShortcutButtonProps {
 const ShortcutButton = ({ icon, link, onSelect }: ShortcutButtonProps) => {
   return (
     <a href={link} onClick={onSelect ? (event) => { event.preventDefault(); onSelect(); } : undefined}>
-      <div className="rounded-full cursor-pointer hover:shadow-lg opacity-30 hover:opacity-100 transition-[opacity,shadow] duration-200">
+      <div className="rounded-full cursor-pointer opacity-30 hover:opacity-100 transition-opacity duration-200">
         <div className="size-16 aspect-square flex items-center justify-center">{icon}</div>
       </div>
     </a>
@@ -196,8 +176,9 @@ const SearchResultsContainer = ({ searchResults, onHover, onSelect }: SearchResu
     <motion.div
       layout
       id="cinema-search-results"
+      data-lenis-prevent
       onMouseLeave={() => onHover(null)}
-      className="px-2 border-white/15 border-t flex flex-col bg-cinema-spotlight max-h-96 overflow-y-auto w-full py-2"
+      className="px-2 border-white/15 border-t flex flex-col max-h-96 overflow-y-auto w-full py-2"
     >
       <span className="sr-only" role="status">{searchResults.length} promotions found</span>
       {!searchResults.length && <p className="px-4 py-5 text-sm text-white/50">No promotions found. Try “student”, “Wednesday” or “late”.</p>}
@@ -358,35 +339,37 @@ const AppleSpotlight = ({
         <motion.div
           initial={{
             opacity: 0,
-            filter: 'blur(20px) url(#blob)',
+            filter: 'blur(20px)',
             scaleX: 1.3,
             scaleY: 1.1,
             y: -10
           }}
           animate={{
             opacity: 1,
-            filter: 'blur(0px) url(#blob)',
+            filter: 'blur(0px)',
             scaleX: 1,
             scaleY: 1,
-            y: 0
+            y: 0,
+            transitionEnd: { filter: 'none' }
           }}
           exit={{
             opacity: 0,
-            filter: 'blur(20px) url(#blob)',
+            filter: 'blur(20px)',
             scaleX: 1.3,
             scaleY: 1.1,
-            y: 10
+            y: 10,
+            transition: { duration: 0.3, ease: 'easeIn' }
           }}
           transition={{
-            stiffness: 550,
-            damping: 50,
-            type: 'spring'
+            type: 'spring',
+            stiffness: 170,
+            damping: 17,
+            opacity: { duration: 0.5, ease: 'easeOut' },
+            filter: { duration: 0.6, ease: 'easeOut' }
           }}
           className="cinema-spotlight-source relative z-50 flex flex-col items-center justify-center" data-spotlight-motion
           onClick={handleClose}
         >
-          <SVGFilter />
-
           <div
             data-spotlight-hover inert={!interactive}
             onMouseEnter={() => { if (interactive && window.matchMedia('(min-width: 640px) and (hover: hover) and (pointer: fine)').matches) setHovered(true); }}
@@ -395,10 +378,9 @@ const AppleSpotlight = ({
               setHoveredShortcut(null);
             }}
             onClick={(e) => e.stopPropagation()}
-            style={{ filter: 'url(#blob)' }}
             className={cn(
               'w-full flex items-center justify-end gap-4 z-20 group',
-              '[&>div]:bg-cinema-spotlight [&>div]:text-cinema-cream [&>div]:rounded-full [&>div]:backdrop-blur-xl',
+              '[&>div]:bg-black/55 [&>div]:text-cinema-cream [&>div]:rounded-full [&>div]:backdrop-blur-xl [&>div]:backdrop-saturate-150 [&>div]:shadow-[inset_0_1px_0_#ffffff14]',
               '[&_svg]:size-7 [&_svg]:stroke-[1.4]',
               'max-w-3xl'
             )}
@@ -417,7 +399,7 @@ const AppleSpotlight = ({
                 style={{
                   borderRadius: '30px'
                 }}
-                className="h-full w-full flex flex-col items-center justify-start z-10 relative shadow-lg overflow-hidden border border-white/15"
+                className="h-full w-full flex flex-col items-center justify-start z-10 relative overflow-hidden border border-white/15"
               >
                 <SpotlightInput
                   inputRef={inputRef} handleClose={handleClose}
@@ -450,19 +432,21 @@ const AppleSpotlight = ({
                     key={`shortcut-${index}`}
                     onMouseEnter={() => setHoveredShortcut(index)}
                     layout
-                    initial={{ scale: 0.7, x: -1 * (64 * (index + 1)) }}
-                    animate={{ scale: 1, x: 0 }}
+                    initial={{ scale: 0.7, x: -1 * (64 * (index + 1)), opacity: 0 }}
+                    animate={{ scale: 1, x: 0, opacity: 1 }}
                     exit={{
                       scale: 0.7,
                       x:
                         1 *
-                        (16 * (shortcuts.length - index - 1) + 64 * (shortcuts.length - index - 1))
+                        (16 * (shortcuts.length - index - 1) + 64 * (shortcuts.length - index - 1)),
+                      opacity: 0
                     }}
                     transition={{
                       duration: 0.8,
                       type: 'spring',
                       bounce: 0.2,
-                      delay: index * 0.05
+                      delay: index * 0.05,
+                      opacity: { duration: 0.3, ease: 'easeOut', delay: index * 0.05 }
                     }}
                     className="cinema-spotlight-shortcuts rounded-full cursor-pointer"
                   >

@@ -137,7 +137,6 @@ test('navbar morph still opens and closes around the source entrance and exit', 
     await tick(1450);
     assert.equal(stage.style.opacity, '1');
     assert.ok(ui.d.querySelector('[data-spotlight-motion]'));
-    assert.ok(ui.d.querySelector('filter#blob'));
     await ui.type('student');
     ui.d.querySelector('[aria-label="Close search"]').click();
     await tick(2050);
