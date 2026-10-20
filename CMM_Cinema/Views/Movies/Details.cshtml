@@ -1,0 +1,83 @@
+@model Movie
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = $"{Model.Title} - CMM Cinema";
+    var eyebrow = Model.Status == MovieStatus.Upcoming
+        ? "Coming Soon" + (Model.ReleaseDate is { } date ? " · " + date.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")
+        : "Now Showing";
+    var buttonClass = "group relative isolate inline-flex min-h-12 items-center justify-center rounded-full px-5 text-sm font-bold text-cinema-cream no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink";
+    var buttons = new[] { (Label: "Book Now!", Href: "#", Accent: "bg-cinema-sun"), (Label: "Showtimes", Href: "#", Accent: "bg-cinema-sky") };
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+<section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="movie-title" data-movie-detail>
+    <svg class="absolute size-0" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="detail-goo" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" />
+            </filter>
+        </defs>
+    </svg>
+    <div class="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:gap-12 md:px-12 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:gap-20">
+        <div class="w-full max-w-xs md:max-w-none">
+            <div class="relative aspect-[2/3] overflow-hidden rounded-2xl" data-detail-poster>
+                @await Html.PartialAsync("_MoviePoster", Model, new ViewDataDictionary(ViewData) { ["PosterClass"] = "origin-bottom" })
+            </div>
+            <div class="mt-6 grid grid-cols-2 gap-3">
+                @foreach (var button in buttons)
+                {
+                    <a class="@buttonClass" href="@button.Href" data-goo-button>
+                        <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#detail-goo)]" aria-hidden="true">
+                            <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
+                            <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full @button.Accent" data-goo-fill></span></span>
+                            <span class="absolute left-0 top-0 size-9 rounded-full @button.Accent" data-goo-blob></span>
+                        </span>
+                        <span class="relative transition-colors duration-300 group-data-[goo-active]:text-cinema-ink" data-goo-label>@button.Label</span>
+                    </a>
+                }
+            </div>
+        </div>
+
+        <div class="min-w-0">
+            <p class="m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60" data-reveal-lines>@eyebrow</p>
+            <h1 class="m-0 mt-2 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl lg:text-7xl" id="movie-title" data-reveal-chars>@Model.Title</h1>
+            <ul class="m-0 mt-4 flex list-none flex-wrap items-center gap-y-2 p-0 text-sm font-semibold" aria-label="Movie details">
+                @foreach (var detail in new[] { Model.Genre, Model.Runtime, Model.Rating, Model.Language })
+                {
+                    <li class="border-l border-cinema-ink/30 px-3 leading-none first:border-l-0 first:pl-0" data-reveal-up>@detail</li>
+                }
+            </ul>
+            <p class="m-0 mt-6 max-w-2xl text-base leading-relaxed text-cinema-ink/80 md:text-lg" data-reveal-lines>@Model.Overview</p>
+
+            @if (Model.Cast.Count > 0)
+            {
+                <h2 class="m-0 mt-12 text-3xl font-black uppercase leading-none tracking-tighter md:text-4xl" data-reveal-chars>Cast</h2>
+                <ul class="m-0 mt-5 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 xl:grid-cols-3">
+                    @foreach (var member in Model.Cast)
+                    {
+                        <li class="flex min-w-0 items-center gap-3" data-reveal-cast>
+                            <span class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full bg-cinema-ink text-cinema-cream" aria-hidden="true">
+                                @if (!string.IsNullOrEmpty(member.PhotoUrl))
+                                {
+                                    <img class="size-full object-cover" src="@member.PhotoUrl" alt="" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" focusable="false"><circle cx="10" cy="7" r="3.5" /><path d="M3.5 17a6.5 6.5 0 0 1 13 0Z" /></svg>
+                                }
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block truncate text-sm font-extrabold leading-tight">@member.Name</span>
+                                <span class="mt-1 block truncate text-[11px] font-semibold uppercase tracking-widest text-cinema-ink/60">@member.Role</span>
+                            </span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</section>

@@ -19,35 +19,7 @@
                 @foreach (var movie in Model.Movies)
                 {
                     <div class="swiper-slide h-auto">
-                        <article data-movie-card>
-                            <div class="movie-poster relative aspect-[2/3] overflow-hidden rounded-2xl" data-movie-poster>
-                                <div class="movie-poster__inner relative size-full">
-                                    <div class="movie-poster__base relative size-full @movie.Bg">
-                                        <div class="@movie.Art" aria-hidden="true"></div>
-                                        <span class="absolute left-3 top-3 rounded-full border px-2 py-0.5 text-[10px] font-bold leading-none @movie.Badge">@movie.Rating</span>
-                                        <p class="absolute inset-x-3 bottom-3 m-0 text-2xl font-black uppercase leading-[0.9] tracking-tighter sm:text-3xl @movie.Text" aria-hidden="true">@Html.Raw(movie.Poster)</p>
-                                    </div>
-                                    <div class="movie-glass pointer-events-none absolute inset-0 flex flex-col justify-between border border-white/20 p-5 text-white backdrop-blur-xl backdrop-saturate-150 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-40px_70px_rgba(0,0,0,0.5)] [background:linear-gradient(145deg,rgba(255,255,255,0.16),transparent_38%),rgba(4,6,8,0.82)]">
-                                        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-white/70" aria-hidden="true">
-                                            <span>@movie.Duration</span>
-                                            <span class="rounded-full border border-white/40 px-2 py-0.5 leading-none">@movie.Rating</span>
-                                        </div>
-                                        <div>
-                                            <p class="m-0 text-2xl font-black uppercase leading-[0.95] tracking-tighter" aria-hidden="true">@movie.Title</p>
-                                            <p class="m-0 mt-1 text-xs font-semibold text-white/60" aria-hidden="true">@movie.Genre</p>
-                                            <p class="m-0 mt-3 text-sm leading-snug text-white/75">@movie.Synopsis</p>
-                                        </div>
-                                    </div>
-                                    <div class="movie-glare pointer-events-none absolute inset-0" aria-hidden="true"></div>
-                                </div>
-                            </div>
-                            <p class="m-0 mt-3 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">@movie.Duration</p>
-                            <h3 class="m-0 mt-1 text-lg font-extrabold leading-tight"><span class="relative inline-block whitespace-nowrap"><span class="relative z-10">@movie.Title</span>@await Html.PartialAsync("_AnnotationHighlight")</span></h3>
-                            <div class="mt-2 flex gap-2 text-[11px] font-semibold leading-none">
-                                <span class="rounded-full bg-cinema-ink px-3 py-1.5 text-cinema-cream">@movie.Genre</span>
-                                <span class="rounded-full border border-cinema-ink px-3 py-1.5">@movie.Rating</span>
-                            </div>
-                        </article>
+                        @await Html.PartialAsync("_MovieCard", movie)
                     </div>
                 }
             </div>

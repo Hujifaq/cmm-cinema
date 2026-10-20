@@ -124,9 +124,12 @@
       animation?.progress(1);
       rows[next].focus();
     };
-    const onFocusOut = () => queueMicrotask(() => {
-      if (!disposed && open && !nav.contains(document.activeElement)) setOpen(false);
-    });
+    // Mid-focus-change activeElement is body, so judge by where focus is going.
+    // A null target (pointer on a non-focusable area) is handled by onOutside.
+    const onFocusOut = event => {
+      const next = event.relatedTarget;
+      if (!disposed && open && next && !nav.contains(next)) setOpen(false);
+    };
     const onBreakpoint = () => {
       if (!mobile.matches && (panel.contains(document.activeElement) || document.activeElement === toggle)) {
         desktopButtons[rows.findIndex(row => row.getAttribute('aria-pressed') === 'true')]?.focus();

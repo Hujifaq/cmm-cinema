@@ -176,6 +176,23 @@
 }
 .news-link:hover .news-underline, .news-link:focus-visible .news-underline { opacity: 0; transform: scaleY(0.2); }
 .news-link:hover .movie-highlight, .news-link:focus-visible .movie-highlight { opacity: 1; transform: scaleY(1); }
+/* Movies tabs: the active title wears a hand-drawn double underline that draws itself in. */
+.movies-tab { --highlight-color: #34d399; }
+.movies-tab__underline {
+  color: var(--highlight-color);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 550ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.movies-tab__underline path { stroke-width: 0.045em; vector-effect: non-scaling-stroke; }
+.movies-tab__underline path + path { stroke-width: 0.034em; opacity: 0.85; }
+.movies-tab[aria-selected="true"] .movies-tab__underline,
+.movies-tab:focus-visible .movies-tab__underline { clip-path: inset(0 0 0 0); }
+@media (hover: hover) and (pointer: fine) {
+  .movies-tab:hover .movies-tab__underline { clip-path: inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .movies-tab__underline { transition: none; }
+}
 /* Cards bleed to the screen edges so the returning story can enter from off-screen. */
 .news-swiper.swiper { overflow: visible; }
 .news-thumb__image { transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1); }
@@ -185,3 +202,14 @@
 @media (prefers-reduced-motion: reduce) {
   .news-underline, .news-link .movie-highlight, .news-thumb__image { transition: none; }
 }
+
+/* Movie detail: copy waits hidden for its GSAP reveal; the fallback shows it if scripts never run. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-movie-detail]:not([data-revealed]) :is([data-detail-poster], [data-reveal-chars], [data-reveal-lines], [data-reveal-up], [data-reveal-cast], [data-goo-button]) {
+    visibility: hidden;
+    animation: movie-detail-unhide 0s 3s forwards;
+  }
+}
+@keyframes movie-detail-unhide { to { visibility: visible; } }
+/* Gooey buttons: the accent fill and blob rest collapsed until GSAP grows them from the pointer. */
+[data-goo-fill], [data-goo-blob] { transform: scale(0); }

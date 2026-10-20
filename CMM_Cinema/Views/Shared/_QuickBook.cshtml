@@ -1,0 +1,93 @@
+@{
+    var today = DateTime.Today;
+    var fields = new[]
+    {
+        (Id: "cinema", Label: "Cinema", Placeholder: "Select cinema", Options: new[]
+        {
+            (Value: "central", Text: "CMM Central", Badge: "C", Meta: "Downtown"),
+            (Value: "riverside", Text: "CMM Riverside", Badge: "R", Meta: "Riverfront"),
+            (Value: "skyline", Text: "CMM Skyline", Badge: "S", Meta: "Rooftop"),
+            (Value: "harbor-point", Text: "CMM Harbor Point", Badge: "H", Meta: "Marina"),
+        }),
+        (Id: "date", Label: "Date", Placeholder: "Select date", Options: Enumerable.Range(0, 7).Select(i =>
+        {
+            var d = today.AddDays(i);
+            return (Value: d.ToString("yyyy-MM-dd"), Text: d.ToString("ddd, d MMM"), Badge: d.Day.ToString(), Meta: i == 0 ? "Today" : i == 1 ? "Tomorrow" : "");
+        }).ToArray()),
+    };
+    const string check = "M4.5 10.5 8 14l7.5-8";
+}
+
+<div class="relative z-40 mx-auto mt-[2.5rem] w-full max-w-5xl md:mt-20 lg:mt-14" data-quick-book>
+    <svg class="absolute size-0" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="qb-goo" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10" />
+            </filter>
+            <filter id="qb-goo-sm" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" />
+            </filter>
+        </defs>
+    </svg>
+
+    <form class="flex flex-col gap-3 rounded-[32px] bg-black/55 p-3 font-sans shadow-[0_8px_32px_#0003,inset_0_1px_0_#ffffff14] ring-1 ring-inset ring-white/15 backdrop-blur-xl backdrop-saturate-150 md:flex-row md:items-center md:gap-4 md:rounded-full md:py-3 md:pl-8 md:pr-3" aria-label="Quick book" data-qb-form>
+        <h2 class="m-0 shrink-0 px-2 text-xl font-black uppercase leading-none tracking-tight text-white md:px-0">Quick Book</h2>
+
+        @foreach (var f in fields)
+        {
+            <div class="group/qb relative min-w-0 flex-1" data-qb-select>
+                <input type="hidden" name="@f.Id" data-qb-value />
+                <span class="sr-only" id="qb-@f.Id-label">@f.Label</span>
+                <button type="button" id="qb-@f.Id-trigger" class="relative flex h-12 w-full cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-full border border-white/25 bg-transparent pl-5 pr-4 text-left text-sm font-semibold text-white/60 outline-none transition-[background-color,border-color,color] duration-300 hover:border-white/45 hover:bg-cinema-nav-hover focus-visible:border-cinema-cream/70 focus-visible:bg-cinema-nav-hover group-data-[open]/qb:border-white/50 group-data-[open]/qb:bg-cinema-nav-hover group-data-[filled]/qb:text-white" aria-haspopup="listbox" aria-expanded="false" aria-controls="qb-@f.Id-list" aria-labelledby="qb-@f.Id-label qb-@f.Id-trigger" data-qb-trigger>
+                    <span class="block min-w-0 truncate" data-qb-label>@f.Placeholder</span>
+                    <svg class="size-4 shrink-0 text-white transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-data-[open]/qb:rotate-180" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 8 5 5 5-5" /></svg>
+                </button>
+
+                <div class="absolute inset-x-0 top-full z-50 mt-2 min-w-64 data-[dir=up]:top-auto data-[dir=up]:bottom-full data-[dir=up]:mb-2 data-[dir=up]:mt-0" data-qb-panel hidden>
+                    <div class="pointer-events-none absolute inset-0 [filter:url(#qb-goo)]" aria-hidden="true">
+                        <span class="absolute inset-0 rounded-[26px] bg-black" data-qb-blob></span>
+                        <span class="absolute right-6 top-0 size-8 rounded-full bg-black" data-qb-drop></span>
+                        <span class="absolute left-1/3 top-0 size-6 rounded-full bg-black" data-qb-drop></span>
+                    </div>
+                    <div class="pointer-events-none absolute inset-0 rounded-[26px] shadow-[0_24px_60px_#0005,inset_0_1px_0_#ffffff1f] ring-1 ring-inset ring-white/10" aria-hidden="true" data-qb-sheen></div>
+
+                    <div class="relative p-2">
+                        <div class="pointer-events-none absolute inset-2 opacity-0 [filter:url(#qb-goo-sm)]" aria-hidden="true" data-qb-pill-layer>
+                            <span class="absolute inset-x-0 top-0 h-12 rounded-full bg-cinema-cream" data-qb-pill></span>
+                            <span class="absolute left-1 top-0 size-9 rounded-full bg-cinema-cream" data-qb-tail></span>
+                            <span class="absolute right-1 top-0 size-9 rounded-full bg-cinema-cream" data-qb-tail></span>
+                        </div>
+                        <ul class="relative m-0 list-none p-0 outline-none" role="listbox" id="qb-@f.Id-list" tabindex="-1" aria-labelledby="qb-@f.Id-label">
+                            @for (var i = 0; i < f.Options.Length; i++)
+                            {
+                                var o = f.Options[i];
+                                <li class="group/opt relative flex h-12 cursor-pointer select-none items-center gap-3 rounded-full pl-2 pr-4 text-sm font-semibold text-white/75 transition-colors duration-200 aria-selected:text-white data-[active]:text-cinema-ink" role="option" id="qb-@f.Id-opt-@i" aria-selected="false" data-value="@o.Value" data-label="@o.Text">
+                                    <span class="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 text-[11px] font-black transition-colors duration-200 group-data-[active]/opt:bg-cinema-ink group-data-[active]/opt:text-cinema-cream" aria-hidden="true">@o.Badge</span>
+                                    <span class="min-w-0 flex-1 truncate">@o.Text</span>
+                                    @if (o.Meta.Length > 0)
+                                    {
+                                        <span class="shrink-0 text-[10px] font-bold uppercase tracking-widest text-white/40 transition-colors duration-200 group-data-[active]/opt:text-cinema-ink/55">@o.Meta</span>
+                                    }
+                                    <svg class="size-4 shrink-0 opacity-0 transition-opacity duration-200 group-aria-selected/opt:opacity-100" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="@check" /></svg>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <button type="submit" class="relative isolate flex h-12 shrink-0 cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-full border-0 bg-cinema-cream py-0 pl-6 pr-1.5 text-sm font-extrabold text-cinema-ink shadow-[inset_0_-2px_0_#0000001a] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream" data-qb-submit>
+            <span class="pointer-events-none absolute inset-0 -z-1" aria-hidden="true">
+                <span class="absolute right-1.5 top-1.5 size-9 rounded-full bg-cinema-ink" data-qb-ink></span>
+            </span>
+            <span class="relative block" data-qb-submit-label>Find showtimes</span>
+            <span class="relative grid size-9 place-items-center rounded-full text-cinema-cream" aria-hidden="true" data-qb-submit-icon>
+                <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-qb-submit-arrow><path d="M4 10h12m-5-5 5 5-5 5" /></svg>
+            </span>
+        </button>
+        <p class="sr-only" role="status" aria-live="polite" data-qb-status></p>
+    </form>
+</div>

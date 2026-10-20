@@ -1,14 +1,17 @@
 using CMM_Cinema.Models;
+using CMM_Cinema.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace CMM_Cinema.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(IMovieRepository movies) : Controller
     {
-        public IActionResult Index()
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            return View();
+            return View(new MovieListingsViewModel(
+                await movies.GetByStatusAsync(MovieStatus.NowShowing, cancellationToken),
+                await movies.GetByStatusAsync(MovieStatus.Upcoming, cancellationToken)));
         }
 
         public IActionResult Privacy()
