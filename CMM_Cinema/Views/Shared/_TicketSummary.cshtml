@@ -1,0 +1,48 @@
+@model Ticket
+@{
+    // Poster, title and showing details, shared by the ticket list card and the ticket detail page.
+    var culture = System.Globalization.CultureInfo.InvariantCulture;
+    var titleId = ViewData["TitleId"] ?? $"ticket-{Model.BookingCode}";
+    var posterSize = ViewData["PosterSize"] ?? "w-24 sm:w-32 md:w-36";
+    var titleSize = ViewData["TitleSize"] ?? "text-2xl sm:text-3xl lg:text-4xl";
+}
+
+<div class="flex min-w-0 gap-4 sm:gap-6">
+    <div class="relative aspect-2/3 shrink-0 overflow-hidden rounded-2xl @posterSize @(Model.IsPast ? "grayscale-[0.6]" : "")" data-ticket-poster>
+        <div class="size-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ticket:scale-[1.06] group-hover/ticket:-rotate-1 motion-reduce:transition-none motion-reduce:group-hover/ticket:transform-none">
+            @await Html.PartialAsync("_MoviePoster", Model.Movie)
+        </div>
+    </div>
+
+    <div class="min-w-0 self-center">
+        <p class="m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">Booking · @Model.BookingCode</p>
+        <h2 class="m-0 mt-2 font-black uppercase leading-[0.9] tracking-tighter @titleSize" id="@titleId"><span class="relative inline-block"><span class="relative z-10">@Model.Movie.Title</span>@await Html.PartialAsync("_AnnotationHighlight")</span></h2>
+        <ul class="m-0 mt-3 flex list-none flex-wrap items-center gap-y-2 p-0 text-xs font-semibold sm:text-sm" aria-label="Movie details">
+            @foreach (var detail in new[] { Model.Movie.Runtime, Model.Movie.Rating, Model.Movie.Genre })
+            {
+                <li class="border-l border-cinema-ink/30 px-3 leading-none first:border-l-0 first:pl-0">@detail</li>
+            }
+        </ul>
+
+        <dl class="m-0 mt-5 grid gap-2.5 text-sm text-cinema-ink/80">
+            <div class="flex items-center gap-2.5">
+                <dt class="shrink-0 text-cinema-ink"><span class="sr-only">Cinema</span>
+                    <svg class="block size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 18s-5.5-5.2-5.5-9.5a5.5 5.5 0 0 1 11 0C15.5 12.8 10 18 10 18Z" /><circle cx="10" cy="8.5" r="2" /></svg>
+                </dt>
+                <dd class="m-0 min-w-0 truncate">@Model.Cinema · @Model.Hall</dd>
+            </div>
+            <div class="flex items-center gap-2.5">
+                <dt class="shrink-0 text-cinema-ink"><span class="sr-only">Showtime</span>
+                    <svg class="block size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4.5" width="14" height="12.5" rx="2.5" /><path d="M3 8.5h14M7 2.5v4M13 2.5v4" /></svg>
+                </dt>
+                <dd class="m-0 min-w-0"><time datetime="@Model.Showtime.ToString("yyyy-MM-ddTHH:mm", culture)">@Model.Showtime.ToString("ddd, MMM d, yyyy", culture) <span class="px-1 text-cinema-ink/30" aria-hidden="true">|</span> <span class="font-bold text-cinema-ink">@Model.Showtime.ToString("HH:mm", culture)</span></time></dd>
+            </div>
+            <div class="flex items-center gap-2.5">
+                <dt class="shrink-0 text-cinema-ink"><span class="sr-only">Format</span>
+                    <svg class="block size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="5" width="11" height="10" rx="2" /><path d="m13.5 9 4-2.5v7l-4-2.5" /></svg>
+                </dt>
+                <dd class="m-0">@Model.Format</dd>
+            </div>
+        </dl>
+    </div>
+</div>

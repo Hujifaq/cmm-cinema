@@ -50,6 +50,11 @@
   [data-nav-action-pill], [data-nav-action] { transition: none; }
 }
 
+/* Printed pages (tickets) leave the floating navbar off the paper. */
+@media print {
+  [data-nav-header] { display: none; }
+}
+
 /* The Spotlight is portaled outside the sticky/filtered navbar. */
 [data-cinema-nav][data-search-mode],
 [data-cinema-nav][data-search-mode] * { animation: none !important; }
@@ -142,7 +147,7 @@
   transition: clip-path 650ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 @media (hover: hover) and (pointer: fine) {
-  [data-movie-card]:hover .movie-highlight { clip-path: inset(0 0 0 0); }
+  :is([data-movie-card], [data-ticket-card]):hover .movie-highlight { clip-path: inset(0 0 0 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .movie-highlight { transition: none; }
@@ -211,5 +216,12 @@
   }
 }
 @keyframes movie-detail-unhide { to { visibility: visible; } }
+/* My tickets: the same reveal guard for the title, tabs and ticket cards. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-tickets-page]:not([data-revealed]) :is([data-reveal-chars], [data-tickets-tab], [data-ticket-card]) {
+    visibility: hidden;
+    animation: movie-detail-unhide 0s 3s forwards;
+  }
+}
 /* Gooey buttons: the accent fill and blob rest collapsed until GSAP grows them from the pointer. */
 [data-goo-fill], [data-goo-blob] { transform: scale(0); }

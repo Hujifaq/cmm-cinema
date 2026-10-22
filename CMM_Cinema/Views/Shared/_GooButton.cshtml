@@ -1,0 +1,10 @@
+@model (string Label, string Href, string Accent)
+@* Gooey pill: needs the _GooFilter partial on the page; goo-button.js drives the fill and blob. *@
+<a class="group relative isolate inline-flex min-h-12 items-center justify-center rounded-full px-5 text-sm font-bold text-cinema-cream no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink @ViewData["GooClass"]" href="@Model.Href" aria-label="@ViewData["GooLabel"]" data-goo-button>
+    <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+        <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
+        <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full @Model.Accent" data-goo-fill></span></span>
+        <span class="absolute left-0 top-0 size-9 rounded-full @Model.Accent" data-goo-blob></span>
+    </span>
+    <span class="relative transition-colors duration-300 group-data-[goo-active]:text-cinema-ink" data-goo-label>@Model.Label</span>
+</a>
