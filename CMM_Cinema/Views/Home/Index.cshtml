@@ -1,32 +1,11 @@
+@model MovieListingsViewModel
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "CMM Cinema";
-    var promotions = new[] {
-        "Movie night, made better — tickets from ฿150",
-        "Double the fun — buy 1 ticket, get 1 free on Wednesdays",
-        "Free popcorn upgrade with every combo",
-        "Student perks — save 20% on your next screening"
-    };
 }
 
 @section TopBanner {
-    <section class="cinema-marquee relative overflow-hidden bg-black py-2 font-sans text-[13px] font-semibold leading-5 text-white sm:text-sm" aria-label="Cinema promotions" data-marquee>
-        <div class="cinema-marquee__track flex w-max" data-marquee-track>
-            @for (var copy = 0; copy < 2; copy++)
-            {
-                <div class="cinema-marquee__group flex min-w-[100vw] shrink-0 items-center justify-around" aria-hidden="@(copy == 1 ? "true" : "false")">
-                    @foreach (var promotion in promotions)
-                    {
-                        <span class="inline-flex shrink-0 items-center gap-8 whitespace-nowrap pr-8 sm:gap-12 sm:pr-12">
-                            <span>@promotion</span>
-                            <span aria-hidden="true">✦</span>
-                        </span>
-                    }
-                </div>
-            }
-        </div>
-       
-    </section>
+    @await Html.PartialAsync("_CinemaMarquee")
 }
 
 <section class="cinema-hero relative isolate h-dvh w-full overflow-hidden" aria-labelledby="cinema-title">
@@ -109,18 +88,8 @@
 @await Html.PartialAsync("_CinemaPromos")
 
 @{
-    var upcoming = new MovieSectionViewModel("upcoming", "UPCOMING", true, new[] {
-        new MovieCard("Silver Tide", "Silver<br>Tide", "2H 05M", "Sci-Fi", "PG", "bg-cinema-brick", "text-cinema-cream", "border-cinema-cream text-cinema-cream", "absolute -right-12 top-4 size-[80%] rounded-full bg-cinema-sun", "When the oceans glow silver, one marine biologist hears a message in the waves."),
-        new MovieCard("Crimson Garden", "Crimson<br>Garden", "1H 58M", "Drama", "PG-13", "bg-cinema-sun", "text-cinema-ink", "border-cinema-ink text-cinema-ink", "absolute left-[14%] top-[12%] h-[56%] w-[72%] rounded-t-full bg-cinema-brick", "A widowed florist finds a hidden garden that blooms with long-buried family secrets."),
-        new MovieCard("Echo Valley", "Echo Valley", "1H 44M", "Adventure", "PG", "bg-cinema-ink", "text-cinema-cream", "border-cinema-cream text-cinema-cream", "absolute -top-[40%] -inset-x-[10%] h-[75%] rounded-full bg-cinema-sky", "Three strangers follow a legendary echo into a valley that is on no map."),
-        new MovieCard("Velvet Skies", "Velvet Skies", "1H 36M", "Romance", "PG-13", "bg-cinema-sky", "text-cinema-ink", "border-cinema-ink text-cinema-ink", "absolute inset-x-0 top-0 h-[56%] bg-[repeating-linear-gradient(120deg,var(--color-cinema-ink)_0_14px,transparent_14px_32px)]", "Two night-flight attendants trade stories and slowly fall for each other across time zones.")
-    });
-    var nowShowing = new MovieSectionViewModel("now-showing", "NOW SHOWING", false, new[] {
-        new MovieCard("The Last Horizon", "The Last<br>Horizon", "2H 18M", "Action", "PG-13", "bg-cinema-ink", "text-cinema-cream", "border-cinema-cream text-cinema-cream", "absolute -right-12 top-4 size-[80%] rounded-full bg-cinema-sky", "A burned-out pilot has one launch left to outrun the collapse of the last colony."),
-        new MovieCard("Neon Harbor", "Neon Harbor", "1H 52M", "Thriller", "R", "bg-cinema-sky", "text-cinema-ink", "border-cinema-ink text-cinema-ink", "absolute left-[14%] top-[12%] h-[56%] w-[72%] rounded-t-full bg-cinema-ink", "A night-shift detective follows a trail of flickering signs into the city's darkest port."),
-        new MovieCard("Paper Moons", "Paper Moons", "1H 40M", "Animation", "G", "bg-cinema-sun", "text-cinema-ink", "border-cinema-sun bg-cinema-sun text-cinema-ink", "absolute -top-[40%] -inset-x-[10%] h-[75%] rounded-full bg-cinema-ink", "Two paper-cut siblings fold their way across the night sky to bring a lost moon home."),
-        new MovieCard("Hollow Pines", "Hollow Pines", "1H 47M", "Horror", "R", "bg-cinema-brick", "text-cinema-cream", "border-cinema-cream text-cinema-cream", "absolute inset-x-0 top-0 h-[56%] bg-[repeating-linear-gradient(120deg,var(--color-cinema-cream)_0_14px,transparent_14px_32px)]", "A weekend cabin trip turns strange when the forest starts answering back.")
-    });
+    var upcoming = new MovieSectionViewModel("upcoming", "UPCOMING", true, Model.Upcoming);
+    var nowShowing = new MovieSectionViewModel("now-showing", "NOW SHOWING", false, Model.NowShowing);
     var news = new NewsSectionViewModel("news", "NEWS & UPDATES", new[] {
         new NewsItem("Behind the scenes of The Last Horizon", "Feature", "Oct 12, 2026", "https://picsum.photos/seed/cmm-news-1/1200/675", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.", "#"),
         new NewsItem("Paper Moons wins the festival audience award", "Awards", "Oct 08, 2026", "https://picsum.photos/seed/cmm-news-2/1200/675", "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters.", "#"),

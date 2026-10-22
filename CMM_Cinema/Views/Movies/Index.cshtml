@@ -1,0 +1,84 @@
+@model MovieListingsViewModel
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = "Movies - CMM Cinema";
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+@{
+    var tabClass = "movies-tab relative shrink-0 cursor-pointer text-[1em] whitespace-nowrap border-0 bg-transparent p-0 font-['Arial_Black','Helvetica_Neue',Arial,sans-serif] font-black uppercase leading-[0.85] tracking-[-0.06em] text-cinema-ink [-webkit-text-stroke:0.012em_var(--color-cinema-ink)] [paint-order:stroke_fill] transition-colors aria-[selected=false]:text-transparent aria-[selected=false]:hover:text-cinema-ink/10";
+    var underline = new Microsoft.AspNetCore.Html.HtmlString("<svg class=\"movies-tab__underline pointer-events-none absolute inset-x-[-2%] -bottom-[0.2em] h-[0.16em] w-[104%]\" viewBox=\"0 0 200 14\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" preserveAspectRatio=\"none\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M3 4.5 C40 2.5 90 4 130 3 S180 3.5 197 2.8\" /><path d=\"M14 10.5 C60 9.2 105 10.8 150 9.8 S178 10 188 9.6\" /></svg>");
+}
+
+<section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" data-movies-page>
+    <div class="mx-auto max-w-[1440px] px-5 md:px-12">
+        <div class="flex flex-nowrap items-end justify-start gap-x-[0.18em] text-[min(9.5vw,8.5rem)]" role="tablist" aria-label="Movie status">
+            <button type="button" role="tab" id="tab-movies" aria-selected="true" aria-controls="panel-movies" data-movies-tab="movies" class="@tabClass">Movies@(underline)</button>
+            <button type="button" role="tab" id="tab-upcoming" aria-selected="false" aria-controls="panel-upcoming" data-movies-tab="upcoming" class="@tabClass">Upcoming@(underline)</button>
+        </div>
+
+        @foreach (var (key, list) in new[] { ("movies", Model.NowShowing), ("upcoming", Model.Upcoming) })
+        {
+            <div role="tabpanel" id="panel-@key" aria-labelledby="tab-@key" data-movies-panel="@key" data-movie-grid class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:mt-14 md:grid-cols-3 md:gap-x-5 lg:grid-cols-4" hidden="@(key != "movies")">
+                @foreach (var movie in list)
+                {
+                    @await Html.PartialAsync("_MovieCard", movie)
+                }
+            </div>
+        }
+
+        @await Html.PartialAsync("_QuickBook")
+    </div>
+</section>
+
+<script>
+    // Tabs: a hand-drawn underline marks the active one; hovering redraws it in a fresh colour.
+    document.addEventListener('DOMContentLoaded', function () {
+        var tabs = [].slice.call(document.querySelectorAll('[data-movies-tab]'));
+        var panels = [].slice.call(document.querySelectorAll('[data-movies-panel]'));
+        var colors = ['#34d399', '#f472b6', '#fb923c', '#60a5fa', '#a78bfa', '#facc15'];
+        var last = '';
+        var gsap = window.gsap;
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        function recolor(tab) {
+            var options = colors.filter(function (color) { return color !== last; });
+            last = options[Math.floor(Math.random() * options.length)];
+            tab.style.setProperty('--highlight-color', last);
+        }
+
+        function select(tab) {
+            if (tab.getAttribute('aria-selected') === 'true') return;
+            tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t === tab)); });
+            panels.forEach(function (panel) {
+                panel.hidden = panel.dataset.moviesPanel !== tab.dataset.moviesTab;
+                if (!panel.hidden && gsap && !reduced.matches) {
+                    gsap.fromTo(panel.querySelectorAll('[data-movie-card]'),
+                        { opacity: 0, y: 28 },
+                        { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', stagger: 0.05, clearProps: 'opacity,transform' });
+                }
+            });
+        }
+
+        tabs.forEach(function (tab, index) {
+            if (tab.getAttribute('aria-selected') === 'true') recolor(tab);
+            tab.addEventListener('pointerenter', function () {
+                if (tab.getAttribute('aria-selected') !== 'true') recolor(tab);
+            });
+            tab.addEventListener('focus', function () {
+                if (tab.getAttribute('aria-selected') !== 'true') recolor(tab);
+            });
+            tab.addEventListener('click', function () { select(tab); });
+            tab.addEventListener('keydown', function (event) {
+                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                event.preventDefault();
+                var next = tabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+                next.focus();
+                select(next);
+            });
+        });
+    });
+</script>

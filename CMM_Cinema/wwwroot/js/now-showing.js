@@ -6,8 +6,8 @@
   let last = '';
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  document.querySelectorAll('[data-movie-swiper]').forEach(root => {
-    new Swiper(root, {
+  document.querySelectorAll('[data-movie-swiper], [data-movie-grid]').forEach(root => {
+    if (root.hasAttribute('data-movie-swiper')) new Swiper(root, {
       slidesPerView: 1.6,
       spaceBetween: 16,
       grabCursor: true,

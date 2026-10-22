@@ -1,0 +1,66 @@
+/* Cross-document View Transition modelled on paulkalkbrenner.net (Barba + GSAP):
+   the old page shrinks from its bottom edge, then swings out to the left while the
+   new page swings in from the right. The navbar keeps its own snapshot and stays still. */
+/* The @view-transition opt-in (desktop only) lives inline in _HeroLayout's <head>:
+   Chrome can reveal a heavy page before this file applies, which skips the transition. */
+
+:root {
+  --page-ease: cubic-bezier(0.625, 0.05, 0, 1);
+}
+
+[data-cinema-nav] {
+  view-transition-name: cinema-nav;
+}
+
+::view-transition-group(cinema-nav),
+::view-transition-old(cinema-nav),
+::view-transition-new(cinema-nav) {
+  animation: none;
+}
+
+::view-transition-old(cinema-nav) {
+  display: none;
+}
+
+/* Seen behind the shrinking pages. */
+::view-transition {
+  background: #000;
+}
+
+::view-transition-group(root) {
+  animation-duration: 0.9s;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+  transform-origin: center bottom;
+}
+
+::view-transition-old(root) {
+  animation:
+    page-shrink 0.6s var(--page-ease) both,
+    page-swing-out 0.8s var(--page-ease) 0.1s both;
+}
+
+::view-transition-new(root) {
+  animation: page-swing-in 0.8s var(--page-ease) 0.1s both;
+}
+
+@keyframes page-shrink {
+  to { scale: 0.8; opacity: 0.8; }
+}
+
+@keyframes page-swing-out {
+  to { translate: -50% 0; rotate: -5deg; }
+}
+
+@keyframes page-swing-in {
+  from { translate: 100% 0; rotate: 5deg; scale: 0.85; }
+  to { translate: 0 0; rotate: 0deg; scale: 1; }
+}
+
+:root[data-page-arrived] [data-cinema-nav],
+:root[data-page-arrived] [data-cinema-nav] * {
+  animation: none !important;
+}

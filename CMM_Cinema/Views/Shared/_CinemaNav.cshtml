@@ -1,6 +1,9 @@
 @{
 
-    var items = new[] { "Home", "Work", "About", "Contact" };
+    var items = new[] { "Home", "Movies", "About", "Contact" };
+    var hrefs = new[] { "/", "/Movies", "/About", "/Contact" };
+    var currentPath = (Context.Request.Path.Value ?? "").TrimEnd('/');
+    var active = Math.Max(0, Array.FindIndex(hrefs, href => string.Equals(href.TrimEnd('/'), currentPath, StringComparison.OrdinalIgnoreCase) || (href != "/" && currentPath.StartsWith(href + "/", StringComparison.OrdinalIgnoreCase))));
     var pillClass = "inline-flex min-h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border-0 bg-transparent px-3 py-3 font-sans text-sm font-medium leading-none transition-colors duration-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream lg:px-5";
 }
 
@@ -17,7 +20,7 @@
                     <ul class="relative m-0 flex list-none flex-wrap gap-1 p-0 text-white/65 md:flex-nowrap lg:gap-1.5" data-gooey-list>
                         @for (var i = 0; i < items.Length; i++)
                         {
-                            <li class="flex" style="--nav-item: @i" data-gooey-index="@i"><button class="@pillClass" type="button" aria-pressed="@(i == 0 ? "true" : "false")">@items[i]</button></li>
+                            <li class="flex" style="--nav-item: @i" data-gooey-index="@i"><button class="@pillClass" type="button" data-href="@hrefs[i]" aria-pressed="@(i == active ? "true" : "false")">@items[i]</button></li>
                         }
                     </ul>
                     <ul class="pointer-events-none invisible absolute inset-0 m-0 flex list-none flex-wrap gap-1 p-0 text-black md:flex-nowrap lg:gap-1.5" style="clip-path: inset(100%)" data-gooey-overlay aria-hidden="true">
@@ -54,7 +57,7 @@
                     @for (var i = 0; i < items.Length; i++)
                     {
                         <li>
-                            <button class="block min-h-15 w-full cursor-pointer rounded-2xl border-0 bg-transparent px-3 py-3 text-left font-sans text-[clamp(2rem,8vw,3.5rem)] font-medium leading-[1.1] tracking-[-0.04em] text-white/80 transition-colors hover:text-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cinema-cyan" type="button" aria-pressed="@(i == 0 ? "true" : "false")" data-mobile-index="@i">
+                            <button class="block min-h-15 w-full cursor-pointer rounded-2xl border-0 bg-transparent px-3 py-3 text-left font-sans text-[clamp(2rem,8vw,3.5rem)] font-medium leading-[1.1] tracking-[-0.04em] text-white/80 transition-colors hover:text-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cinema-cyan" type="button" aria-pressed="@(i == active ? "true" : "false")" data-mobile-index="@i">
                                 <span class="block overflow-hidden">
                                     <span class="block origin-bottom-left break-words" data-menu-label>@items[i]</span>
                                 </span>
