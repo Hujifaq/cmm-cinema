@@ -5,7 +5,7 @@
     var eyebrow = Model.Status == MovieStatus.Upcoming
         ? "Coming Soon" + (Model.ReleaseDate is { } date ? " · " + date.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")
         : "Now Showing";
-    var buttons = new[] { (Label: "Book Now!", Href: "#", Accent: "bg-cinema-sun"), (Label: "Showtimes", Href: "#", Accent: "bg-cinema-sky") };
+    var buttons = new[] { (Label: "Book Now!", Href: "#", Accent: "bg-cinema-brick"), (Label: "Showtimes", Href: "#", Accent: "bg-cinema-logo") };
 }
 
 @section TopBanner {
@@ -14,6 +14,9 @@
 
 <section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="movie-title" data-movie-detail>
     @await Html.PartialAsync("_GooFilter")
+    <div class="mx-auto max-w-[1440px] px-5 md:px-12">
+        @await Html.PartialAsync("_Breadcrumb", new (string, string?)[] { ("Home", "/"), ("Movies", "/Movies"), (Model.Title, null) })
+    </div>
     <div class="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:gap-12 md:px-12 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:gap-20">
         <div class="w-full max-w-xs md:max-w-none">
             <div class="relative aspect-[2/3] overflow-hidden rounded-2xl" data-detail-poster>
@@ -22,7 +25,7 @@
             <div class="mt-6 grid grid-cols-2 gap-3">
                 @foreach (var button in buttons)
                 {
-                    @await Html.PartialAsync("_GooButton", button)
+                    @await Html.PartialAsync("_GooButton", button, new ViewDataDictionary(ViewData) { ["GooLightLabel"] = true })
                 }
             </div>
         </div>

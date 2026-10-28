@@ -74,4 +74,18 @@ public sealed class DemoMovieRepository : IMovieRepository
 
     public Task<Movie?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
         Task.FromResult(Movies.FirstOrDefault(movie => string.Equals(movie.Slug, slug, StringComparison.OrdinalIgnoreCase)));
+
+    // Title matches rank first; a D1 query can mirror this with LIKE and an ORDER BY on the title match.
+    public Task<IReadOnlyList<Movie>> SearchAsync(string query, int limit, CancellationToken cancellationToken = default)
+    {
+        var term = query.Trim();
+        if (term.Length == 0) return Task.FromResult<IReadOnlyList<Movie>>([]);
+        return Task.FromResult<IReadOnlyList<Movie>>(Movies
+            .Where(movie => movie.SearchText.Contains(term, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(movie => movie.Title.StartsWith(term, StringComparison.OrdinalIgnoreCase) ? 0 : movie.Title.Contains(term, StringComparison.OrdinalIgnoreCase) ? 1 : 2)
+            .ThenBy(movie => movie.Status)
+            .ThenBy(movie => movie.Title)
+            .Take(limit)
+            .ToArray());
+    }
 }

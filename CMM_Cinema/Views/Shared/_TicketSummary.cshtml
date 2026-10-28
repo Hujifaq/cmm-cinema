@@ -8,7 +8,7 @@
 }
 
 <div class="flex min-w-0 gap-4 sm:gap-6">
-    <div class="relative aspect-2/3 shrink-0 overflow-hidden rounded-2xl @posterSize @(Model.IsPast ? "grayscale-[0.6]" : "")" data-ticket-poster>
+    <div class="relative aspect-2/3 shrink-0 overflow-hidden rounded-2xl shadow-clay-raised @posterSize @(Model.IsPast ? "grayscale-[0.6]" : "")" data-ticket-poster>
         <div class="size-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ticket:scale-[1.06] group-hover/ticket:-rotate-1 motion-reduce:transition-none motion-reduce:group-hover/ticket:transform-none">
             @await Html.PartialAsync("_MoviePoster", Model.Movie)
         </div>

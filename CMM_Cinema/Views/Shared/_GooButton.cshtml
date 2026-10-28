@@ -6,5 +6,5 @@
         <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full @Model.Accent" data-goo-fill></span></span>
         <span class="absolute left-0 top-0 size-9 rounded-full @Model.Accent" data-goo-blob></span>
     </span>
-    <span class="relative transition-colors duration-300 group-data-[goo-active]:text-cinema-ink" data-goo-label>@Model.Label</span>
+    <span class="relative transition-colors duration-300 @(ViewData["GooLightLabel"] is true ? "group-data-[goo-active]:text-cinema-cream" : "group-data-[goo-active]:text-cinema-ink")" data-goo-label>@Model.Label</span>
 </a>
