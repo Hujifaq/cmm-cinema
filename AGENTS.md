@@ -1,3 +1,8 @@
+# Design system
+
+Read `DESIGN.md` before building or changing UI. It documents the colors,
+typography, surfaces and every animation the site uses.
+
 # Styling conventions
 
 - Prefer Tailwind utilities for standard styling in Razor views.
