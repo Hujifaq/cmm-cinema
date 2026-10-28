@@ -1,7 +1,7 @@
 @{
 
-    var items = new[] { "Home", "Movies", "About", "Contact" };
-    var hrefs = new[] { "/", "/Movies", "/About", "/Contact" };
+    var items = new[] { "Home", "Movies", "About", "Tickets" };
+    var hrefs = new[] { "/", "/Movies", "/About", "/MyTickets" };
     var currentPath = (Context.Request.Path.Value ?? "").TrimEnd('/');
     var active = Math.Max(0, Array.FindIndex(hrefs, href => string.Equals(href.TrimEnd('/'), currentPath, StringComparison.OrdinalIgnoreCase) || (href != "/" && currentPath.StartsWith(href + "/", StringComparison.OrdinalIgnoreCase))));
     var pillClass = "inline-flex min-h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border-0 bg-transparent px-3 py-3 font-sans text-sm font-medium leading-none transition-colors duration-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream lg:px-5";

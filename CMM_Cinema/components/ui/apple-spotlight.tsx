@@ -122,7 +122,7 @@ const SpotlightInput = ({
           ref={inputRef}
           layout="position"
           type="text"
-          aria-label="Search cinema promotions" aria-controls="cinema-search-results" autoComplete="off" spellCheck={false}
+          aria-label="Search movies and promotions" aria-controls="cinema-search-results" autoComplete="off" spellCheck={false}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-full bg-transparent outline-none ring-none"
@@ -168,10 +168,11 @@ const SearchResultCard = ({ icon, label, description, link, isLast, onSelect }: 
 interface SearchResultsContainerProps {
   onSelect?: (result: SearchResult) => void;
   searchResults: SearchResult[];
+  pending?: boolean;
   onHover: (index: number | null) => void;
 }
 
-const SearchResultsContainer = ({ searchResults, onHover, onSelect }: SearchResultsContainerProps) => {
+const SearchResultsContainer = ({ searchResults, pending, onHover, onSelect }: SearchResultsContainerProps) => {
   return (
     <motion.div
       layout
@@ -180,8 +181,8 @@ const SearchResultsContainer = ({ searchResults, onHover, onSelect }: SearchResu
       onMouseLeave={() => onHover(null)}
       className="px-2 border-white/15 border-t flex flex-col max-h-96 overflow-y-auto w-full py-2"
     >
-      <span className="sr-only" role="status">{searchResults.length} promotions found</span>
-      {!searchResults.length && <p className="px-4 py-5 text-sm text-white/50">No promotions found. Try “student”, “Wednesday” or “late”.</p>}
+      <span className="sr-only" role="status">{pending && !searchResults.length ? 'Searching' : `${searchResults.length} results found`}</span>
+      {!searchResults.length && <p className="px-4 py-5 text-sm text-white/50">{pending ? 'Searching…' : 'No movies or promotions found. Try a title, a genre, “student” or “late”.'}</p>}
       {searchResults.map((result, index) => {
         return (
           <motion.div
@@ -220,6 +221,8 @@ interface AppleSpotlightProps {
   shortcuts?: Shortcut[];
   isOpen?: boolean;
   handleClose?: () => void;
+  onQueryChange?: (value: string) => void;
+  pending?: boolean;
 }
 
 const AppleSpotlight = ({
@@ -247,7 +250,7 @@ const AppleSpotlight = ({
   ],
   isOpen = true,
   handleClose = () => {},
-  results, onSelect, inputRef, onExitComplete, interactive = true
+  results, onSelect, inputRef, onExitComplete, interactive = true, onQueryChange, pending
 }: AppleSpotlightProps) => {
   const [hovered, setHovered] = useState(false);
   const [hoveredSearchResult, setHoveredSearchResult] = useState<number | null>(null);
@@ -256,6 +259,7 @@ const AppleSpotlight = ({
 
   const handleSearchValueChange = (value: string) => {
     setSearchValue(value);
+    onQueryChange?.(value);
     setHoveredSearchResult(null);
     setHoveredShortcut(null);
   };
@@ -420,7 +424,7 @@ const AppleSpotlight = ({
 
                 {searchValue && (
                   <SearchResultsContainer
-                    searchResults={searchResults}
+                    searchResults={searchResults} pending={pending}
                     onHover={setHoveredSearchResult} onSelect={onSelect}
                   />
                 )}

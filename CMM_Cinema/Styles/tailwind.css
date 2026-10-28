@@ -20,6 +20,14 @@
   --color-cinema-sky: #6fd8e4;
   --color-cinema-sun: #ecc861;
   --color-cinema-brick: #b94734;
+  --color-cinema-logo: #1a4466;
+  --color-cinema-linen: #fbf6e8;
+  /* Claymorphism: a soft drop shadow outside, a bright top-left rim and a shaded bottom-right inside. */
+  --shadow-clay: 0 28px 48px -26px rgb(7 28 30 / 0.42), 0 10px 18px -10px rgb(7 28 30 / 0.14), inset 6px 6px 14px rgb(255 255 255 / 0.95), inset -10px -12px 26px rgb(7 28 30 / 0.07);
+  --shadow-clay-hover: 0 40px 60px -28px rgb(7 28 30 / 0.48), 0 16px 26px -12px rgb(7 28 30 / 0.18), inset 6px 6px 14px rgb(255 255 255 / 0.95), inset -12px -14px 30px rgb(7 28 30 / 0.09);
+  --shadow-clay-stub: inset 6px 6px 14px rgb(255 255 255 / 0.85), inset -10px -12px 26px rgb(120 90 20 / 0.06);
+  --shadow-clay-raised: 0 12px 20px -12px rgb(7 28 30 / 0.55), 0 3px 6px -3px rgb(7 28 30 / 0.25);
+  --shadow-clay-pill: inset 0 2px 3px rgb(255 255 255 / 0.3), inset 0 -2px 4px rgb(0 0 0 / 0.25), 0 6px 12px -6px rgb(26 68 102 / 0.7);
   --color-cinema-nav-hover: rgba(255, 255, 255, 0.08);
 }
 
@@ -48,6 +56,11 @@
 }
 @media (prefers-reduced-motion: reduce) {
   [data-nav-action-pill], [data-nav-action] { transition: none; }
+}
+
+/* Printed pages (tickets) leave the floating navbar off the paper. */
+@media print {
+  [data-nav-header] { display: none; }
 }
 
 /* The Spotlight is portaled outside the sticky/filtered navbar. */
@@ -142,7 +155,7 @@
   transition: clip-path 650ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 @media (hover: hover) and (pointer: fine) {
-  [data-movie-card]:hover .movie-highlight { clip-path: inset(0 0 0 0); }
+  :is([data-movie-card], [data-ticket-card]):hover .movie-highlight { clip-path: inset(0 0 0 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .movie-highlight { transition: none; }
@@ -153,16 +166,8 @@
 .promo-controls[hidden] { display: none; }
 .promo-swiper:not(.swiper-initialized) .swiper-wrapper { display: grid; gap: 24px; }
 
-/* Keep the hit target still while the cream surface follows the pointer. */
+/* Keep the hit target still while the cream surface follows the pointer (cinema-magnetic.js). */
 .promo-arrow { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-.promo-arrow [data-magnetic-body] { transition: opacity 160ms ease; }
-.promo-arrow:active [data-magnetic-body] { opacity: .82; }
-.promo-arrow:not([data-magnetic-ready]) [data-magnetic-visual] {
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .promo-arrow:not([data-magnetic-ready]):active [data-magnetic-visual] { transform: scale(.97); }
-}
 
 /* News & blog: a hand-drawn double underline that melts into the full highlight on hover. */
 .news-link { --highlight-color: #34d399; }
@@ -176,23 +181,6 @@
 }
 .news-link:hover .news-underline, .news-link:focus-visible .news-underline { opacity: 0; transform: scaleY(0.2); }
 .news-link:hover .movie-highlight, .news-link:focus-visible .movie-highlight { opacity: 1; transform: scaleY(1); }
-/* Movies tabs: the active title wears a hand-drawn double underline that draws itself in. */
-.movies-tab { --highlight-color: #34d399; }
-.movies-tab__underline {
-  color: var(--highlight-color);
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 550ms cubic-bezier(0.65, 0, 0.35, 1);
-}
-.movies-tab__underline path { stroke-width: 0.045em; vector-effect: non-scaling-stroke; }
-.movies-tab__underline path + path { stroke-width: 0.034em; opacity: 0.85; }
-.movies-tab[aria-selected="true"] .movies-tab__underline,
-.movies-tab:focus-visible .movies-tab__underline { clip-path: inset(0 0 0 0); }
-@media (hover: hover) and (pointer: fine) {
-  .movies-tab:hover .movies-tab__underline { clip-path: inset(0 0 0 0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .movies-tab__underline { transition: none; }
-}
 /* Cards bleed to the screen edges so the returning story can enter from off-screen. */
 .news-swiper.swiper { overflow: visible; }
 .news-thumb__image { transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1); }
@@ -211,5 +199,25 @@
   }
 }
 @keyframes movie-detail-unhide { to { visibility: visible; } }
+/* My tickets: the same reveal guard for the title, tabs and ticket cards. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-tickets-page]:not([data-revealed]) :is([data-reveal-chars], [data-tickets-tab], [data-ticket-card]) {
+    visibility: hidden;
+    animation: movie-detail-unhide 0s 3s forwards;
+  }
+}
+/* My tickets: each tab's ink fill grows as a circle from its centre when selected and shrinks back when not. */
+.tickets-tab__fill {
+  clip-path: circle(0% at 50% 50%);
+  transition: clip-path 600ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+[data-tickets-tab][aria-selected="true"] .tickets-tab__fill {
+  clip-path: circle(75% at 50% 50%);
+  transition-duration: 850ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tickets-tab__fill { transition: none; }
+}
 /* Gooey buttons: the accent fill and blob rest collapsed until GSAP grows them from the pointer. */
 [data-goo-fill], [data-goo-blob] { transform: scale(0); }

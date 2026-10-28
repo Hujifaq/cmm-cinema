@@ -1,0 +1,22 @@
+@model IReadOnlyList<(string Label, string? Href)>
+@* The last item is the current page: plain text with aria-current instead of a link. *@
+<nav class="mb-6 font-sans text-xs font-semibold tracking-wide text-cinema-ink print:hidden md:mb-8" aria-label="Breadcrumb">
+    <ol class="m-0 flex list-none flex-wrap items-center gap-x-2 gap-y-1 p-0">
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            var (label, href) = Model[i];
+            var last = i == Model.Count - 1;
+            <li class="flex min-w-0 items-center gap-2">
+                @if (last)
+                {
+                    <span class="truncate rounded-full bg-cinema-ink/[0.07] px-3 py-1 font-bold" aria-current="page">@label</span>
+                }
+                else
+                {
+                    <a class="rounded-full px-1 py-1 text-cinema-ink/55 no-underline transition-colors hover:text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" href="@href">@label</a>
+                    <svg class="block size-3 shrink-0 text-cinema-ink/30" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4.5 2.5 3.5 3.5-3.5 3.5" /></svg>
+                }
+            </li>
+        }
+    </ol>
+</nav>

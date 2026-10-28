@@ -1,0 +1,180 @@
+@model Ticket
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = $"Ticket {Model.BookingCode} - {Model.Movie.Title} - CMM Cinema";
+    var buttonClass = "inline-flex min-h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-cinema-ink px-6 font-sans text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink sm:flex-none";
+    var notchClass = "pointer-events-none absolute size-7 rounded-full border border-cinema-ink/15 bg-cinema-paper";
+
+    
+    const int size = 21;
+    var seed = Model.BookingCode.Aggregate(17u, (hash, c) => hash * 31u + c);
+    bool IsFinder(int x, int y) => (x < 7 && y < 7) || (x >= size - 7 && y < 7) || (x < 7 && y >= size - 7);
+    var modules = new List<(int X, int Y)>();
+    for (var y = 0; y < size; y++)
+    {
+        for (var x = 0; x < size; x++)
+        {
+            seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5;
+            if (!IsFinder(x, y) && !(x < 8 && y < 8) && !(x >= size - 8 && y < 8) && !(x < 8 && y >= size - 8) && seed % 2 == 0)
+                modules.Add((x, y));
+        }
+    }
+    var finders = new[] { (0, 0), (size - 7, 0), (0, size - 7) };
+
+    var culture = System.Globalization.CultureInfo.InvariantCulture;
+    var showing = new[]
+    {
+        (Label: "Movie", Value: Model.Movie.Title),
+        (Label: "Cinema", Value: Model.Cinema),
+        (Label: "Hall", Value: Model.Hall),
+        (Label: "Format", Value: Model.Format),
+        (Label: "Date", Value: Model.Showtime.ToString("ddd, MMM d, yyyy", culture)),
+        (Label: "Showtime", Value: Model.Showtime.ToString("HH:mm", culture)),
+        (Label: "Runtime", Value: Model.Movie.Runtime),
+        (Label: "Rating", Value: Model.Movie.Rating),
+    };
+
+    // Decorative barcode derived from the booking code: each character gives two bar/space pairs.
+    var bars = new List<(int X, int W)>();
+    var barX = 0;
+    foreach (var c in Model.BookingCode)
+    {
+        for (var i = 0; i < 4; i++)
+        {
+            var width = ((c >> (i * 2)) & 3) + 1;
+            if (i % 2 == 0) bars.Add((barX, width));
+            barX += width;
+        }
+    }
+}
+
+<section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40 print:min-h-0 print:pt-8" aria-labelledby="ticket-details-title">
+    <div class="mx-auto max-w-6xl px-5 md:px-12">
+        @await Html.PartialAsync("_Breadcrumb", new (string, string?)[] { ("Home", "/"), ("My Tickets", "/MyTickets"), (Model.BookingCode, null) })
+        <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div>
+                <h1 class="m-0 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl lg:text-7xl" id="ticket-details-title">Ticket Details</h1>
+                <a class="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full text-sm font-bold text-cinema-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink print:hidden" href="/MyTickets">
+                    <svg class="block size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 10H4M9 5l-5 5 5 5" /></svg>
+                    Back to My Tickets
+                </a>
+            </div>
+            <div class="flex gap-3 print:hidden">
+                <button class="@buttonClass bg-cinema-ink text-cinema-cream" type="button" data-ticket-download>
+                    <svg class="block size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 16.5h12" /></svg>
+                    Download Ticket
+                </button>
+                <button class="@buttonClass bg-transparent text-cinema-ink" type="button" data-ticket-print>
+                    <svg class="block size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5.5 7.5V3h9v4.5M5.5 14H3.5v-6.5h13V14h-2M5.5 11.5h9V17h-9Z" /></svg>
+                    Print Ticket
+                </button>
+            </div>
+        </div>
+
+        <article class="relative mt-8 grid grid-cols-1 overflow-hidden rounded-[28px] border border-cinema-ink/15 bg-white shadow-[0_18px_40px_-28px_rgb(7_28_30/0.45)] md:mt-10 md:grid-cols-[minmax(0,1fr)_300px] lg:grid-cols-[minmax(0,1fr)_340px] print:shadow-none" aria-labelledby="ticket-movie-title">
+            <div class="min-w-0 p-5 sm:p-8 md:p-10">
+                @await Html.PartialAsync("_TicketSummary", Model, new ViewDataDictionary(ViewData) { ["TitleId"] = "ticket-movie-title", ["PosterSize"] = "w-28 sm:w-40 md:w-44 lg:w-48", ["TitleSize"] = "text-3xl sm:text-4xl lg:text-5xl" })
+            </div>
+
+            <div class="relative grid justify-items-center gap-1 border-t-2 border-dashed border-cinema-ink/20 bg-cinema-cream px-5 py-8 text-center md:border-l-2 md:border-t-0 md:p-10">
+                <span class="@notchClass -left-3.75 -top-3.75" aria-hidden="true"></span>
+                <span class="@notchClass -right-3.75 -top-3.75 md:hidden" aria-hidden="true"></span>
+                <span class="@notchClass -bottom-3.75 -left-3.75 hidden md:block" aria-hidden="true"></span>
+
+                <p class="m-0 text-2xl font-black uppercase leading-none tracking-tighter md:text-3xl">CMM Cinema</p>
+                <p class="m-0 text-sm text-cinema-ink/60">Your movie experience</p>
+                <div class="mt-5 rounded-2xl bg-white p-3 ring-1 ring-cinema-ink/10 @(Model.IsPast ? "opacity-40" : "")">
+                    <svg class="block size-36 text-cinema-ink md:size-40" viewBox="0 0 @size @size" shape-rendering="crispEdges" role="img" aria-label="Ticket code for booking @Model.BookingCode" focusable="false">
+                        @foreach (var (fx, fy) in finders)
+                        {
+                            <rect x="@fx" y="@fy" width="7" height="7" fill="currentColor" />
+                            <rect x="@(fx + 1)" y="@(fy + 1)" width="5" height="5" fill="#fff" />
+                            <rect x="@(fx + 2)" y="@(fy + 2)" width="3" height="3" fill="currentColor" />
+                        }
+                        @foreach (var (mx, my) in modules)
+                        {
+                            <rect x="@mx" y="@my" width="1" height="1" fill="currentColor" />
+                        }
+                    </svg>
+                </div>
+                <p class="m-0 mt-3 font-mono text-sm font-bold tracking-[0.2em]">@Model.BookingCode</p>
+                @if (Model.IsPast)
+                {
+                    <span class="mt-2 inline-block rounded-full border border-cinema-ink/40 px-3 py-1.5 text-[11px] font-semibold leading-none text-cinema-ink/70">Watched</span>
+                }
+                else
+                {
+                    <span class="mt-2 inline-block rounded-full bg-cinema-logo px-3 py-1.5 text-[11px] font-bold leading-none text-white">Confirmed</span>
+                }
+            </div>
+        </article>
+
+        <section class="mt-6 overflow-hidden rounded-[28px] bg-white text-cinema-ink ring-1 ring-cinema-ink/10 print:ring-cinema-ink/20" aria-labelledby="ticket-summary-title">
+            <header class="flex flex-col gap-5 px-6 pb-6 pt-7 sm:flex-row sm:items-end sm:justify-between sm:px-8 md:px-10 md:pt-9">
+                <div>
+                   
+                    <h2 class="m-0 mt-3 text-3xl font-black uppercase leading-none tracking-tighter md:text-4xl" id="ticket-summary-title">E-Receipt</h2>
+                </div>
+                <dl class="m-0 grid grid-cols-2 gap-x-8 gap-y-1 sm:text-right">
+                    <dt class="text-[10px] font-bold uppercase tracking-widest text-cinema-ink/50">Receipt no.</dt>
+                    <dt class="text-[10px] font-bold uppercase tracking-widest text-cinema-ink/50">Status</dt>
+                    <dd class="m-0 font-mono text-sm font-bold tracking-wider">@Model.BookingCode</dd>
+                    <dd class="m-0 text-sm font-bold @(Model.IsPast ? "text-cinema-ink/60" : "text-cinema-logo")">@(Model.IsPast ? "Used" : "Paid · Confirmed")</dd>
+                </dl>
+            </header>
+
+            <div class="border-t border-cinema-ink/10 px-6 py-6 sm:px-8 md:px-10 md:py-8">
+                <h3 class="m-0 text-[11px] font-bold uppercase tracking-[0.2em] text-cinema-ink/50">Showing</h3>
+                <dl class="m-0 mt-5 grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4">
+                    @foreach (var item in showing)
+                    {
+                        <div class="min-w-0">
+                            <dt class="text-[10px] font-bold uppercase tracking-widest text-cinema-ink/50">@item.Label</dt>
+                            <dd class="m-0 mt-1 break-words text-base font-bold leading-snug">@item.Value</dd>
+                        </div>
+                    }
+                </dl>
+            </div>
+
+            <div class="grid gap-6 border-t border-cinema-ink/10 px-6 py-6 sm:px-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:px-10 md:py-8">
+                <div>
+                    <h3 class="m-0 text-[11px] font-bold uppercase tracking-[0.2em] text-cinema-ink/50">@(Model.Seats.Count == 1 ? "Seat" : "Seats")</h3>
+                    <ul class="m-0 mt-4 flex list-none flex-wrap gap-2 p-0">
+                        @foreach (var seat in Model.Seats)
+                        {
+                            <li class="grid min-w-12 place-items-center rounded-lg bg-cinema-logo px-3 py-2 font-mono text-sm font-bold text-white print:bg-transparent print:text-cinema-ink print:ring-1 print:ring-cinema-ink">@seat</li>
+                        }
+                    </ul>
+                </div>
+                <div class="flex items-baseline justify-between gap-6 border-0 border-t border-dashed border-cinema-ink/15 pt-4 md:border-0 md:pt-0 md:text-right">
+                    <p class="m-0 text-sm text-cinema-ink/60">Adult × @Model.Seats.Count</p>
+                    <p class="m-0 text-2xl font-black uppercase leading-none tracking-tighter">Admits @Model.Seats.Count</p>
+                </div>
+            </div>
+
+            <footer class="flex flex-col gap-5 bg-cinema-ink px-6 py-5 text-white sm:flex-row sm:items-center sm:justify-between sm:px-8 md:px-10 print:bg-transparent print:text-cinema-ink print:ring-1 print:ring-cinema-ink/20">
+                <p class="m-0 flex max-w-xl items-start gap-3 text-sm leading-relaxed text-white/75 print:text-cinema-ink/75">
+                    <svg class="mt-0.5 block size-4 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="7.5" /><path d="M10 9v5M10 6.2v.1" /></svg>
+                    Show this code at the hall entrance. Please arrive 15 minutes before the showtime; doors close once the film begins.
+                </p>
+                <div class="w-44 shrink-0">
+                    <svg class="block h-9 w-44" viewBox="0 0 @barX 10" preserveAspectRatio="none" shape-rendering="crispEdges" aria-hidden="true" focusable="false">
+                        @foreach (var (bx, bw) in bars)
+                        {
+                            <rect x="@bx" y="0" width="@bw" height="10" fill="currentColor" />
+                        }
+                    </svg>
+                    <p class="m-0 mt-1.5 text-center font-mono text-[10px] tracking-[0.35em] text-white/60 print:text-cinema-ink/60">@Model.BookingCode</p>
+                </div>
+            </footer>
+        </section>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var print = document.querySelector('[data-ticket-print]');
+        if (print) print.addEventListener('click', function () { window.print(); });
+        // Download Ticket connects once ticket files are generated.
+    });
+</script>

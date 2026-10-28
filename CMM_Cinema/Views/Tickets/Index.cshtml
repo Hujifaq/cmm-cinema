@@ -1,0 +1,56 @@
+@model MyTicketsViewModel
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = "My Tickets - CMM Cinema";
+    // Each tab owns an ink fill that grows (selected) or shrinks (unselected) as a circle; see .tickets-tab__fill.
+    var tabClass = "relative z-10 inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border border-cinema-ink px-5 font-sans text-sm font-bold leading-none transition-colors duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none aria-selected:text-white aria-[selected=false]:bg-transparent aria-[selected=false]:text-cinema-ink aria-[selected=false]:hover:bg-cinema-ink/[0.06]";
+    var countClass = "inline-grid min-w-6 place-items-center rounded-full px-1.5 py-1 text-[11px] leading-none transition-colors duration-300 motion-reduce:transition-none in-aria-selected:bg-cinema-logo in-aria-selected:text-white in-aria-[selected=false]:bg-cinema-ink/10";
+    var panels = new[]
+    {
+        (Key: "upcoming", Label: "Upcoming Tickets", Tickets: Model.Upcoming, Empty: "No upcoming tickets", Hint: "Tickets you book will show up here."),
+        (Key: "past", Label: "Past Tickets", Tickets: Model.Past, Empty: "No past tickets", Hint: "Movies you have watched will show up here."),
+    };
+}
+
+<section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="my-tickets-title" data-tickets-page>
+    @await Html.PartialAsync("_GooFilter")
+    <div class="mx-auto max-w-6xl px-5 md:px-12">
+        <h1 class="m-0 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl lg:text-7xl" id="my-tickets-title" data-reveal-chars>My Tickets</h1>
+
+        <div class="relative mt-8 flex flex-wrap gap-3" role="tablist" aria-label="Ticket status" data-tickets-tabs>
+            @foreach (var panel in panels)
+            {
+                var selected = panel.Key == "upcoming";
+                <button class="@tabClass" type="button" role="tab" id="tab-@panel.Key" aria-selected="@(selected ? "true" : "false")" aria-controls="panel-@panel.Key" tabindex="@(selected ? 0 : -1)" data-tickets-tab="@panel.Key">
+                    <span class="tickets-tab__fill absolute inset-0 -z-10 rounded-full bg-cinema-ink" aria-hidden="true"></span>
+                    @panel.Label
+                    <span class="@countClass" data-tickets-count>@panel.Tickets.Count</span>
+                </button>
+            }
+        </div>
+
+        @foreach (var panel in panels)
+        {
+            <div class="mt-8 grid gap-6 md:mt-10 [&[hidden]]:hidden" role="tabpanel" id="panel-@panel.Key" aria-labelledby="tab-@panel.Key" tabindex="0" data-tickets-panel="@panel.Key" hidden="@(panel.Key != "upcoming")">
+                @if (panel.Tickets.Count == 0)
+                {
+                    <div class="group/empty grid place-items-center gap-3 rounded-[28px] border-2 border-dashed border-cinema-ink/15 bg-cinema-ink/[0.04] px-6 py-16 text-center" data-ticket-card>
+                        <svg class="block h-10 w-12 text-cinema-ink/50 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/empty:-rotate-12 group-hover/empty:scale-110 motion-reduce:transition-none" viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M6 8h36v8a4 4 0 0 0 0 8v8H6v-8a4 4 0 0 0 0-8Z" />
+                            <path d="M20 13v3M20 20v0M20 24v3" stroke-linecap="round" />
+                        </svg>
+                        <p class="m-0 text-lg font-extrabold">@panel.Empty</p>
+                        <p class="m-0 text-sm text-cinema-ink/60">@panel.Hint</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var ticket in panel.Tickets)
+                    {
+                        @await Html.PartialAsync("_TicketCard", ticket)
+                    }
+                }
+            </div>
+        }
+    </div>
+</section>

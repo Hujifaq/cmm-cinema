@@ -5,8 +5,7 @@
     var eyebrow = Model.Status == MovieStatus.Upcoming
         ? "Coming Soon" + (Model.ReleaseDate is { } date ? " · " + date.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")
         : "Now Showing";
-    var buttonClass = "group relative isolate inline-flex min-h-12 items-center justify-center rounded-full px-5 text-sm font-bold text-cinema-cream no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink";
-    var buttons = new[] { (Label: "Book Now!", Href: "#", Accent: "bg-cinema-sun"), (Label: "Showtimes", Href: "#", Accent: "bg-cinema-sky") };
+    var buttons = new[] { (Label: "Book Now!", Href: "#", Accent: "bg-cinema-brick"), (Label: "Showtimes", Href: "#", Accent: "bg-cinema-logo") };
 }
 
 @section TopBanner {
@@ -14,14 +13,10 @@
 }
 
 <section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="movie-title" data-movie-detail>
-    <svg class="absolute size-0" aria-hidden="true" focusable="false">
-        <defs>
-            <filter id="detail-goo" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
-                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" />
-            </filter>
-        </defs>
-    </svg>
+    @await Html.PartialAsync("_GooFilter")
+    <div class="mx-auto max-w-[1440px] px-5 md:px-12">
+        @await Html.PartialAsync("_Breadcrumb", new (string, string?)[] { ("Home", "/"), ("Movies", "/Movies"), (Model.Title, null) })
+    </div>
     <div class="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:gap-12 md:px-12 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:gap-20">
         <div class="w-full max-w-xs md:max-w-none">
             <div class="relative aspect-[2/3] overflow-hidden rounded-2xl" data-detail-poster>
@@ -30,14 +25,7 @@
             <div class="mt-6 grid grid-cols-2 gap-3">
                 @foreach (var button in buttons)
                 {
-                    <a class="@buttonClass" href="@button.Href" data-goo-button>
-                        <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#detail-goo)]" aria-hidden="true">
-                            <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
-                            <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full @button.Accent" data-goo-fill></span></span>
-                            <span class="absolute left-0 top-0 size-9 rounded-full @button.Accent" data-goo-blob></span>
-                        </span>
-                        <span class="relative transition-colors duration-300 group-data-[goo-active]:text-cinema-ink" data-goo-label>@button.Label</span>
-                    </a>
+                    @await Html.PartialAsync("_GooButton", button, new ViewDataDictionary(ViewData) { ["GooLightLabel"] = true })
                 }
             </div>
         </div>

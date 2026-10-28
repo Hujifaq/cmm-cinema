@@ -15,6 +15,13 @@ async function setup(width = 1120, animated = false) {
   const w = dom.window, d = w.document;
   w.matchMedia = query => ({ matches: query.includes('prefers-reduced-motion') ? !animated : query.includes('(hover: hover)'), addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} });
   w.scrollTo = () => {};
+  const movies = [{ title: 'Neon Harbor', url: '/Movies/neon-harbor', description: 'Now showing · Thriller · R · 1h 52m', keywords: 'neon harbor thriller r eng movies now showing' }];
+  const requests = [];
+  w.fetch = async url => {
+    requests.push(url);
+    const term = decodeURIComponent(new URL(url, 'http://localhost/').searchParams.get('q')).toLowerCase();
+    return { ok: true, json: async () => movies.filter(movie => movie.keywords.includes(term)) };
+  };
   w.HTMLElement.prototype.scrollIntoView = function () { this.scrolled = true; };
   w.HTMLElement.prototype.getClientRects = function () { return [{}]; };
   w.HTMLElement.prototype.getBoundingClientRect = function () { return { top: 24, left: 12, width: parseFloat(this.style.width) || 0, height: 64, right: width + 12, bottom: 88 }; };
@@ -33,7 +40,7 @@ async function setup(width = 1120, animated = false) {
     input().dispatchEvent(new w.Event('input', { bubbles: true }));
     await tick();
   };
-  return { dom, w, d, trigger, input, type, slideCalls };
+  return { dom, w, d, trigger, input, type, slideCalls, requests };
 }
 
 test('copied Spotlight opens empty, focuses input, and X or Escape restores navbar and focus', async () => {
@@ -74,8 +81,8 @@ test('cinema data, result links, arrow navigation and selection work with the co
 test('no matches, Enter selection, and keyboard focus wrapping remain usable', async () => {
   const ui = await setup();
   try {
-    await ui.type('not-a-promotion');
-    assert.match(ui.d.querySelector('#cinema-search-results').textContent, /No promotions found/);
+    await ui.type('not-a-promotion'); await tick(200);
+    assert.match(ui.d.querySelector('#cinema-search-results').textContent, /No movies or promotions found/);
     ui.input().focus();
     ui.d.dispatchEvent(new ui.w.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
     assert.equal(ui.d.activeElement.getAttribute('aria-label'), 'Close search');
@@ -121,11 +128,11 @@ test('source hover uses presence exits and can reenter without waiting for a cus
     pointer('mouseout'); await tick(1100);
     assert.equal(items().length, 0);
     pointer('mouseover'); await tick(1100);
-    const student = items().find(item => item.textContent === '' && item.querySelector('a[href="#cinema-students"]'));
-    assert.ok(student);
-    student.querySelector('a').click(); await tick();
-    assert.equal(ui.input().value, 'student');
-    assert.equal(ui.d.querySelectorAll('#cinema-search-results a').length, 1);
+    const promotions = items().find(item => item.textContent === '' && item.querySelector('a[href="/#cinema-promotions"]'));
+    assert.ok(promotions);
+    promotions.querySelector('a').click(); await tick(200);
+    assert.equal(ui.input().value, 'Promotions');
+    assert.equal(ui.d.querySelectorAll('#cinema-search-results a').length, 2);
   } finally { ui.dom.window.close(); }
 });
 
@@ -143,5 +150,35 @@ test('navbar morph still opens and closes around the source entrance and exit', 
     assert.equal(ui.d.querySelector('[role="dialog"]'), null);
     assert.equal(ui.d.activeElement, ui.trigger);
     assert.equal(ui.trigger.getAttribute('aria-expanded'), 'false');
+  } finally { ui.dom.window.close(); }
+});
+
+test('movie matches come from the search endpoint and link to the movie page', async () => {
+  const ui = await setup();
+  try {
+    await ui.type('neon');
+    assert.match(ui.d.querySelector('#cinema-search-results').textContent, /Searching/);
+    await tick(200);
+    assert.deepEqual(ui.requests, ['/api/movies/search?q=neon']);
+    const link = ui.d.querySelector('#cinema-search-results a');
+    assert.equal(link.getAttribute('href'), '/Movies/neon-harbor');
+    assert.match(link.textContent, /Neon Harbor/);
+    await ui.type('neon h'); await ui.type('neon ha'); await tick(200);
+    assert.equal(ui.requests.at(-1), '/api/movies/search?q=neon%20ha');
+    assert.equal(ui.requests.length, 2);
+  } finally { ui.dom.window.close(); }
+});
+
+test('category shortcuts list movies and promotions through the same search', async () => {
+  const ui = await setup();
+  const labels = () => [...ui.d.querySelectorAll('#cinema-search-results a')].map(link => link.textContent);
+  try {
+    await ui.type('Promotions'); await tick(200);
+    assert.equal(labels().length, 2);
+    assert.match(labels().join(), /Midweek magic.*Student escape/);
+    await ui.type('Now showing'); await tick(200);
+    assert.deepEqual(labels().map(label => /Neon Harbor/.test(label)), [true]);
+    await ui.type('Coming soon'); await tick(200);
+    assert.equal(labels().length, 0);
   } finally { ui.dom.window.close(); }
 });
