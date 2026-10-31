@@ -22,6 +22,15 @@
   --color-cinema-brick: #b94734;
   --color-cinema-logo: #1a4466;
   --color-cinema-linen: #fbf6e8;
+  /* Accents reserved for the account posters. */
+  --color-cinema-poster-red: #ff2638;
+  --color-cinema-poster-amber: #ffb52e;
+  --color-cinema-poster-peach: #ffe4cc;
+  --color-cinema-poster-green: #63b879;
+  /* Pink clay artwork on the account page. */
+  --color-cinema-clay-blush: #ffd1e3;
+  --color-cinema-clay-pink: #ee91bd;
+  --color-cinema-clay-rose: #b85b8c;
   /* Claymorphism: a soft drop shadow outside, a bright top-left rim and a shaded bottom-right inside. */
   --shadow-clay: 0 28px 48px -26px rgb(7 28 30 / 0.42), 0 10px 18px -10px rgb(7 28 30 / 0.14), inset 6px 6px 14px rgb(255 255 255 / 0.95), inset -10px -12px 26px rgb(7 28 30 / 0.07);
   --shadow-clay-hover: 0 40px 60px -28px rgb(7 28 30 / 0.48), 0 16px 26px -12px rgb(7 28 30 / 0.18), inset 6px 6px 14px rgb(255 255 255 / 0.95), inset -12px -14px 30px rgb(7 28 30 / 0.09);
@@ -221,3 +230,100 @@
 }
 /* Gooey buttons: the accent fill and blob rest collapsed until GSAP grows them from the pointer. */
 [data-goo-fill], [data-goo-blob] { transform: scale(0); }
+
+/* Signup: Poppy's layered face reacts to the form without replacing artwork. */
+.auth-card[data-auth-ready] .auth-forms { display: grid; }
+.auth-card[data-auth-ready] .auth-view {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 220ms ease, transform 350ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s 220ms;
+}
+.auth-card[data-auth-ready] .auth-view[data-active] {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  transition-delay: 0s;
+}
+@media (min-width: 1024px) {
+  .auth-card[data-auth-ready] .auth-art { grid-area: 1 / 1; }
+  .auth-card[data-auth-ready] .auth-forms { grid-area: 1 / 2; }
+  .auth-card[data-auth-ready] :is(.auth-art, .auth-forms) {
+    transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .auth-card[data-auth-ready][data-auth-mode="register"] .auth-art { transform: translateX(100%); }
+  .auth-card[data-auth-ready][data-auth-mode="register"] .auth-forms { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-card[data-auth-ready] :is(.auth-art, .auth-forms, .auth-view) { transition: none; }
+}
+.signup-art {
+  background-image:
+    radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--color-cinema-cyan) 55%, transparent), transparent 68%),
+    linear-gradient(150deg, var(--color-cinema-ink), var(--color-cinema-deep) 65%);
+}
+.popcorn-mascot { --poppy-ease: cubic-bezier(0.22, 1, 0.36, 1); }
+.popcorn-mascot__character {
+  transform-box: fill-box;
+  transform-origin: 50% 80%;
+  transform: translateY(var(--poppy-nod, 0px)) rotate(var(--poppy-tilt, 0deg));
+  transition: transform 500ms var(--poppy-ease);
+}
+.popcorn-mascot__eyeballs {
+  transform: translate(var(--poppy-eye-x, 0px), var(--poppy-eye-y, 0px));
+  transition: transform 360ms var(--poppy-ease);
+}
+.popcorn-mascot__gaze {
+  transform: translate(var(--poppy-look-x, 0px), var(--poppy-look-y, 0px));
+  transition: transform 260ms var(--poppy-ease);
+}
+.popcorn-mascot__highlights {
+  transform: translate(var(--poppy-highlight-x, 0px), var(--poppy-highlight-y, 0px));
+  transition: transform 120ms var(--poppy-ease);
+}
+.popcorn-mascot__eyes-open {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 240ms var(--poppy-ease), opacity 200ms var(--poppy-ease);
+}
+.popcorn-mascot__eyes-closed, .popcorn-mascot__oops { opacity: 0; }
+.popcorn-mascot__eyes-closed, .popcorn-mascot__smile, .popcorn-mascot__oops { transition: opacity 180ms var(--poppy-ease); }
+:is([data-mascot-private], [data-mascot-blinking]) .popcorn-mascot__eyes-open {
+  transform: scaleY(0);
+  opacity: 0;
+  transition-duration: 90ms;
+}
+:is([data-mascot-private], [data-mascot-blinking]) .popcorn-mascot__eyes-closed { opacity: 1; transition-duration: 90ms; }
+[data-mascot-error] .popcorn-mascot__smile { opacity: 0; }
+[data-mascot-error] .popcorn-mascot__oops { opacity: 1; }
+[data-mascot-error] .popcorn-mascot__reaction {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: poppy-shake 550ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes poppy-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-9px) rotate(-4deg); }
+  40% { transform: translateX(8px) rotate(3deg); }
+  60% { transform: translateX(-5px) rotate(-2deg); }
+  80% { transform: translateX(3px) rotate(1deg); }
+}
+/* Hidden attributes must win against utility display declarations without Preflight. */
+[data-signup-page] [hidden] { display: none; }
+[data-signup-page] { color-scheme: light; }
+@media (prefers-reduced-motion: reduce) {
+  .popcorn-mascot__character, .popcorn-mascot__gaze, .popcorn-mascot__eyeballs, .popcorn-mascot__highlights { transform: none; }
+  .popcorn-mascot__character, .popcorn-mascot__gaze, .popcorn-mascot__eyeballs, .popcorn-mascot__highlights,
+  .popcorn-mascot__eyes-open, .popcorn-mascot__eyes-closed,
+  .popcorn-mascot__smile, .popcorn-mascot__oops { transition: none; }
+  [data-mascot-error] .popcorn-mascot__reaction { animation: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-signup-page]:not([data-revealed]) :is([data-signup-card], [data-signup-art], [data-reveal-chars], [data-reveal-up], [data-mascot-entrance]) {
+    visibility: hidden;
+    animation: movie-detail-unhide 0s 3s forwards;
+  }
+}

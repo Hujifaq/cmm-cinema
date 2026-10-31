@@ -1,0 +1,50 @@
+@{
+    var bubbles = new[]
+    {
+        (X: 175, R: 3, Duration: 4, Delay: -2, Sway: 5),
+        (X: 188, R: 5, Duration: 6, Delay: -4, Sway: -6),
+        (X: 202, R: 2, Duration: 3, Delay: -1, Sway: 4),
+        (X: 216, R: 4, Duration: 5, Delay: -3, Sway: -5),
+        (X: 229, R: 3, Duration: 4, Delay: -3, Sway: 6),
+        (X: 243, R: 5, Duration: 6, Delay: -2, Sway: -4),
+        (X: 256, R: 2, Duration: 3, Delay: -2, Sway: 5),
+        (X: 270, R: 4, Duration: 5, Delay: -4, Sway: -6),
+        (X: 164, R: 2, Duration: 3, Delay: -2, Sway: 4),
+        (X: 171, R: 4, Duration: 5, Delay: -1, Sway: -5),
+        (X: 180, R: 2, Duration: 4, Delay: -3, Sway: 6),
+        (X: 185, R: 3, Duration: 3, Delay: -1, Sway: -4),
+        (X: 194, R: 2, Duration: 5, Delay: -4, Sway: 5),
+        (X: 200, R: 4, Duration: 4, Delay: -2, Sway: -6),
+        (X: 208, R: 3, Duration: 6, Delay: -5, Sway: 4),
+        (X: 213, R: 2, Duration: 3, Delay: -2, Sway: -5),
+        (X: 222, R: 4, Duration: 5, Delay: -2, Sway: 6),
+        (X: 227, R: 2, Duration: 4, Delay: -1, Sway: -4),
+        (X: 235, R: 3, Duration: 3, Delay: -1, Sway: 5),
+        (X: 241, R: 2, Duration: 5, Delay: -3, Sway: -6),
+        (X: 249, R: 4, Duration: 4, Delay: -3, Sway: 4),
+        (X: 257, R: 3, Duration: 6, Delay: -4, Sway: -5),
+        (X: 264, R: 2, Duration: 3, Delay: -2, Sway: 6),
+        (X: 280, R: 3, Duration: 5, Delay: -1, Sway: -4)
+    };
+}
+@* The fizz shares the cup's coordinate system, tilt, and bob, with a short clipped rise above its lid. *@
+<defs>
+    <radialGradient id="cup-soda-glass" cx="30%" cy="25%" r="75%">
+        <stop stop-color="white" stop-opacity="0.3" />
+        <stop offset="0.55" stop-color="white" stop-opacity="0.02" />
+        <stop offset="1" stop-color="white" stop-opacity="0.18" />
+    </radialGradient>
+    <clipPath id="cup-soda-area" clipPathUnits="userSpaceOnUse">
+        <rect x="150" y="8" width="145" height="110" />
+    </clipPath>
+</defs>
+<g class="auth-soda-bubbles" clip-path="url(#cup-soda-area)" fill="url(#cup-soda-glass)" stroke="var(--color-cinema-cream)" stroke-opacity="0.75" stroke-width="1.2" aria-hidden="true">
+    @foreach (var bubble in bubbles)
+    {
+        var radius = bubble.R * 2;
+        <g class="auth-soda-bubble" style="--bubble-duration: @(bubble.Duration)s; --bubble-delay: @(bubble.Delay)s; --bubble-sway: @(bubble.Sway)px">
+            <circle cx="@bubble.X" cy="112" r="@radius" />
+            <circle cx="@(bubble.X - radius / 3)" cy="@(112 - radius / 3)" r="@(Math.Max(1, radius / 5))" fill="white" fill-opacity="0.8" stroke="none" />
+        </g>
+    }
+</g>

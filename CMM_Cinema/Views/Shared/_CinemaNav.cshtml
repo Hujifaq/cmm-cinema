@@ -31,13 +31,12 @@
                     </ul>
                 </div>
             </div>
-            @* Account destinations can be connected when authentication is ready. *@
             <div class="relative flex shrink-0 items-center gap-0 md:justify-self-end md:gap-1 lg:gap-2" data-nav-actions>
                 <span class="pointer-events-none absolute left-0 top-0 rounded-full opacity-0" aria-hidden="true" data-nav-action-pill></span>
                 <button class="relative z-10 inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream" type="button" aria-label="Search" aria-expanded="false" aria-controls="cinema-search" data-nav-search data-nav-action>
                     @await Html.PartialAsync("_SearchIcon")
                 </button>
-                <button class="relative z-10 hidden min-h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border-0 bg-transparent px-2 text-sm font-medium text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream md:inline-flex lg:px-3" type="button" data-nav-account data-nav-action>Login / Register</button>
+                <a class="relative z-10 hidden min-h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border-0 bg-transparent px-2 text-sm font-medium text-cinema-cream no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream md:inline-flex lg:px-3" asp-controller="LoginRegister" asp-action="Index" aria-current="@(currentPath.Equals("/LoginRegister", StringComparison.OrdinalIgnoreCase) ? "page" : null)" data-nav-account data-nav-action>Login / Register</a>
                 <button class="group relative hidden min-h-11 min-w-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-3 text-sm font-medium text-white transition-colors hover:text-cinema-cyan aria-expanded:text-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cyan" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="cinema-mobile-menu" data-nav-toggle>
                     <span class="pointer-events-none block h-5 overflow-hidden leading-5" aria-hidden="true">
                         <span class="block transition-transform duration-300 ease-out group-aria-expanded:-translate-y-1/2 motion-reduce:transition-none">
@@ -65,7 +64,7 @@
                         </li>
                     }
                 </ul>
-                <button class="mt-8 inline-flex min-h-12 w-full shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-cream px-5 py-3 font-sans text-sm font-semibold text-cinema-ink transition-colors duration-150 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cyan" type="button" data-nav-account>Login / Register</button>
+                <a class="mt-8 inline-flex min-h-12 w-full shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-cream px-5 py-3 font-sans text-sm font-semibold text-cinema-ink no-underline transition-colors duration-150 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cyan" asp-controller="LoginRegister" asp-action="Index" aria-current="@(currentPath.Equals("/LoginRegister", StringComparison.OrdinalIgnoreCase) ? "page" : null)" data-nav-account>Login / Register</a>
             </div>
         </div>
     </nav>

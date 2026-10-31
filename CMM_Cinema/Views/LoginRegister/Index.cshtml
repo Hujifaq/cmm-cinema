@@ -1,0 +1,137 @@
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = "Login / Register - CMM Cinema";
+    var inputClass = "block min-h-11 w-full min-w-0 rounded-full border border-solid border-cinema-ink/15 bg-cinema-paper px-5 py-2.5 font-sans text-base text-cinema-ink placeholder:text-cinema-ink/40 transition-[border-color,background-color,box-shadow] duration-200 focus:border-cinema-deep focus:bg-white focus:outline-2 focus:outline-offset-2 focus:outline-cinema-cyan/50 focus:ring-4 focus:ring-cinema-cyan/25 focus-visible:outline-cinema-deep motion-reduce:transition-none";
+    var labelClass = "mb-2 block text-[11px] font-bold uppercase tracking-widest text-cinema-ink/70";
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+<section class="auth-page flex min-h-[calc(100svh_-_36px)] items-center overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-20 md:pt-36" aria-labelledby="account-title" data-signup-page>
+    <h1 class="sr-only" id="account-title">Login or register for CMM Cinema</h1>
+    @await Html.PartialAsync("_GooFilter")
+    <div class="mx-auto w-full max-w-[1120px] px-5 md:px-10">
+        <div class="auth-card relative grid items-stretch overflow-hidden rounded-[32px] bg-white shadow-clay ring-1 ring-cinema-ink/[0.05] lg:grid-cols-2" data-signup-card data-auth-mode="login">
+            <aside class="auth-art signup-art auth-poster relative isolate z-10 min-w-0 overflow-hidden p-6 sm:p-9 lg:p-10" aria-label="Your movie buddy" data-signup-art>
+                @await Html.PartialAsync("_AuthPosterBackdrop")
+                <div class="auth-poster-heading" data-reveal-up>
+                    <p class="auth-poster-script" data-poster-script>freshly</p>
+                    <p class="auth-poster-title" aria-label="Popped" data-poster-title><span aria-hidden="true">P</span><span aria-hidden="true">O</span><span aria-hidden="true">P</span><span aria-hidden="true">P</span><span aria-hidden="true">E</span><span aria-hidden="true">D</span></p>
+                </div>
+                <div class="auth-poster-stage" data-mascot-entrance data-auth-scene>
+                    <svg class="auth-poster-sparkle auth-poster-sparkle--left" viewBox="0 0 24 32" aria-hidden="true" focusable="false"><path d="m12 2 3 10 7 4-7 4-3 10-3-10-7-4 7-4Z" /></svg>
+                    <svg class="auth-poster-sparkle auth-poster-sparkle--right" viewBox="0 0 24 32" aria-hidden="true" focusable="false"><path d="m12 2 3 10 7 4-7 4-3 10-3-10-7-4 7-4Z" /></svg>
+                    <svg class="auth-poster-sparkle auth-poster-sparkle--small" viewBox="0 0 24 32" aria-hidden="true" focusable="false"><path d="m12 2 3 10 7 4-7 4-3 10-3-10-7-4 7-4Z" /></svg>
+                    <div class="auth-clay-character" data-auth-clay-character>
+                        @await Html.PartialAsync("_PopcornMascot")
+                    </div>
+                </div>
+                <div class="auth-poster-footer" data-reveal-up>
+                    <p class="auth-poster-tagline" data-poster-tagline>made for movie nights.</p>
+                    <button class="inline-flex min-h-12 w-full cursor-pointer items-center justify-between gap-4 rounded-full border-0 bg-cinema-ink px-5 py-3 font-sans text-sm font-bold text-cinema-cream transition-colors hover:bg-cinema-deep focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" type="button" aria-controls="auth-login-panel auth-register-panel" data-auth-switch="register" hidden>
+                        <span data-auth-switch-label>Register</span>
+                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </button>
+                </div>
+            </aside>
+
+            <div class="auth-forms min-w-0 bg-white" data-auth-forms>
+                <section class="auth-view flex min-w-0 flex-col justify-center p-6 sm:p-9 lg:p-10" id="auth-login-panel" aria-labelledby="login-title" data-auth-view="login">
+                    <div class="mb-7">
+                        <p class="mb-3 mt-0 text-[10px] font-bold uppercase tracking-[0.2em] text-cinema-ink/50" data-reveal-up>Welcome back</p>
+                        <h2 class="m-0 text-4xl font-black uppercase leading-[0.9] tracking-tighter sm:text-5xl" id="login-title" data-reveal-chars>Login<span class="text-cinema-brick">.</span></h2>
+                        <p class="mb-0 mt-4 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Your next movie night starts here.</p>
+                    </div>
+                    <form class="relative z-10 grid gap-4" aria-labelledby="login-title" data-login-form>
+                        <div data-reveal-up>
+                            <label class="@labelClass" for="login-email">Email address</label>
+                            <input class="@inputClass" id="login-email" name="email" type="email" autocomplete="username" placeholder="you@example.com" maxlength="254" required />
+                        </div>
+                        <div data-reveal-up>
+                            <label class="@labelClass" for="login-password">Password</label>
+                            <div class="relative">
+                                <input class="@inputClass pr-16" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required />
+                                <button class="absolute right-2 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="login-password" aria-label="Show password" aria-pressed="false" data-password-toggle hidden>Show</button>
+                            </div>
+                        </div>
+                        <label class="inline-flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm text-cinema-ink/70" data-reveal-up>
+                            <input class="m-0 size-4 accent-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" name="rememberMe" type="checkbox" />
+                            Remember me
+                        </label>
+                        <div class="mt-1" data-reveal-up>
+                            <button class="inline-flex min-h-12 w-full cursor-pointer items-center justify-between gap-3 rounded-full border-0 bg-cinema-ink px-5 py-3 font-sans text-sm font-bold text-cinema-cream transition-colors hover:bg-cinema-deep disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" type="submit" data-login-submit disabled>
+                                <span>Login</span>
+                                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                            </button>
+                        </div>
+                        <p class="m-0 text-center text-sm leading-relaxed text-cinema-ink/70" role="status" data-login-status hidden></p>
+                        <noscript><p class="m-0 text-sm text-cinema-ink/60">Please enable JavaScript to preview the login form. Login is not available yet.</p></noscript>
+                    </form>
+                </section>
+
+                <section class="auth-view min-w-0 p-6 sm:p-9 lg:p-10" id="auth-register-panel" aria-labelledby="signup-title" data-auth-view="register" data-signup-panel>
+                    <div class="mb-7">
+                        <p class="mb-3 mt-0 text-[10px] font-bold uppercase tracking-[0.2em] text-cinema-ink/50" data-reveal-up>New to CMM Cinema?</p>
+                        <h2 class="m-0 text-4xl font-black uppercase leading-[0.9] tracking-tighter sm:text-5xl" id="signup-title" data-reveal-chars>Register<span class="text-cinema-brick">.</span></h2>
+                        <p class="mb-0 mt-4 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Make yourself at home. The movies are waiting.</p>
+                    </div>
+
+                    <form class="grid gap-4" aria-labelledby="signup-title" data-signup-form>
+                        <div data-reveal-up>
+                            <label class="@labelClass" for="signup-name">Full name</label>
+                            <input class="@inputClass" id="signup-name" name="name" type="text" autocomplete="name" placeholder="Your name" maxlength="100" required />
+                        </div>
+                        <div data-reveal-up>
+                            <label class="@labelClass" for="signup-email">Email address</label>
+                            <input class="@inputClass" id="signup-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" maxlength="254" required />
+                        </div>
+                        <div data-reveal-up>
+                            <label class="@labelClass" for="signup-password">Password</label>
+                            <div class="relative">
+                                <input class="@inputClass pr-16" id="signup-password" name="password" type="password" autocomplete="new-password" placeholder="Create a password" minlength="8" aria-describedby="signup-password-hint" required />
+                                <button class="absolute right-2 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="signup-password" aria-label="Show password" aria-pressed="false" data-password-toggle hidden>Show</button>
+                            </div>
+                            <p class="mb-0 mt-2 px-2 text-xs text-cinema-ink/50" id="signup-password-hint">At least 8 characters. Make it a good one.</p>
+                        </div>
+                        <div data-reveal-up>
+                            <label class="@labelClass" for="signup-confirm">Confirm password</label>
+                            <div class="relative">
+                                <input class="@inputClass pr-16" id="signup-confirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="One more time" minlength="8" required />
+                                <button class="absolute right-2 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="signup-confirm" aria-label="Show confirm password" aria-pressed="false" data-password-toggle hidden>Show</button>
+                            </div>
+                        </div>
+                        <div class="mt-1" data-reveal-up>
+                            <button class="group relative isolate inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-5 py-3 font-sans text-sm font-bold text-cinema-cream disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-signup-submit data-goo-button disabled>
+                                <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                                    <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
+                                    <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-cyan" data-goo-fill></span></span>
+                                    <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-cyan" data-goo-blob></span>
+                                </span>
+                                <span class="relative flex w-full items-center justify-between gap-3 transition-colors duration-300 group-data-[goo-active]:text-cinema-ink motion-reduce:transition-none" data-goo-label>
+                                    <span>Create account</span>
+                                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                </span>
+                            </button>
+                        </div>
+                        <p class="m-0 text-center text-sm leading-relaxed text-cinema-ink/70" role="status" data-signup-status hidden></p>
+                        <noscript><p class="m-0 text-sm text-cinema-ink/60">Please enable JavaScript to preview the signup form. Account registration is not available yet.</p></noscript>
+                    </form>
+                    <p class="mb-0 mt-5 text-center text-xs text-cinema-ink/50" data-reveal-up>A little movie magic starts here.</p>
+                </section>
+            </div>
+            <p class="sr-only" role="status" data-auth-announcement></p>
+        </div>
+    </div>
+</section>
+
+<footer class="rounded-t-[40px] bg-cinema-ink px-5 py-10 font-sans text-cinema-cream md:rounded-t-[56px] md:px-12 md:py-14">
+    <div class="mx-auto flex max-w-[1344px] flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
+        <div>
+            <a class="inline-block text-3xl font-black uppercase leading-none tracking-tighter text-cinema-cream no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cream" href="/">CMM Cinema<span class="text-cinema-cyan">.</span></a>
+            <p class="mb-0 mt-3 text-sm text-cinema-cream/60">A little movie magic.</p>
+        </div>
+        <a class="inline-flex min-h-11 items-center gap-4 rounded-full border border-solid border-cinema-cream/30 px-6 text-sm font-bold text-cinema-cream no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cream" href="/Movies">Find your next film <span aria-hidden="true">↗</span></a>
+    </div>
+</footer>

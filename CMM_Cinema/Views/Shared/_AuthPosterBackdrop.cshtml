@@ -1,0 +1,50 @@
+@* Login keeps its swirl; Register uses broad, irregular waves like a printed snack poster. *@
+<div class="auth-poster-backdrop" aria-hidden="true">
+    <svg viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" fill="none" focusable="false">
+        <defs>
+            <path id="auth-poster-ray" d="M300 440C240 320 200 140 300-220L620-220C350 140 330 320 300 440Z" data-poster-ray data-shape-login="M300 440C240 320 200 140 300-220L620-220C350 140 330 320 300 440Z" data-shape-register="M300 440C110 540 80 150 280-220L520-220C680 180 370 590 300 440Z" />
+            <radialGradient id="auth-poster-color" cx="300" cy="410" r="560" gradientUnits="userSpaceOnUse">
+                <stop stop-color="var(--auth-poster-red)" />
+                <stop offset="0.5" stop-color="var(--auth-poster-red)" />
+                <stop offset="0.9" stop-color="color-mix(in srgb, var(--auth-poster-red) 70%, var(--color-cinema-ink))" />
+                <stop offset="1" stop-color="var(--color-cinema-ink)" />
+            </radialGradient>
+            <radialGradient id="auth-poster-light" cx="0.2" cy="0.12" r="0.9">
+                <stop stop-color="white" stop-opacity="0.18" />
+                <stop offset="0.65" stop-color="white" stop-opacity="0" />
+                <stop offset="1" stop-color="var(--color-cinema-ink)" stop-opacity="0.12" />
+            </radialGradient>
+            @* Static film grain stays behind all lettering, controls, and Poppy's face. *@
+            <filter id="auth-poster-noise" x="0" y="0" width="600" height="800" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="0.58" numOctaves="3" seed="17" stitchTiles="stitch" />
+                <feColorMatrix type="saturate" values="0" />
+                <feComponentTransfer>
+                    <feFuncR type="linear" slope="2.4" intercept="-0.7" />
+                    <feFuncG type="linear" slope="2.4" intercept="-0.7" />
+                    <feFuncB type="linear" slope="2.4" intercept="-0.7" />
+                    <feFuncA type="table" tableValues="1 1" />
+                </feComponentTransfer>
+            </filter>
+        </defs>
+        <path fill="var(--color-cinema-cream)" d="M0 0h600v800H0z" />
+        <g fill="url(#auth-poster-color)" stroke="var(--color-cinema-cream)" stroke-opacity="0.12" stroke-width="1" data-poster-paint="login">
+            @for (var ray = 0; ray < 8; ray++)
+            {
+                <use href="#auth-poster-ray" transform="rotate(@(ray * 45) 300 440)" />
+            }
+        </g>
+        <g class="auth-register-paint" data-poster-paint="register">
+            <path fill="var(--color-cinema-poster-green, #63b879)" d="M0 0h600v800H0z" />
+            <g fill="none" stroke="var(--color-cinema-poster-peach, #ffe4cc)" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M-80 30C60-40 36 160 110 100S220-40 310 28S470 160 505 50S580-30 680 20" stroke-width="32" />
+                <path d="M-70 135C30 155 15 300 120 260S215 135 320 195S455 330 520 245S545 85 675 140" stroke-width="42" />
+                <path d="M-65 350C75 280 115 410 205 350S310 295 385 355S535 355 665 340" stroke-width="34" />
+                <path d="M-55 470C60 410 140 520 240 475S335 405 425 465S560 510 655 440" stroke-width="44" />
+                <path d="M-65 605C60 565 90 635 185 590S295 510 345 580S420 700 500 610S580 555 670 630" stroke-width="38" />
+                <path d="M-70 775C40 665 145 820 245 740S400 700 440 755S590 805 670 720" stroke-width="40" />
+            </g>
+        </g>
+        <path fill="url(#auth-poster-light)" d="M0 0h600v800H0z" />
+        <path class="auth-poster-grain" fill="white" d="M0 0h600v800H0z" filter="url(#auth-poster-noise)" />
+    </svg>
+</div>
