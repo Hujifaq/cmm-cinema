@@ -38,7 +38,21 @@
       loginStatus.hidden = false;
     });
     loginForm.querySelector('[data-login-submit]').disabled = false;
+    const forgotPassword = loginForm.querySelector('[data-forgot-password]');
+    forgotPassword.hidden = false;
+    forgotPassword.addEventListener('click', () => {
+      loginStatus.textContent = 'Password reset is not available yet. Please check back soon.';
+      loginStatus.hidden = false;
+    });
   }
+  root.querySelectorAll('[data-google-login]').forEach(googleLogin => {
+    const googleStatus = googleLogin.closest('[data-auth-view]').querySelector('[data-google-login-status]');
+    googleLogin.disabled = false;
+    googleLogin.addEventListener('click', () => {
+      googleStatus.textContent = 'Google sign-in is not available yet. Please check back soon.';
+      googleStatus.hidden = false;
+    });
+  });
   root.querySelectorAll('[data-password-toggle]').forEach(button => {
     const input = document.getElementById(button.getAttribute('aria-controls'));
     const label = input === confirmation ? 'confirm password' : 'password';

@@ -1,20 +1,21 @@
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "Login / Register - CMM Cinema";
-    var inputClass = "block min-h-11 w-full min-w-0 rounded-full border border-solid border-cinema-ink/15 bg-cinema-paper px-5 py-2.5 font-sans text-base text-cinema-ink placeholder:text-cinema-ink/40 focus:outline-none";
-    var labelClass = "mb-2 block text-[11px] font-bold uppercase tracking-widest text-cinema-ink/70";
+    var inputClass = "block min-h-[44px] sm:min-h-12 w-full min-w-0 rounded-2xl border-0 bg-white py-3 pl-10 pr-5 font-sans text-base sm:text-sm text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:outline-none";
+    var loginInputClass = "block min-h-[44px] sm:min-h-12 w-full min-w-0 rounded-2xl border-0 bg-white py-3 pl-10 pr-5 font-sans text-base sm:text-sm text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:outline-none";
+    var labelClass = "sr-only";
 }
 
 @section TopBanner {
     @await Html.PartialAsync("_CinemaMarquee")
 }
 
-<section class="auth-page flex min-h-[calc(100svh_-_36px)] items-center overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-20 md:pt-36" aria-labelledby="account-title" data-signup-page>
+<section class="auth-page flex min-h-[calc(100svh_-_36px)] items-center overflow-x-clip bg-cinema-paper pb-12 pt-28 font-sans text-cinema-ink md:pb-14 md:pt-32" aria-labelledby="account-title" data-signup-page>
     <h1 class="sr-only" id="account-title">Login or register for CMM Cinema</h1>
     @await Html.PartialAsync("_GooFilter")
-    <div class="mx-auto w-full max-w-[1120px] px-5 md:px-10">
-        <div class="auth-card relative grid items-stretch overflow-hidden rounded-[32px] bg-white shadow-clay ring-1 ring-cinema-ink/[0.05] lg:grid-cols-2" data-signup-card data-auth-mode="login">
-            <aside class="auth-art signup-art auth-poster relative isolate z-10 min-w-0 overflow-hidden p-6 sm:p-9 lg:p-10" aria-label="Your movie buddy" data-signup-art>
+    <div class="mx-auto w-full max-w-[980px] px-5 md:px-8">
+        <div class="auth-card relative grid items-stretch overflow-hidden rounded-[28px] bg-white shadow-clay ring-1 ring-cinema-ink/[0.05] lg:grid-cols-2" data-signup-card data-auth-mode="login">
+            <aside class="auth-art signup-art auth-poster relative isolate z-10 min-w-0 overflow-hidden p-5 sm:p-7 lg:p-7" aria-label="Your movie buddy" data-signup-art>
                 @await Html.PartialAsync("_AuthPosterBackdrop")
                 <div class="auth-poster-heading" data-reveal-up>
                     <p class="auth-poster-script" data-poster-script>freshly</p>
@@ -30,7 +31,7 @@
                 </div>
                 <div class="auth-poster-footer" data-reveal-up>
                     <p class="auth-poster-tagline" data-poster-tagline>made for movie nights.</p>
-                    <button class="group relative isolate inline-flex min-h-12 min-w-40 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-8 py-3 font-sans text-sm font-bold text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button" aria-controls="auth-login-panel auth-register-panel" data-auth-switch="register" data-goo-button hidden>
+                    <button class="group relative isolate inline-flex min-h-[44px] min-w-32 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-6 py-2.5 font-sans text-sm font-bold text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button" aria-controls="auth-login-panel auth-register-panel" data-auth-switch="register" data-goo-button hidden>
                         <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
                             <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
                             <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-cyan" data-goo-fill></span></span>
@@ -42,94 +43,138 @@
             </aside>
 
             <div class="auth-forms min-w-0 bg-white" data-auth-forms>
-                <section class="auth-view flex min-w-0 flex-col justify-center p-6 sm:p-9 lg:p-10" id="auth-login-panel" aria-labelledby="login-title" data-auth-view="login">
-                    <div class="mb-7">
-                        <p class="mb-3 mt-0 text-[10px] font-bold uppercase tracking-[0.2em] text-cinema-ink/50" data-reveal-up>Welcome back</p>
-                        <h2 class="m-0 text-4xl font-black uppercase leading-[0.9] tracking-tighter sm:text-5xl" id="login-title" data-reveal-chars>Login<span class="text-cinema-brick">.</span></h2>
-                        <p class="mb-0 mt-4 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Your next movie night starts here.</p>
+                <section class="auth-view flex min-w-0 flex-col justify-center bg-cinema-paper p-5 sm:p-7 lg:p-7" id="auth-login-panel" aria-labelledby="login-title" data-auth-view="login">
+                    <div class="mb-6">
+                        <h2 class="m-0 text-3xl font-bold leading-tight tracking-tighter sm:text-4xl" id="login-title" data-reveal-chars>Welcome back.</h2>
+                        <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Sign into your account below.</p>
                     </div>
-                    <form class="relative z-10 grid gap-4" aria-labelledby="login-title" data-login-form>
-                        <div data-reveal-up>
-                            <label class="@labelClass" for="login-email">Email address</label>
-                            <input class="@inputClass" id="login-email" name="email" type="email" autocomplete="username" placeholder="you@example.com" maxlength="254" required />
+                    <form class="relative z-10 grid gap-3" aria-labelledby="login-title" data-login-form>
+                        <div class="relative" data-reveal-up>
+                            <label class="sr-only" for="login-email">Email address</label>
+                            <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2" stroke-linecap="round" /></svg>
+                            <input class="@loginInputClass" id="login-email" name="email" type="email" autocomplete="username" placeholder="Enter your email" maxlength="254" required />
                         </div>
-                        <div data-reveal-up>
-                            <label class="@labelClass" for="login-password">Password</label>
-                            <div class="relative">
-                                <input class="@inputClass pr-16" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required />
-                                <button class="absolute right-2 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="login-password" aria-label="Show password" aria-pressed="false" data-password-toggle hidden>Show</button>
-                            </div>
+                        <div class="relative" data-reveal-up>
+                            <label class="sr-only" for="login-password">Password</label>
+                            <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" stroke-linecap="round" /></svg>
+                            <input class="@loginInputClass pr-16" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
+                            <button class="absolute right-2 top-1/2 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="login-password" aria-label="Show password" aria-pressed="false" data-password-toggle hidden>Show</button>
                         </div>
-                        <label class="inline-flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm text-cinema-ink/70" data-reveal-up>
-                            <input class="m-0 size-4 accent-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" name="rememberMe" type="checkbox" />
-                            Remember me
-                        </label>
-                        <div class="mt-1" data-reveal-up>
-                            <button class="group relative isolate inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-5 py-3 font-sans text-sm font-bold text-cinema-cream disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-login-submit data-goo-button disabled>
+                        <div class="mt-2 flex flex-col items-stretch gap-1" data-reveal-up>
+                            <button class="inline-flex min-h-[44px] cursor-pointer items-center self-end border-0 bg-transparent p-0 text-left font-sans text-xs font-bold text-cinema-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink sm:text-sm" type="button" data-forgot-password hidden>Forgot password?</button>
+                            <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-2.5 font-sans text-sm font-bold text-cinema-cream shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-login-submit data-goo-button disabled>
                                 <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
-                                    <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
-                                    <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-cyan" data-goo-fill></span></span>
-                                    <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-cyan" data-goo-blob></span>
+                                    <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
+                                    <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
+                                    <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
                                 </span>
-                                <span class="relative flex w-full items-center justify-between gap-3 transition-colors duration-300 group-data-[goo-active]:text-cinema-ink motion-reduce:transition-none" data-goo-label>
-                                    <span>Login</span>
-                                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                                </span>
+                                <span class="relative" data-goo-label>Sign In</span>
                             </button>
                         </div>
-                        <p class="m-0 text-center text-sm leading-relaxed text-cinema-ink/70" role="status" data-login-status hidden></p>
+                        <p class="m-0 text-sm leading-relaxed text-cinema-ink/70" role="status" data-login-status hidden></p>
                         <noscript><p class="m-0 text-sm text-cinema-ink/60">Please enable JavaScript to preview the login form. Login is not available yet.</p></noscript>
                     </form>
+                    <div class="my-4 flex items-center gap-3" data-reveal-up>
+                        <span class="h-px flex-1 bg-cinema-ink/10" aria-hidden="true"></span>
+                        <span class="text-xs font-medium uppercase tracking-widest text-cinema-ink/40">OR</span>
+                        <span class="h-px flex-1 bg-cinema-ink/10" aria-hidden="true"></span>
+                    </div>
+                    <div class="relative z-10" data-reveal-up>
+                        <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 font-sans text-sm font-bold text-cinema-ink shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button" aria-describedby="google-login-status" data-google-login data-goo-button disabled>
+                            <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                                <span class="absolute inset-0 rounded-2xl bg-white"></span>
+                                <span class="absolute inset-0 overflow-hidden rounded-2xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-white" data-goo-fill></span></span>
+                                <span class="absolute left-0 top-0 size-9 rounded-full bg-white" data-goo-blob></span>
+                            </span>
+                            <span class="relative flex items-center justify-center gap-3" data-goo-label>
+                                <svg class="size-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path fill="#4285f4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.9-1.75 2.98-4.33 2.98-7.36Z" />
+                                    <path fill="#34a853" d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.24-2.51c-.9.6-2.04.96-3.38.96-2.6 0-4.8-1.76-5.59-4.13H3.07v2.59A10 10 0 0 0 12 22Z" />
+                                    <path fill="#fbbc05" d="M6.41 13.91a6 6 0 0 1 0-3.82V7.5H3.07a10 10 0 0 0 0 9l3.34-2.59Z" />
+                                    <path fill="#ea4335" d="M12 5.96c1.47 0 2.79.51 3.82 1.51l2.87-2.87A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.93 5.5l3.34 2.59C7.2 7.72 9.4 5.96 12 5.96Z" />
+                                </svg>
+                                <span>Sign in with Google</span>
+                            </span>
+                        </button>
+                        <p class="mb-0 mt-3 text-center text-sm leading-relaxed text-cinema-ink/70" id="google-login-status" role="status" data-google-login-status hidden></p>
+                    </div>
                 </section>
 
-                <section class="auth-view min-w-0 p-6 sm:p-9 lg:p-10" id="auth-register-panel" aria-labelledby="signup-title" data-auth-view="register" data-signup-panel>
-                    <div class="mb-7">
-                        <p class="mb-3 mt-0 text-[10px] font-bold uppercase tracking-[0.2em] text-cinema-ink/50" data-reveal-up>New to CMM Cinema?</p>
-                        <h2 class="m-0 text-4xl font-black uppercase leading-[0.9] tracking-tighter sm:text-5xl" id="signup-title" data-reveal-chars>Register<span class="text-cinema-brick">.</span></h2>
-                        <p class="mb-0 mt-4 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Make yourself at home. The movies are waiting.</p>
+                <section class="auth-view min-w-0 bg-cinema-paper p-5 sm:p-7 lg:p-7" id="auth-register-panel" aria-labelledby="signup-title" data-auth-view="register" data-signup-panel>
+                    <div class="mb-6">
+                        <h2 class="m-0 text-3xl font-black leading-tight tracking-tighter sm:text-4xl" id="signup-title" data-reveal-chars>Let's get started.</h2>
+                        <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Create your account details below.</p>
                     </div>
 
-                    <form class="grid gap-4" aria-labelledby="signup-title" data-signup-form>
-                        <div data-reveal-up>
+                    <form class="relative z-10 grid gap-3" aria-labelledby="signup-title" data-signup-form>
+                        <div class="relative" data-reveal-up>
                             <label class="@labelClass" for="signup-name">Full name</label>
-                            <input class="@inputClass" id="signup-name" name="name" type="text" autocomplete="name" placeholder="Your name" maxlength="100" required />
+                            <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2" stroke-linecap="round" /></svg>
+                            <input class="@inputClass" id="signup-name" name="name" type="text" autocomplete="name" placeholder="Enter your name" maxlength="100" required />
                         </div>
-                        <div data-reveal-up>
+                        <div class="relative" data-reveal-up>
                             <label class="@labelClass" for="signup-email">Email address</label>
-                            <input class="@inputClass" id="signup-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" maxlength="254" required />
+                            <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 6 9 7 9-7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                            <input class="@inputClass" id="signup-email" name="email" type="email" autocomplete="email" placeholder="Enter your email" maxlength="254" required />
                         </div>
                         <div data-reveal-up>
                             <label class="@labelClass" for="signup-password">Password</label>
                             <div class="relative">
-                                <input class="@inputClass pr-16" id="signup-password" name="password" type="password" autocomplete="new-password" placeholder="Create a password" minlength="8" aria-describedby="signup-password-hint" required />
-                                <button class="absolute right-2 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="signup-password" aria-label="Show password" aria-pressed="false" data-password-toggle hidden>Show</button>
+                                <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" stroke-linecap="round" /></svg>
+                                <input class="@inputClass pr-16" id="signup-password" name="password" type="password" autocomplete="new-password" placeholder="Enter your password" minlength="8" aria-describedby="signup-password-hint" required />
+                                <button class="absolute right-2 top-1/2 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="signup-password" aria-label="Show password" aria-pressed="false" data-password-toggle hidden>Show</button>
                             </div>
                             <p class="mb-0 mt-2 px-2 text-xs text-cinema-ink/50" id="signup-password-hint">At least 8 characters. Make it a good one.</p>
                         </div>
-                        <div data-reveal-up>
+                        <div class="relative" data-reveal-up>
                             <label class="@labelClass" for="signup-confirm">Confirm password</label>
-                            <div class="relative">
-                                <input class="@inputClass pr-16" id="signup-confirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="One more time" minlength="8" required />
-                                <button class="absolute right-2 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="signup-confirm" aria-label="Show confirm password" aria-pressed="false" data-password-toggle hidden>Show</button>
+                            <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" stroke-linecap="round" /></svg>
+                            <input class="@inputClass pr-16" id="signup-confirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Confirm your password" minlength="8" required />
+                            <button class="absolute right-2 top-1/2 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="signup-confirm" aria-label="Show confirm password" aria-pressed="false" data-password-toggle hidden>Show</button>
+                        </div>
+                        <div class="mt-2 grid gap-1">
+                            <div class="flex min-h-[44px] items-center gap-3 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>
+                                <input class="m-0 size-4 shrink-0 accent-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" id="signup-privacy" name="privacyAcknowledged" type="checkbox" required />
+                                <label class="m-0" for="signup-privacy">I agree to the <a class="font-bold text-cinema-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" asp-controller="Home" asp-action="Privacy" target="_blank" rel="noopener">Privacy Policy</a>.</label>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3" data-reveal-up>
+                                <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-2.5 font-sans text-sm font-bold text-cinema-cream shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-signup-submit data-goo-button disabled>
+                                    <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                                        <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
+                                        <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
+                                        <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
+                                    </span>
+                                    <span class="relative" data-goo-label>Sign up</span>
+                                </button>
                             </div>
                         </div>
-                        <div class="mt-1" data-reveal-up>
-                            <button class="group relative isolate inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-5 py-3 font-sans text-sm font-bold text-cinema-cream disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-signup-submit data-goo-button disabled>
-                                <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
-                                    <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
-                                    <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-cyan" data-goo-fill></span></span>
-                                    <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-cyan" data-goo-blob></span>
-                                </span>
-                                <span class="relative flex w-full items-center justify-between gap-3 transition-colors duration-300 group-data-[goo-active]:text-cinema-ink motion-reduce:transition-none" data-goo-label>
-                                    <span>Create account</span>
-                                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                                </span>
-                            </button>
-                        </div>
-                        <p class="m-0 text-center text-sm leading-relaxed text-cinema-ink/70" role="status" data-signup-status hidden></p>
+                        <p class="m-0 text-sm leading-relaxed text-cinema-ink/70" role="status" data-signup-status hidden></p>
                         <noscript><p class="m-0 text-sm text-cinema-ink/60">Please enable JavaScript to preview the signup form. Account registration is not available yet.</p></noscript>
                     </form>
-                    <p class="mb-0 mt-5 text-center text-xs text-cinema-ink/50" data-reveal-up>A little movie magic starts here.</p>
+                    <div class="my-4 flex items-center gap-3" data-reveal-up>
+                        <span class="h-px flex-1 bg-cinema-ink/10" aria-hidden="true"></span>
+                        <span class="text-xs font-medium uppercase tracking-widest text-cinema-ink/40">OR</span>
+                        <span class="h-px flex-1 bg-cinema-ink/10" aria-hidden="true"></span>
+                    </div>
+                    <div class="relative z-10" data-reveal-up>
+                        <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 font-sans text-sm font-bold text-cinema-ink shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button" aria-describedby="google-register-status" data-google-login data-goo-button disabled>
+                            <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                                <span class="absolute inset-0 rounded-2xl bg-white"></span>
+                                <span class="absolute inset-0 overflow-hidden rounded-2xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-white" data-goo-fill></span></span>
+                                <span class="absolute left-0 top-0 size-9 rounded-full bg-white" data-goo-blob></span>
+                            </span>
+                            <span class="relative flex items-center justify-center gap-3" data-goo-label>
+                                <svg class="size-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path fill="#4285f4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.9-1.75 2.98-4.33 2.98-7.36Z" />
+                                    <path fill="#34a853" d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.24-2.51c-.9.6-2.04.96-3.38.96-2.6 0-4.8-1.76-5.59-4.13H3.07v2.59A10 10 0 0 0 12 22Z" />
+                                    <path fill="#fbbc05" d="M6.41 13.91a6 6 0 0 1 0-3.82V7.5H3.07a10 10 0 0 0 0 9l3.34-2.59Z" />
+                                    <path fill="#ea4335" d="M12 5.96c1.47 0 2.79.51 3.82 1.51l2.87-2.87A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.93 5.5l3.34 2.59C7.2 7.72 9.4 5.96 12 5.96Z" />
+                                </svg>
+                                <span>Sign up with Google</span>
+                            </span>
+                        </button>
+                        <p class="mb-0 mt-3 text-center text-sm leading-relaxed text-cinema-ink/70" id="google-register-status" role="status" data-google-login-status hidden></p>
+                    </div>
                 </section>
             </div>
             <p class="sr-only" role="status" data-auth-announcement></p>

@@ -184,6 +184,101 @@ test('Login validates independently of Register and remains a local UI preview',
   } finally { ui.dom.window.close(); }
 });
 
+test('Login shows email and password together and requires both before signing in', () => {
+  const ui = setup({ mode: 'login', reduced: true });
+  try {
+    const login = ui.document.querySelector('[data-login-form]');
+    const status = login.querySelector('[data-login-status]');
+    assert.equal(login.elements.password.disabled, false);
+    assert.equal(login.elements.password.closest('[hidden]'), null);
+    login.elements.email.value = 'invalid-email';
+    login.elements.password.value = 'PreviewOnly123';
+    login.requestSubmit();
+    assert.equal(status.hidden, true, 'Invalid email prevents submission');
+    login.elements.email.value = 'guest@example.com';
+    login.elements.password.value = '';
+    login.requestSubmit();
+    assert.equal(status.hidden, true, 'Empty password prevents submission');
+    login.elements.password.value = 'PreviewOnly123';
+    login.requestSubmit();
+    assert.equal(status.hidden, false);
+    ui.switchTo('register');
+    ui.switchTo('login');
+    assert.equal(login.elements.email.value, 'guest@example.com');
+    assert.equal(login.elements.password.value, 'PreviewOnly123');
+  } finally { ui.dom.window.close(); }
+});
+
+test('Google sign-in bypasses the email form and reports its preview status', () => {
+  const ui = setup({ mode: 'login' });
+  try {
+    const google = ui.document.querySelector('[data-google-login]');
+    const status = ui.document.querySelector('[data-google-login-status]');
+    const login = ui.document.querySelector('[data-login-form]');
+    assert.equal(login.checkValidity(), false);
+    assert.equal(google.disabled, false);
+    assert.equal(google.type, 'button');
+    google.click();
+    assert.equal(status.hidden, false);
+    assert.match(status.textContent, /Google sign-in is not available yet/);
+    assert.equal(login.querySelector('[data-login-status]').hidden, true);
+  } finally { ui.dom.window.close(); }
+});
+
+test('Forgot password reports its preview status without requiring login fields', () => {
+  const ui = setup({ mode: 'login' });
+  try {
+    const login = ui.document.querySelector('[data-login-form]');
+    const forgot = login.querySelector('[data-forgot-password]');
+    assert.equal(forgot.hidden, false);
+    assert.equal(login.checkValidity(), false);
+    forgot.click();
+    const status = login.querySelector('[data-login-status]');
+    assert.equal(status.hidden, false);
+    assert.match(status.textContent, /Password reset is not available yet/);
+  } finally { ui.dom.window.close(); }
+});
+
+test('Register requires privacy acknowledgement and still validates matching passwords', () => {
+  const ui = setup({ reduced: true });
+  try {
+    ui.input('name', 'Cinema Guest');
+    ui.input('email', 'guest@example.com');
+    ui.input('password', 'MovieNight123');
+    ui.input('confirmPassword', 'MovieNight123');
+    const status = ui.form.querySelector('[data-signup-status]');
+    assert.equal(ui.form.checkValidity(), false, 'Privacy checkbox is required');
+    ui.form.requestSubmit();
+    assert.equal(status.hidden, true);
+    ui.form.elements.privacyAcknowledged.checked = true;
+    ui.input('confirmPassword', 'Different123');
+    assert.equal(ui.form.checkValidity(), false, 'Password confirmation still applies');
+    ui.input('confirmPassword', 'MovieNight123');
+    assert.equal(ui.form.checkValidity(), true);
+    ui.form.requestSubmit();
+    assert.equal(status.hidden, false);
+    assert.match(status.textContent, /registration is not available yet/);
+  } finally { ui.dom.window.close(); }
+});
+
+test('Register Google action bypasses validation and only updates its own status', () => {
+  const ui = setup();
+  try {
+    const register = ui.form.closest('[data-auth-view]');
+    const google = register.querySelector('[data-google-login]');
+    const status = register.querySelector('[data-google-login-status]');
+    const loginStatus = ui.document.querySelector('#google-login-status');
+    assert.equal(ui.form.checkValidity(), false);
+    assert.equal(google.disabled, false);
+    google.click();
+    assert.equal(status.hidden, false);
+    assert.match(status.textContent, /Google sign-in is not available yet/);
+    assert.equal(loginStatus.hidden, true);
+    assert.equal(ui.form.querySelector('[data-signup-status]').hidden, true);
+    assert.equal(ui.form.elements.privacyAcknowledged.checked, false);
+  } finally { ui.dom.window.close(); }
+});
+
 test('mascot follows Login fields and switching forms re-hides shown passwords', () => {
   const ui = setup({ mode: 'login' });
   try {

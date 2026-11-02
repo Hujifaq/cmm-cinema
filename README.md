@@ -2,6 +2,37 @@
 
 ASP.NET Core MVC application targeting .NET 10.
 
+## Development server recovery
+
+Run exactly one development server. From the repository root or `CMM_Cinema`:
+
+```sh
+npm run dev
+```
+
+This command explicitly disables Hot Reload to work around the observed
+`BadImageFormatException` when rendering Razor views in a long-running Hot Reload
+session. Stop an existing watcher with Ctrl+C before starting it. The equivalent
+command from `CMM_Cinema` is:
+
+```sh
+dotnet watch --no-hot-reload
+```
+
+This mode rebuilds and restarts the app for source changes instead of applying
+code updates to the running process. It is a development workaround; it does not
+change the application's login logic or production configuration. Testing with
+SDK 10.0.400 showed that `hotReloadEnabled: false` in `launchSettings.json` alone
+still lets `dotnet watch` enable Hot Reload, so use the explicit CLI flag.
+Avoid running
+a separate `dotnet build` against the same output directory while the watcher is
+active; let the watcher build the changes.
+
+If startup reports `address already in use` for port 5081, an app is already
+listening there. Stop the other CMM Cinema instance before restarting the watcher;
+the HTTP and HTTPS profiles both use that port and cannot run together. Inspect
+the listener on macOS with `lsof -nP -iTCP:5081 -sTCP:LISTEN`.
+
 ## Cinema hero
 
 The home page uses a dedicated `_HeroLayout` with a floating glass navbar and
