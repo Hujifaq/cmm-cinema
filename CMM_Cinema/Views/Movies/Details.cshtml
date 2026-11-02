@@ -41,6 +41,14 @@
             </ul>
             <p class="m-0 mt-6 max-w-2xl text-base leading-relaxed text-cinema-ink/80 md:text-lg" data-reveal-lines>@Model.Overview</p>
 
+            @if (Model.TrailerEmbedUrl is { } trailerUrl)
+            {
+                <h2 class="m-0 mt-12 text-3xl font-black uppercase leading-none tracking-tighter md:text-4xl" data-reveal-chars>Trailer</h2>
+                <div class="mt-5 aspect-video w-full max-w-3xl overflow-hidden rounded-2xl bg-cinema-ink">
+                    <iframe class="size-full border-0" src="@trailerUrl" title="@Model.Title trailer" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                </div>
+            }
+
             @if (Model.Cast.Count > 0)
             {
                 <h2 class="m-0 mt-12 text-3xl font-black uppercase leading-none tracking-tighter md:text-4xl" data-reveal-chars>Cast</h2>
