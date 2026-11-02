@@ -1,7 +1,7 @@
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "Login / Register - CMM Cinema";
-    var inputClass = "block min-h-11 w-full min-w-0 rounded-full border border-solid border-cinema-ink/15 bg-cinema-paper px-5 py-2.5 font-sans text-base text-cinema-ink placeholder:text-cinema-ink/40 transition-[border-color,background-color,box-shadow] duration-200 focus:border-cinema-deep focus:bg-white focus:outline-2 focus:outline-offset-2 focus:outline-cinema-cyan/50 focus:ring-4 focus:ring-cinema-cyan/25 focus-visible:outline-cinema-deep motion-reduce:transition-none";
+    var inputClass = "block min-h-11 w-full min-w-0 rounded-full border border-solid border-cinema-ink/15 bg-cinema-paper px-5 py-2.5 font-sans text-base text-cinema-ink placeholder:text-cinema-ink/40 focus:outline-none";
     var labelClass = "mb-2 block text-[11px] font-bold uppercase tracking-widest text-cinema-ink/70";
 }
 
@@ -30,9 +30,13 @@
                 </div>
                 <div class="auth-poster-footer" data-reveal-up>
                     <p class="auth-poster-tagline" data-poster-tagline>made for movie nights.</p>
-                    <button class="inline-flex min-h-12 w-full cursor-pointer items-center justify-between gap-4 rounded-full border-0 bg-cinema-ink px-5 py-3 font-sans text-sm font-bold text-cinema-cream transition-colors hover:bg-cinema-deep focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" type="button" aria-controls="auth-login-panel auth-register-panel" data-auth-switch="register" hidden>
-                        <span data-auth-switch-label>Register</span>
-                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    <button class="group relative isolate inline-flex min-h-12 min-w-40 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-8 py-3 font-sans text-sm font-bold text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button" aria-controls="auth-login-panel auth-register-panel" data-auth-switch="register" data-goo-button hidden>
+                        <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                            <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
+                            <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-cyan" data-goo-fill></span></span>
+                            <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-cyan" data-goo-blob></span>
+                        </span>
+                        <span class="relative transition-colors duration-300 group-data-[goo-active]:text-cinema-ink motion-reduce:transition-none" data-goo-label data-auth-switch-label>Register</span>
                     </button>
                 </div>
             </aside>
@@ -61,9 +65,16 @@
                             Remember me
                         </label>
                         <div class="mt-1" data-reveal-up>
-                            <button class="inline-flex min-h-12 w-full cursor-pointer items-center justify-between gap-3 rounded-full border-0 bg-cinema-ink px-5 py-3 font-sans text-sm font-bold text-cinema-cream transition-colors hover:bg-cinema-deep disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" type="submit" data-login-submit disabled>
-                                <span>Login</span>
-                                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                            <button class="group relative isolate inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-5 py-3 font-sans text-sm font-bold text-cinema-cream disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-login-submit data-goo-button disabled>
+                                <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                                    <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
+                                    <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-cyan" data-goo-fill></span></span>
+                                    <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-cyan" data-goo-blob></span>
+                                </span>
+                                <span class="relative flex w-full items-center justify-between gap-3 transition-colors duration-300 group-data-[goo-active]:text-cinema-ink motion-reduce:transition-none" data-goo-label>
+                                    <span>Login</span>
+                                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                </span>
                             </button>
                         </div>
                         <p class="m-0 text-center text-sm leading-relaxed text-cinema-ink/70" role="status" data-login-status hidden></p>

@@ -14,17 +14,6 @@
                 <stop offset="0.65" stop-color="white" stop-opacity="0" />
                 <stop offset="1" stop-color="var(--color-cinema-ink)" stop-opacity="0.12" />
             </radialGradient>
-            @* Static film grain stays behind all lettering, controls, and Poppy's face. *@
-            <filter id="auth-poster-noise" x="0" y="0" width="600" height="800" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                <feTurbulence type="fractalNoise" baseFrequency="0.58" numOctaves="3" seed="17" stitchTiles="stitch" />
-                <feColorMatrix type="saturate" values="0" />
-                <feComponentTransfer>
-                    <feFuncR type="linear" slope="2.4" intercept="-0.7" />
-                    <feFuncG type="linear" slope="2.4" intercept="-0.7" />
-                    <feFuncB type="linear" slope="2.4" intercept="-0.7" />
-                    <feFuncA type="table" tableValues="1 1" />
-                </feComponentTransfer>
-            </filter>
         </defs>
         <path fill="var(--color-cinema-cream)" d="M0 0h600v800H0z" />
         <g fill="url(#auth-poster-color)" stroke="var(--color-cinema-cream)" stroke-opacity="0.12" stroke-width="1" data-poster-paint="login">
@@ -45,6 +34,7 @@
             </g>
         </g>
         <path fill="url(#auth-poster-light)" d="M0 0h600v800H0z" />
-        <path class="auth-poster-grain" fill="white" d="M0 0h600v800H0z" filter="url(#auth-poster-noise)" />
     </svg>
 </div>
+@* Film grain sits outside the scaled, parallaxing backdrop so it renders pixel-crisp and stays still. *@
+<div class="auth-poster-grain" aria-hidden="true"></div>

@@ -3,7 +3,7 @@
   const root = document.querySelector('[data-signup-page]');
   if (!root) return;
 
-  // This is a UI preview: validate locally and never send or store credentials.
+  
   const form = root.querySelector('[data-signup-form]');
   const password = form.elements.password;
   const confirmation = form.elements.confirmPassword;
@@ -228,26 +228,90 @@
     let errorTimer;
     let blinkTimer, reopenTimer;
     let focused = null;
+    const svg = mascot.querySelector('svg');
+    const eyes = [...mascot.querySelectorAll('[data-mascot-eye]')].map(eye => ({
+      gaze: eye.querySelector('.popcorn-mascot__gaze'),
+      glint: eye.querySelector('[data-mascot-highlights]'),
+      cx: Number(eye.dataset.eyeX), cy: Number(eye.dataset.eyeY),
+      x: 0, y: 0, tx: 0, ty: 0, gx: 0, gy: 0
+    }));
+    // Pupils (rx 17, ry 23) travel inside the eye white (rx 26, ry 32) without touching its edge.
+    const travel = 8;
+    // The white glint is a nearer depth plane: it travels further and reacts sooner than the pupil.
+    const glintLead = 1.8, glintReach = 9;
+    let frame, lastTime;
+    const paintEye = eye => {
+      eye.gaze.style.transform = `translate(${eye.x}px, ${eye.y}px)`;
+      // The glint is nested in the pupil, so paint only its offset from the pupil,
+      // kept within the dark pupil so it never slips onto the eye white.
+      let rx = eye.gx - eye.x, ry = eye.gy - eye.y;
+      const length = Math.hypot(rx, ry);
+      if (length > glintReach) { rx *= glintReach / length; ry *= glintReach / length; }
+      eye.glint.style.transform = `translate(${rx}px, ${ry}px)`;
+    };
+    const render = time => {
+      const elapsed = Math.min(64, time - (lastTime ?? time - 16));
+      lastTime = time;
+      // Frame-rate independent exponential easing: smooth, with no restart when targets change.
+      const pupilStep = 1 - Math.exp(-elapsed / 70);
+      const glintStep = 1 - Math.exp(-elapsed / 35);
+      let moving = false;
+      eyes.forEach(eye => {
+        const gtx = eye.tx * glintLead, gty = eye.ty * glintLead;
+        eye.x += (eye.tx - eye.x) * pupilStep;
+        eye.y += (eye.ty - eye.y) * pupilStep;
+        eye.gx += (gtx - eye.gx) * glintStep;
+        eye.gy += (gty - eye.gy) * glintStep;
+        if (Math.max(Math.abs(eye.tx - eye.x), Math.abs(eye.ty - eye.y), Math.abs(gtx - eye.gx), Math.abs(gty - eye.gy)) < 0.02) {
+          eye.x = eye.tx;
+          eye.y = eye.ty;
+          eye.gx = gtx;
+          eye.gy = gty;
+        } else moving = true;
+        paintEye(eye);
+      });
+      frame = moving ? requestAnimationFrame(render) : undefined;
+      if (!moving) lastTime = undefined;
+    };
+    const animateEyes = () => { if (frame === undefined) frame = requestAnimationFrame(render); };
+    const resetEyes = () => {
+      cancelAnimationFrame(frame);
+      frame = lastTime = undefined;
+      eyes.forEach(eye => {
+        eye.x = eye.y = eye.tx = eye.ty = eye.gx = eye.gy = 0;
+        eye.gaze.style.removeProperty('transform');
+        eye.glint.style.removeProperty('transform');
+      });
+    };
     const neutral = () => {
-      ['--poppy-look-x', '--poppy-look-y', '--poppy-eye-x', '--poppy-eye-y', '--poppy-highlight-x', '--poppy-highlight-y', '--poppy-tilt', '--poppy-nod'].forEach(property => mascot.style.removeProperty(property));
+      ['--poppy-tilt', '--poppy-nod'].forEach(property => mascot.style.removeProperty(property));
+      if (reduced.matches || document.hidden) return resetEyes();
+      eyes.forEach(eye => { eye.tx = eye.ty = 0; });
+      animateEyes();
     };
     const lookAt = (x, y) => {
       if (reduced.matches || document.hidden || mascot.hasAttribute('data-mascot-private')) return neutral();
+      // Each pupil aims from its own on-screen centre, so both eyes converge on the pointer.
+      const art = svg.getBoundingClientRect();
+      const scale = art.width / (svg.viewBox.baseVal?.width || 440);
+      eyes.forEach(eye => {
+        const dx = x - (art.left + eye.cx * scale);
+        const dy = y - (art.top + eye.cy * scale);
+        const distance = Math.hypot(dx, dy);
+        if (distance < 0.5) { eye.tx = eye.ty = 0; return; }
+        // Reach eases toward full travel, so nearby targets get a proportional glance.
+        const reach = travel * distance / Math.hypot(distance, 70 * scale);
+        eye.tx = dx / distance * reach;
+        eye.ty = dy / distance * reach;
+      });
+      animateEyes();
       // The wrapper stays still as the face moves, avoiding feedback jitter.
       const box = gazeAnchor.getBoundingClientRect();
       const xDirection = (x - box.left - box.width / 2) / Math.max(160, box.width);
       const yDirection = (y - box.top - box.height * 0.51) / Math.max(160, box.height);
       const distance = Math.max(1, Math.hypot(xDirection, yDirection));
-      const dx = xDirection / distance, dy = yDirection / distance;
-      // Nested depth planes: subtle eye shell, trailing dark pupil, leading white glint.
-      mascot.style.setProperty('--poppy-eye-x', `${dx * 2.5}px`);
-      mascot.style.setProperty('--poppy-eye-y', `${dy * 1.5}px`);
-      mascot.style.setProperty('--poppy-look-x', `${dx * 6}px`);
-      mascot.style.setProperty('--poppy-look-y', `${dy * 4.5}px`);
-      mascot.style.setProperty('--poppy-highlight-x', `${dx * 9}px`);
-      mascot.style.setProperty('--poppy-highlight-y', `${dy * 11}px`);
-      mascot.style.setProperty('--poppy-tilt', `${dx * 4}deg`);
-      mascot.style.setProperty('--poppy-nod', `${dy * 3}px`);
+      mascot.style.setProperty('--poppy-tilt', `${xDirection / distance * 4}deg`);
+      mascot.style.setProperty('--poppy-nod', `${yDirection / distance * 3}px`);
     };
     const stopBlinking = () => {
       window.clearTimeout(blinkTimer);
@@ -321,6 +385,15 @@
       neutral();
       sync();
     }, options);
+    // Hovering or keyboard-focusing the Login/Register switch startles the mascot ("!").
+    const switchControl = root.querySelector('[data-auth-switch]');
+    if (switchControl) {
+      const alert = on => mascot.toggleAttribute('data-mascot-alert', on);
+      switchControl.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') alert(true); }, options);
+      switchControl.addEventListener('pointerleave', () => { if (!switchControl.matches(':focus-visible')) alert(false); }, options);
+      switchControl.addEventListener('focus', () => { if (switchControl.matches(':focus-visible')) alert(true); }, options);
+      switchControl.addEventListener('blur', () => { if (!switchControl.matches(':hover')) alert(false); }, options);
+    }
     reduced.addEventListener('change', sync);
     fine.addEventListener('change', neutral);
     document.addEventListener('visibilitychange', sync, options);
@@ -332,6 +405,8 @@
       clearError();
       stopBlinking();
       neutral();
+      resetEyes();
+      mascot.removeAttribute('data-mascot-alert');
     };
   };
   const setupClayScene = () => {
