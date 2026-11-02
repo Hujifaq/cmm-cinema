@@ -20,10 +20,12 @@ public record Movie(
     string? PosterUrl,
     string PosterTheme,
     string? PosterTitle,
-    IReadOnlyList<CastMember> Cast)
+    IReadOnlyList<CastMember> Cast,
+    string? TrailerUrl = null)
 {
     public string Runtime => $"{DurationMinutes / 60}h {DurationMinutes % 60:00}m";
     public string Url => $"/Movies/{Slug}";
+    public string? TrailerEmbedUrl => TrailerLink.ToEmbedUrl(TrailerUrl);
     // Category words let the Spotlight shortcuts ("movies", "now showing", "coming soon") match like any typed query.
     public string SearchText => string.Join(' ', Title, Genre, Rating, Language, Synopsis, "movies",
         Status == MovieStatus.NowShowing ? "now showing" : "coming soon upcoming");
