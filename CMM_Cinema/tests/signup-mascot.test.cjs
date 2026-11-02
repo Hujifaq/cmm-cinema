@@ -8,13 +8,14 @@ const view = readFileSync(join(__dirname, '../Views/LoginRegister/Index.cshtml')
   .replace('@await Html.PartialAsync("_PopcornMascot")', readFileSync(join(__dirname, '../Views/Shared/_PopcornMascot.cshtml'), 'utf8'));
 const source = readFileSync(join(__dirname, '../wwwroot/js/signup.js'), 'utf8');
 
-function setup({ reduced = false, fine = true, mode = 'register' } = {}) {
+function setup({ reduced = false, fine = true, wide = true, mode = 'register' } = {}) {
   const dom = new JSDOM(view, { runScripts: 'outside-only', pretendToBeVisual: true, url: 'http://localhost:5081/LoginRegister' });
   const { window } = dom;
-  const motion = new window.EventTarget(), pointer = new window.EventTarget();
+  const motion = new window.EventTarget(), pointer = new window.EventTarget(), desktop = new window.EventTarget();
   motion.matches = reduced;
   pointer.matches = fine;
-  window.matchMedia = query => query.includes('reduce') ? motion : pointer;
+  desktop.matches = wide;
+  window.matchMedia = query => query.includes('reduce') ? motion : query.includes('min-width') ? desktop : pointer;
   let timerId = 0, random = 0;
   const timers = new Map();
   window.Math.random = () => random;
@@ -47,7 +48,7 @@ function setup({ reduced = false, fine = true, mode = 'register' } = {}) {
   const switchButton = document.querySelector('[data-auth-switch]');
   const switchTo = mode => { if (card.dataset.authMode !== mode) switchButton.click(); };
   switchTo(mode);
-  return { dom, window, document, page, form, mascot, motion, pointer, move, input, toggles, card, switchButton, switchTo, timers, fireTimer, setRandom: value => { random = value; } };
+  return { dom, window, document, page, form, mascot, motion, pointer, desktop, move, input, toggles, card, switchButton, switchTo, timers, fireTimer, setRandom: value => { random = value; } };
 }
 
 test('Poppy follows mouse on fine pointers and looks at the focused Full name field', async () => {
@@ -184,6 +185,98 @@ test('Login validates independently of Register and remains a local UI preview',
   } finally { ui.dom.window.close(); }
 });
 
+test('Login shows email and password together and requires both before signing in', () => {
+  const ui = setup({ mode: 'login', reduced: true });
+  try {
+    const login = ui.document.querySelector('[data-login-form]');
+    const status = login.querySelector('[data-login-status]');
+    assert.equal(login.elements.password.disabled, false);
+    assert.equal(login.elements.password.closest('[hidden]'), null);
+    login.elements.email.value = 'invalid-email';
+    login.elements.password.value = 'PreviewOnly123';
+    login.requestSubmit();
+    assert.equal(status.hidden, true, 'Invalid email prevents submission');
+    login.elements.email.value = 'guest@example.com';
+    login.elements.password.value = '';
+    login.requestSubmit();
+    assert.equal(status.hidden, true, 'Empty password prevents submission');
+    login.elements.password.value = 'PreviewOnly123';
+    login.requestSubmit();
+    assert.equal(status.hidden, false);
+    ui.switchTo('register');
+    ui.switchTo('login');
+    assert.equal(login.elements.email.value, 'guest@example.com');
+    assert.equal(login.elements.password.value, 'PreviewOnly123');
+  } finally { ui.dom.window.close(); }
+});
+
+test('Google sign-in bypasses the email form and reports its preview status', () => {
+  const ui = setup({ mode: 'login' });
+  try {
+    const google = ui.document.querySelector('[data-google-login]');
+    const status = ui.document.querySelector('[data-google-login-status]');
+    const login = ui.document.querySelector('[data-login-form]');
+    assert.equal(login.checkValidity(), false);
+    assert.equal(google.disabled, false);
+    assert.equal(google.type, 'button');
+    google.click();
+    assert.equal(status.hidden, false);
+    assert.match(status.textContent, /Google sign-in is not available yet/);
+    assert.equal(login.querySelector('[data-login-status]').hidden, true);
+  } finally { ui.dom.window.close(); }
+});
+
+test('Forgot password links to the reset page without requiring JavaScript', () => {
+  const dom = new JSDOM(view);
+  try {
+    const forgot = dom.window.document.querySelector('[data-forgot-password]');
+    assert.equal(forgot.tagName, 'A');
+    assert.equal(forgot.hidden, false);
+    assert.equal(forgot.getAttribute('asp-controller'), 'Forgotpassword');
+    assert.equal(forgot.getAttribute('asp-action'), 'Index');
+  } finally { dom.window.close(); }
+});
+
+test('Register requires privacy acknowledgement and still validates matching passwords', () => {
+  const ui = setup({ reduced: true });
+  try {
+    ui.input('name', 'Cinema Guest');
+    ui.input('email', 'guest@example.com');
+    ui.input('password', 'MovieNight123');
+    ui.input('confirmPassword', 'MovieNight123');
+    const status = ui.form.querySelector('[data-signup-status]');
+    assert.equal(ui.form.checkValidity(), false, 'Privacy checkbox is required');
+    ui.form.requestSubmit();
+    assert.equal(status.hidden, true);
+    ui.form.elements.privacyAcknowledged.checked = true;
+    ui.input('confirmPassword', 'Different123');
+    assert.equal(ui.form.checkValidity(), false, 'Password confirmation still applies');
+    ui.input('confirmPassword', 'MovieNight123');
+    assert.equal(ui.form.checkValidity(), true);
+    ui.form.requestSubmit();
+    assert.equal(status.hidden, false);
+    assert.match(status.textContent, /registration is not available yet/);
+  } finally { ui.dom.window.close(); }
+});
+
+test('Register Google action bypasses validation and only updates its own status', () => {
+  const ui = setup();
+  try {
+    const register = ui.form.closest('[data-auth-view]');
+    const google = register.querySelector('[data-google-login]');
+    const status = register.querySelector('[data-google-login-status]');
+    const loginStatus = ui.document.querySelector('#google-login-status');
+    assert.equal(ui.form.checkValidity(), false);
+    assert.equal(google.disabled, false);
+    google.click();
+    assert.equal(status.hidden, false);
+    assert.match(status.textContent, /Google sign-in is not available yet/);
+    assert.equal(loginStatus.hidden, true);
+    assert.equal(ui.form.querySelector('[data-signup-status]').hidden, true);
+    assert.equal(ui.form.elements.privacyAcknowledged.checked, false);
+  } finally { ui.dom.window.close(); }
+});
+
 test('mascot follows Login fields and switching forms re-hides shown passwords', () => {
   const ui = setup({ mode: 'login' });
   try {
@@ -255,7 +348,60 @@ test('switching works without GSAP and with reduced motion; no-JS markup remains
   try {
     assert.equal(fallback.window.document.querySelectorAll('[data-auth-view][inert]').length, 0);
     assert.equal(fallback.window.document.querySelector('[data-signup-card]').hasAttribute('data-auth-ready'), false);
+    assert.equal(fallback.window.document.querySelector('[data-auth-mode-toggle]').hidden, true);
   } finally { fallback.window.close(); }
+});
+
+test('compact toggle switches accessible forms, preserves values, and masks passwords without submitting', () => {
+  for (const reduced of [false, true]) {
+    const ui = setup({ wide: false, reduced, mode: 'login' });
+    try {
+      const buttons = [...ui.document.querySelectorAll('[data-auth-mode-button]')];
+      const [login, register] = buttons;
+      const password = ui.document.getElementById('login-password');
+      let submissions = 0;
+      ui.page.addEventListener('submit', () => { submissions++; });
+      assert.equal(ui.document.querySelector('[data-auth-mode-toggle]').hidden, false);
+      buttons.forEach(button => assert.equal(button.type, 'button'));
+      password.value = 'MovieNight123';
+      ui.document.querySelector('#auth-login-panel [data-password-toggle]').click();
+      password.focus();
+      register.click();
+      assert.equal(ui.document.activeElement, register);
+      assert.equal(register.getAttribute('aria-pressed'), 'true');
+      assert.equal(login.getAttribute('aria-pressed'), 'false');
+      assert.equal(ui.document.getElementById('auth-login-panel').hasAttribute('inert'), true);
+      assert.equal(ui.form.closest('[data-auth-view]').hasAttribute('inert'), false);
+      assert.equal(password.type, 'password');
+      ui.input('name', 'Cinema Guest');
+      login.click();
+      assert.equal(password.value, 'MovieNight123');
+      assert.equal(login.getAttribute('aria-pressed'), 'true');
+      register.click();
+      assert.equal(ui.form.elements.name.value, 'Cinema Guest');
+      assert.equal(ui.document.querySelectorAll('[data-auth-view][data-active]').length, 1);
+      assert.equal(submissions, 0);
+    } finally { ui.dom.window.close(); }
+  }
+});
+
+test('viewport changes transfer switch focus without changing the selected form', () => {
+  const ui = setup({ wide: false, mode: 'register' });
+  try {
+    const register = ui.document.querySelector('[data-auth-mode-button="register"]');
+    register.focus();
+    ui.desktop.matches = true;
+    ui.desktop.dispatchEvent(new ui.window.Event('change'));
+    assert.equal(ui.document.activeElement, ui.switchButton);
+    ui.desktop.matches = false;
+    ui.desktop.dispatchEvent(new ui.window.Event('change'));
+    assert.equal(ui.document.activeElement, register);
+    assert.equal(ui.card.dataset.authMode, 'register');
+    ui.form.elements.name.focus();
+    ui.desktop.matches = true;
+    ui.desktop.dispatchEvent(new ui.window.Event('change'));
+    assert.equal(ui.document.activeElement, ui.form.elements.name);
+  } finally { ui.dom.window.close(); }
 });
 
 test('password mismatch reacts on blur or invalid submission, not on each keystroke, and correction clears it', async () => {

@@ -232,6 +232,17 @@
 [data-goo-fill], [data-goo-blob] { transform: scale(0); }
 
 /* Signup: Poppy's layered face reacts to the form without replacing artwork. */
+.auth-mode-toggle::before {
+  content: "";
+  position: absolute;
+  inset-block: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 999px;
+  background: var(--color-cinema-ink);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.auth-card[data-auth-mode="register"] .auth-mode-toggle::before { transform: translateX(100%); }
 .auth-card[data-auth-ready] .auth-forms { display: grid; }
 .auth-card[data-auth-ready] .auth-view {
   grid-area: 1 / 1;
@@ -248,6 +259,14 @@
   transform: none;
   transition-delay: 0s;
 }
+@media (max-width: 1023px) {
+  .auth-card[data-auth-ready] .auth-forms { position: relative; }
+  .auth-card[data-auth-ready] .auth-view:not([data-active]) {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+  }
+}
 @media (min-width: 1024px) {
   .auth-card[data-auth-ready] .auth-art { grid-area: 1 / 1; }
   .auth-card[data-auth-ready] .auth-forms { grid-area: 1 / 2; }
@@ -258,6 +277,7 @@
   .auth-card[data-auth-ready][data-auth-mode="register"] .auth-forms { transform: translateX(-100%); }
 }
 @media (prefers-reduced-motion: reduce) {
+  .auth-mode-toggle::before { transition: none; }
   .auth-card[data-auth-ready] :is(.auth-art, .auth-forms, .auth-view) { transition: none; }
 }
 .signup-art {
@@ -353,6 +373,10 @@
   [data-mascot-alert]:not([data-mascot-private], [data-mascot-blinking]) .popcorn-mascot__eyes-open { transform: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
+  :is([data-forgot-password-page], [data-reset-password-page]):not([data-revealed]) :is([data-reset-card], [data-reveal-chars], [data-reveal-up]) {
+    visibility: hidden;
+    animation: movie-detail-unhide 0s 3s forwards;
+  }
   [data-signup-page]:not([data-revealed]) :is([data-signup-card], [data-signup-art], [data-reveal-chars], [data-reveal-up], [data-mascot-entrance]) {
     visibility: hidden;
     animation: movie-detail-unhide 0s 3s forwards;

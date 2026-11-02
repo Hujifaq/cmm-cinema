@@ -122,6 +122,8 @@ red rays and accents. This does not change the shared `cinema-brick` token.
 The Register poster uses `cinema-poster-green` (`#63b879`) for its field and
 `cinema-poster-peach` (`#ffe4cc`) for its peach-cream waves. Its cup body uses
 `cinema-poster-red` with cream highlights and ink shading.
+The Google sign-in SVG uses Google's blue, green, yellow and red brand colors,
+reserved for the logo artwork.
 
 ### 3.5 Drawn poster themes
 
@@ -479,15 +481,26 @@ scrolled into view (1.25s, 50ms stagger), and on hover letters near the cursor
 ### 8.19 Signup — `signup.js`
 
 The account page centers a compact card in a cream viewport. Its container is
-1120px including side padding (1040px card on desktop), with 44px pill inputs,
-48px actions and restrained 36–48px form headings. The mascot panel uses a
+980px including side padding (916px card on desktop). Panels use 20px padding
+on phones and 28px from 640px, with tighter 12px form gaps and 24px heading gaps.
+The card uses equal side-by-side columns from 1024px. Below 1024px the mascot
+panel is hidden, and a segmented Login / Register toggle sits above the selected
+form within a centered 560px maximum width. Its 44px controls expose their selected
+state with `aria-pressed`; an ink pill slides between them over 280ms with
+signature-out easing, instantly for reduced motion. The inactive compact form
+is positioned out of flow so Login does not reserve Register's extra height.
+Account page top padding leaves room for the floating navbar.
+Rounded-rectangle inputs are at least 44px on phones and 48px from 640px;
+actions retain at least 44px touch targets. Form headings range from 30–36px.
+The mascot stage caps at 250px, with a 220px desktop minimum height, and its
+poster lettering, sparkles and footer scale down with the compact card.
+The mascot panel uses a
 retro snack-poster composition: a cream and softened-red curved-ray SVG backdrop,
 arched black-weight "POPPED" lettering, a sun-yellow "freshly" accent, and Poppy
 centered among outlined cream sparkles. Georgia italic provides the printed
 script-like accents using system fonts, with no font downloads. A "made for
 movie nights" footer sits above the single Register/Login pill, without an extra
-caption or surrounding box in either mode. On phones the heading and mascot sit side by
-side above the footer to keep the artwork compact. The poster's red accents use
+caption or surrounding box in either mode. The poster's red accents use
 the dedicated `cinema-poster-red` token mixed with 18% ink in the artwork-scoped
 `--auth-poster-red` variable; other colors use the core palette.
 The mascot panel starts directly with its headline; there is no club label or
@@ -506,8 +519,8 @@ field, matching the reference's flowing stripe pattern rather than radial rays.
 the mascot SVG. They rise only 110 SVG units within a narrow clipped area above
 the cup, following its tilt and bob. White glints, 3–6s durations, staggered
 negative delays, and 4–6-unit sideways drift keep the fizz local to the cup.
-There are no bubbles across the poster background. They only animate in Register mode, pause
-in hidden tabs and on pagehide, and are omitted for reduced motion. The existing
+There are no bubbles across the poster background. They only animate in desktop Register mode, pause
+in compact layouts, hidden tabs and on pagehide, and are omitted for reduced motion. The existing
 grain, lighting, layout, copy, character, and switch treatment remain intact.
 
 `_AuthPosterBackdrop` repeats eight curved SVG rays behind the Login mascot
@@ -528,7 +541,7 @@ reset the scene. Reduced motion shows static, complete artwork. The bespoke
 scene rules live in the hand-written `wwwroot/css/hero.css`; no generated CSS
 is edited.
 
-Switching uses a 0.9s GSAP sequence: both panels slide with `power3.inOut`, the
+Desktop switching uses a 0.9s GSAP sequence: both panels slide with `power3.inOut`, the
 poster corners swell and settle, red rays bend while the green wave field reveals, and
 Poppy's silhouette morphs into the cup over 0.72s. Matching SVG path command
 topology allows actual `d` interpolation with GSAP core; no extra plugin is
@@ -543,18 +556,49 @@ bfcache restores its listeners and motion. Reduced motion or missing GSAP sets
 the correct artwork immediately, retaining the existing CSS panel fallback.
 
 `/LoginRegister` initially shows Poppy and a Register switch on the poster left half,
-with Login on the white right half. Selecting Register slides the poster panel to
+with Login on the paper right half. Selecting Register slides the poster panel to
 the right and form surface to the left (0.9s GSAP, 720ms CSS fallback); its switch becomes
 Login. Only the selected form is visible and interactive. Inactive panels use
-`inert` and `aria-hidden`, and mode changes are announced. The form grid reserves
-space for the taller panel so the card stays steady. Values survive switching;
-shown passwords are masked again. Login has email, password, Show/Hide and Remember
-me. On phones the mascot stays above the selected form; reduced motion switches
-instantly. Without JavaScript both form sections remain readable.
+`inert` and `aria-hidden`, and mode changes are announced. From 1024px the form grid
+reserves space for the taller panel so the card stays steady. Values survive switching;
+shown passwords are masked again. Login uses a left-aligned, sentence-case
+"Welcome back." heading in bold system sans, with "Sign into your account below."
+underneath. Email and password are visible together in white, softly shadowed
+16px-radius fields with user/lock icons and accessible labels. Password keeps
+its Show/Hide control. The ink Sign In button spans the full form width, with
+Forgot password? on a separate line above it, aligned to the right.
+A ruled OR divider leads to a full-width white
+Google action with a colored G icon and "Sign in with Google" label.
+Login actions retain the shared goo motion with fills matching each button's
+base color: ink for Sign In and white for Google. Their text and backgrounds
+keep the same colors on hover and keyboard focus.
+Register follows the same left-aligned structure on a paper background, with a
+sentence-case, black-weight "Let's get started." heading and
+"Create your account details below." copy.
+Its full name, email, password and confirmation fields use user, mail and lock
+icons, accessible hidden labels, and white, borderless surfaces with soft shadows
+and 16px corners. Password visibility and confirmation validation remain available.
+A required privacy checkbox links to the existing Privacy page in a separate
+tab. Privacy acknowledgement and Sign up share a compact group with a 4px gap;
+the checkbox row stays 44px tall with vertically centered content.
+The full-width Sign up action sits above a ruled OR divider leading to Sign up
+with Google in a white, softly outlined and shadowed button with ink text.
+Register's Sign up and Google buttons match the Login buttons' styling and
+motion, including the same shadows. Their goo fills match their base colors
+(ink and white respectively), keeping the text and background colors constant
+on hover and keyboard focus. The mascot and panel-switch motion stay intact.
+Form-side account-switch prompts are omitted. The poster's Register/Login
+button switches between the forms on desktop; the compact toggle switches them
+on mobile and small tablets. Both controls stay in sync, and resizing transfers
+keyboard focus if its control becomes hidden.
+Google feedback is scoped to the selected form. Both Google actions remain
+local previews, and the existing Privacy page is still placeholder content.
+Reduced motion switches instantly. Without JavaScript the compact toggle is
+hidden and both form sections remain readable.
 The cream popcorn mascot is layered SVG in `_PopcornMascot`; its shaded puffs and
-glossy eyes use existing palette tokens. Both forms share one card with a 32px outer edge and clay
+glossy eyes use existing palette tokens. Both forms share one card with a 28px outer edge and clay
 shadow. Desktop uses equal-width, stretched columns with no gap or rounded
-internal corners. On smaller screens the two halves stack within the same card.
+internal corners. Mobile and small tablets show only the toggle and selected form.
 Poppy springs into place with `back.out(1.8)`. White eyeballs follow the mouse
 with a smaller offset than the clipped pupils, with 360ms and 260ms signature-out
 easing respectively. The body settles with the same easing over 500ms. Mouse
@@ -576,11 +620,40 @@ timers and listeners are cleaned up on pagehide and restored on bfcache return.
 The entire card rises while its corners settle from 64px, title letters rise through
 masks, and fields stagger up. Focused inputs use a teal border, white fill and
 soft cyan ring; keyboard focus also has a clear teal outline. The submit button
-uses the shared goo treatment. Reduced motion shows the final state immediately;
+uses the shared goo treatment. Login actions keep their labels centered without
+a trailing arrow. Reduced motion shows the final state immediately;
 the 3s reveal guard and animation cleanup also apply. Password visibility and
 native form validation work independently of GSAP. Each form validates independently.
-This is UI only: Login and Register submissions show an unavailable message and
-do not transmit or store account details; Remember me is not persisted yet.
+This is UI only: Login, Register and Google sign-in show an
+unavailable message and do not transmit or store account details.
+The Google action works independently of email/password validation and does not
+start an OAuth flow.
+
+### 8.20 Forgot password — `forgot-password.js`
+
+`/Forgotpassword` uses `_HeroLayout`, the shared marquee and `_AccountFooter`
+(also used by Login/Register). A single 480px-wide paper card is centered below
+the navbar on a cream viewport, with 28px corners, clay shadow, and a fine ink
+outline. It contains the sentence-case "Forgot your password?" heading, an
+email field, a full-width Send reset link action, and Back to login underneath.
+The 48px white email input and ink/cream button match the account forms. Goo
+motion preserves the button's colors, including on keyboard focus. The card
+rises while its corners settle, title characters unmask, and fields stagger up;
+reduced motion, missing libraries and the 3s reveal guard leave content usable.
+Login's Forgot password link navigates here without requiring JavaScript.
+The MVC form validates a required email (up to 254 characters) and uses an
+anti-forgery token. Valid submissions show an unavailable status: no reset token
+is created and no email is sent until an account/email service is implemented.
+
+### 8.21 Reset password preview
+
+`/Resetpassword` is a separate UI preview using the same centered 480px card,
+cream background, marquee, navbar, footer and guarded entrance as Forgot password.
+It displays "Reset your password", New password and Confirm new password fields,
+a full-width Reset password button, and Back to login underneath. Password fields
+are masked. Both buttons are presentation-only `type="button"` controls: there
+is no form submission, password update, token handling, storage or navigation
+from this preview. No recovery flow links to this page yet.
 
 ---
 

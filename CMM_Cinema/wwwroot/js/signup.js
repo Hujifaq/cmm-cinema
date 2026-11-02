@@ -39,6 +39,14 @@
     });
     loginForm.querySelector('[data-login-submit]').disabled = false;
   }
+  root.querySelectorAll('[data-google-login]').forEach(googleLogin => {
+    const googleStatus = googleLogin.closest('[data-auth-view]').querySelector('[data-google-login-status]');
+    googleLogin.disabled = false;
+    googleLogin.addEventListener('click', () => {
+      googleStatus.textContent = 'Google sign-in is not available yet. Please check back soon.';
+      googleStatus.hidden = false;
+    });
+  });
   root.querySelectorAll('[data-password-toggle]').forEach(button => {
     const input = document.getElementById(button.getAttribute('aria-controls'));
     const label = input === confirmation ? 'confirm password' : 'password';
@@ -58,6 +66,9 @@
 
   const card = root.querySelector('[data-signup-card]');
   const switchButton = root.querySelector('[data-auth-switch]');
+  const compactToggle = root.querySelector('[data-auth-mode-toggle]');
+  const modeButtons = [...root.querySelectorAll('[data-auth-mode-button]')];
+  const wide = window.matchMedia('(min-width: 1024px)');
   const views = [...root.querySelectorAll('[data-auth-view]')];
   const poster = (() => {
     const art = root.querySelector('[data-signup-art]');
@@ -66,7 +77,6 @@
     const bodyLayers = [...root.querySelectorAll('[data-mascot-body]')];
     const ray = root.querySelector('[data-poster-ray]');
     if (!card || !art || !surface || !body || !ray) return { change() {} };
-    const wide = window.matchMedia('(min-width: 1024px)');
     const cupDetails = [...root.querySelectorAll('[data-mascot-cup-details]')];
     const popcornDetails = root.querySelector('[data-mascot-popcorn-details]');
     const paints = [...root.querySelectorAll('[data-poster-paint]')];
@@ -86,7 +96,7 @@
     };
     const startIdle = () => {
       stopIdle();
-      if (!gsap || reduced.matches || document.hidden || card.dataset.authMode !== 'register') return;
+      if (!gsap || !wide.matches || reduced.matches || document.hidden || card.dataset.authMode !== 'register') return;
       idle = gsap.to(idleLayer, {
         y: -4, rotation: 1.2, transformOrigin: '50% 90%',
         duration: 2.1, repeat: -1, yoyo: true, ease: 'sine.inOut'
@@ -110,7 +120,7 @@
       stopIdle();
       const mode = card.dataset.authMode;
       const cup = mode === 'register';
-      art.toggleAttribute('data-soda-paused', !resumeIdle || document.hidden);
+      art.toggleAttribute('data-soda-paused', !wide.matches || !resumeIdle || document.hidden);
       setCopy(mode);
       bodyLayers.forEach(layer => layer.setAttribute('d', body.dataset[cup ? 'shapeRegister' : 'shapeLogin']));
       ray.setAttribute('d', ray.dataset[cup ? 'shapeRegister' : 'shapeLogin']);
@@ -136,7 +146,7 @@
       if (resumeIdle) startIdle();
     };
     const change = (mode, animate) => {
-      if (!gsap || reduced.matches || document.hidden || !animate) return settle();
+      if (!gsap || !wide.matches || reduced.matches || document.hidden || !animate) return settle();
       motion?.kill();
       stopIdle();
       setCopy(mode);
@@ -183,12 +193,14 @@
     return { change };
   })();
   if (card && switchButton && views.length === 2) {
+    const visibleSwitch = mode => wide.matches ? switchButton : modeButtons.find(button => button.dataset.authModeButton === mode);
     const switchMode = (mode, announce = true) => {
       if (mode !== 'login' && mode !== 'register') return;
       const previousMode = card.dataset.authMode;
+      if (announce && previousMode === mode) return;
       const outgoing = views.find(view => view.hasAttribute('data-active'));
       // Move focus before making an outgoing form inert; never discard field values.
-      if (outgoing?.contains(document.activeElement)) switchButton.focus({ preventScroll: true });
+      if (outgoing?.contains(document.activeElement)) visibleSwitch(mode)?.focus({ preventScroll: true });
       root.querySelectorAll('[data-password-toggle]').forEach(button => {
         document.getElementById(button.getAttribute('aria-controls')).type = 'password';
         button.textContent = 'Show';
@@ -202,6 +214,7 @@
         view.setAttribute('aria-hidden', String(!active));
       });
       card.dataset.authMode = mode;
+      modeButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.authModeButton === mode)));
       poster.change(mode, announce && previousMode !== mode);
       const next = mode === 'login' ? 'register' : 'login';
       const label = next === 'register' ? 'Register' : 'Login';
@@ -212,6 +225,20 @@
       root.dispatchEvent(new Event('cinema:authchange'));
     };
     switchButton.addEventListener('click', () => switchMode(switchButton.dataset.authSwitch));
+    modeButtons.forEach(button => button.addEventListener('click', () => switchMode(button.dataset.authModeButton)));
+    const syncSwitchFocus = () => {
+      const active = document.activeElement;
+      const hiddenSwitchHasFocus = wide.matches
+        ? compactToggle?.contains(active)
+        : root.querySelector('[data-signup-art]')?.contains(active);
+      if (hiddenSwitchHasFocus) visibleSwitch(card.dataset.authMode)?.focus({ preventScroll: true });
+    };
+    wide.addEventListener('change', syncSwitchFocus);
+    window.addEventListener('pagehide', () => wide.removeEventListener('change', syncSwitchFocus));
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) wide.addEventListener('change', syncSwitchFocus);
+    });
+    if (compactToggle) compactToggle.hidden = false;
     switchButton.hidden = false;
     switchMode('login', false);
     card.setAttribute('data-auth-ready', '');

@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "dotnet watch --no-hot-reload",
     "vendor:sync": "node scripts/sync-swiper.cjs",
     "postinstall": "npm run vendor:sync",
     "test": "node --test tests/*.test.cjs",
