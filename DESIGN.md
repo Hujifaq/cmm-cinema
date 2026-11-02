@@ -113,8 +113,15 @@ never repeating the previous one. Set via the CSS variable `--highlight-color`.
 - News "Read more" (`news.js`): `#34d399 #f472b6 #fb923c #60a5fa #a78bfa #facc15`
 - Default when unset: `#fde047` (yellow).
 
-These pastel/vivid marker colors are the **only** place colors outside the core
-palette are allowed.
+Outside the core palette, these marker colors and the account page's pink clay
+artwork are allowed. The artwork palette uses `cinema-clay-blush` (`#ffd1e3`),
+`cinema-clay-pink` (`#ee91bd`), and `cinema-clay-rose` (`#b85b8c`), defined in
+`Styles/tailwind.css` and reserved for decorative account artwork.
+The account poster also permits `cinema-poster-red` (`#ff2638`) for its vivid
+red rays and accents. This does not change the shared `cinema-brick` token.
+The Register poster uses `cinema-poster-green` (`#63b879`) for its field and
+`cinema-poster-peach` (`#ffe4cc`) for its peach-cream waves. Its cup body uses
+`cinema-poster-red` with cream highlights and ink shading.
 
 ### 3.5 Drawn poster themes
 
@@ -132,6 +139,8 @@ at the bottom + a rating pill top-left. Add new themes in the same style
 - **Font:** the system sans stack (`font-sans`). The hero logotype and Movies
   page tabs use `"Arial Black", "Helvetica Neue", Arial, sans-serif`. Do not add
   web fonts.
+- **Account poster accents:** Georgia italic / Times New Roman italic for the
+  short "freshly" and "made for movie nights" lines; keep forms in system sans.
 - **Display headings:** `font-black uppercase tracking-tighter leading-[0.9]`
   (or `leading-none`).
   - Page titles: `text-5xl sm:text-6xl lg:text-7xl`
@@ -466,6 +475,112 @@ scrolled into view (1.25s, 50ms stagger), and on hover letters near the cursor
   `bg-cinema-ink/[0.07]` pill.
 - Quick-book chevron rotates 180° with the springy curve.
 - Smooth scrolling everywhere via Lenis (`lerp: 0.14`), off for reduced motion.
+
+### 8.19 Signup — `signup.js`
+
+The account page centers a compact card in a cream viewport. Its container is
+1120px including side padding (1040px card on desktop), with 44px pill inputs,
+48px actions and restrained 36–48px form headings. The mascot panel uses a
+retro snack-poster composition: a cream and softened-red curved-ray SVG backdrop,
+arched black-weight "POPPED" lettering, a sun-yellow "freshly" accent, and Poppy
+centered among outlined cream sparkles. Georgia italic provides the printed
+script-like accents using system fonts, with no font downloads. A "made for
+movie nights" footer sits above the single Register/Login pill, without an extra
+caption or surrounding box in either mode. On phones the heading and mascot sit side by
+side above the footer to keep the artwork compact. The poster's red accents use
+the dedicated `cinema-poster-red` token mixed with 18% ink in the artwork-scoped
+`--auth-poster-red` variable; other colors use the core palette.
+The mascot panel starts directly with its headline; there is no club label or
+"Admit you" badge above it.
+
+Register changes the right-hand poster to a green/cream snack-poster design
+with "ice cold DRINKS" lettering and a single water cup mascot. Its tapered red
+body, subtle cream band, striped straw, lid, and gloved limbs share Poppy's layered
+SVG and face; there are no additional food characters. The cup gently bobs and
+leans on a 2.1s GSAP yoyo, independently of the pointer-responsive body and eyes.
+It shares Poppy's blinking, focus attention, password privacy, and error reactions.
+Its background uses six broad, irregular peach-cream waves across a solid green
+field, matching the reference's flowing stripe pattern rather than radial rays.
+`_CupSodaBubbles` anchors 24 translucent bubbles with 4–10 SVG-unit radii
+(twice their original size) and proportionate white glints at the cup's lid inside
+the mascot SVG. They rise only 110 SVG units within a narrow clipped area above
+the cup, following its tilt and bob. White glints, 3–6s durations, staggered
+negative delays, and 4–6-unit sideways drift keep the fizz local to the cup.
+There are no bubbles across the poster background. They only animate in Register mode, pause
+in hidden tabs and on pagehide, and are omitted for reduced motion. The existing
+grain, lighting, layout, copy, character, and switch treatment remain intact.
+
+`_AuthPosterBackdrop` repeats eight curved SVG rays behind the Login mascot
+panel; Register uses the broad wave field described above. The backdrop replaces
+the displayed clay tube without changing Poppy's layered SVG.
+The rays hold the softened red through 50% of their radial gradient before
+shading into a red/ink blend at 90% and near-black ink at the outer edges.
+An 18% upper-left light wash and restrained edge shading keep the red from
+looking overly bright. Static monochrome SVG film grain uses 28% multiply,
+0.58 base frequency, and a 2.4 contrast slope for larger, more visible texture.
+Grain only textures the backdrop; lettering, Poppy's face, and controls stay
+clear. A soft cast shadow beneath Poppy and fine inset highlights on the panel
+and switch give the composition depth without additional animation.
+The swirl does not spin continuously. Fine mouse pointers shift the backdrop,
+Poppy, and foreground sparkles at distinct depths with 700/550/450ms
+signature-out easing. Pointer exit, mode switches, hidden tabs, and pagehide
+reset the scene. Reduced motion shows static, complete artwork. The bespoke
+scene rules live in the hand-written `wwwroot/css/hero.css`; no generated CSS
+is edited.
+
+Switching uses a 0.9s GSAP sequence: both panels slide with `power3.inOut`, the
+poster corners swell and settle, red rays bend while the green wave field reveals, and
+Poppy's silhouette morphs into the cup over 0.72s. Matching SVG path command
+topology allows actual `d` interpolation with GSAP core; no extra plugin is
+required. A red cup-body layer morphs alongside the cream base and fades in with
+the cup details, preserving Poppy's cream appearance on Login. Cup details reveal
+as popcorn details disappear, and the character
+squashes, leans, and settles with `back.out(1.6)`. The same face remains visible.
+Rapid toggles kill the previous timeline and retarget the current geometry.
+GSAP takes ownership of panel transforms only while motion is allowed. Resizing,
+hidden tabs, and pagehide settle the requested state and stop the idle tween;
+bfcache restores its listeners and motion. Reduced motion or missing GSAP sets
+the correct artwork immediately, retaining the existing CSS panel fallback.
+
+`/LoginRegister` initially shows Poppy and a Register switch on the poster left half,
+with Login on the white right half. Selecting Register slides the poster panel to
+the right and form surface to the left (0.9s GSAP, 720ms CSS fallback); its switch becomes
+Login. Only the selected form is visible and interactive. Inactive panels use
+`inert` and `aria-hidden`, and mode changes are announced. The form grid reserves
+space for the taller panel so the card stays steady. Values survive switching;
+shown passwords are masked again. Login has email, password, Show/Hide and Remember
+me. On phones the mascot stays above the selected form; reduced motion switches
+instantly. Without JavaScript both form sections remain readable.
+The cream popcorn mascot is layered SVG in `_PopcornMascot`; its shaded puffs and
+glossy eyes use existing palette tokens. Both forms share one card with a 32px outer edge and clay
+shadow. Desktop uses equal-width, stretched columns with no gap or rounded
+internal corners. On smaller screens the two halves stack within the same card.
+Poppy springs into place with `back.out(1.8)`. White eyeballs follow the mouse
+with a smaller offset than the clipped pupils, with 360ms and 260ms signature-out
+easing respectively. The body settles with the same easing over 500ms. Mouse
+tracking also moves the small white highlights independently inside each dark
+pupil (9px horizontal / 11px vertical, 120ms signature-out). The white foreground
+leads the dark pupil (6px / 4.5px), while the rear eye shell (2.5px / 1.5px) and
+body trail behind, producing parallax on movement and direction changes. Separate pupil clips
+keep those highlights inside the dark eye, rather than fixed to its surface. Mouse
+tracking stays active while fields are focused; pointer exit returns attention to
+the focused field. Tracking measures the stable wrapper to avoid feedback jitter.
+Random blinks wait 3.2–6s, close over 90ms and reopen over 240ms. Blink timers pause
+on hidden tabs and while a password is shown, and are disabled for reduced motion.
+Expression fades also share signature-out easing. Revealing any
+password on either side closes both eyes until all passwords are hidden again. Invalid password
+fields trigger a short head shake and concerned mouth on blur or submission,
+never on each keystroke. Editing clears the reaction. These states also work
+without GSAP. Reduced motion keeps gaze still and changes expressions instantly;
+timers and listeners are cleaned up on pagehide and restored on bfcache return.
+The entire card rises while its corners settle from 64px, title letters rise through
+masks, and fields stagger up. Focused inputs use a teal border, white fill and
+soft cyan ring; keyboard focus also has a clear teal outline. The submit button
+uses the shared goo treatment. Reduced motion shows the final state immediately;
+the 3s reveal guard and animation cleanup also apply. Password visibility and
+native form validation work independently of GSAP. Each form validates independently.
+This is UI only: Login and Register submissions show an unavailable message and
+do not transmit or store account details; Remember me is not persisted yet.
 
 ---
 
