@@ -4,17 +4,24 @@
     var inputClass = "block min-h-[44px] sm:min-h-12 w-full min-w-0 rounded-2xl border-0 bg-white py-3 pl-10 pr-5 font-sans text-base sm:text-sm text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:outline-none";
     var loginInputClass = "block min-h-[44px] sm:min-h-12 w-full min-w-0 rounded-2xl border-0 bg-white py-3 pl-10 pr-5 font-sans text-base sm:text-sm text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:outline-none";
     var labelClass = "sr-only";
+    var modeButtonClass = "relative z-10 inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-4 py-2 font-sans text-sm font-bold text-cinema-ink/60 transition-colors duration-200 aria-pressed:text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink motion-reduce:transition-none";
 }
 
 @section TopBanner {
     @await Html.PartialAsync("_CinemaMarquee")
 }
 
-<section class="auth-page flex min-h-[calc(100svh_-_36px)] items-center overflow-x-clip bg-cinema-paper pb-12 pt-28 font-sans text-cinema-ink md:pb-14 md:pt-32" aria-labelledby="account-title" data-signup-page>
+<section class="auth-page flex min-h-[calc(100svh_-_36px)] items-center overflow-x-clip bg-cinema-paper pb-12 pt-32 font-sans text-cinema-ink md:pb-14 md:pt-36" aria-labelledby="account-title" data-signup-page>
     <h1 class="sr-only" id="account-title">Login or register for CMM Cinema</h1>
     @await Html.PartialAsync("_GooFilter")
     <div class="mx-auto w-full max-w-[980px] px-5 md:px-8">
-        <div class="auth-card relative grid items-stretch overflow-hidden rounded-[28px] bg-white shadow-clay ring-1 ring-cinema-ink/[0.05] lg:grid-cols-2" data-signup-card data-auth-mode="login">
+        <div class="auth-card relative mx-auto grid w-full max-w-[560px] items-stretch overflow-hidden rounded-[28px] bg-white shadow-clay ring-1 ring-cinema-ink/[0.05] lg:max-w-none lg:grid-cols-2" data-signup-card data-auth-mode="login">
+            <div class="bg-cinema-paper px-5 pt-5 sm:px-7 sm:pt-7 lg:hidden" data-auth-mode-toggle hidden>
+                <div class="auth-mode-toggle relative isolate grid grid-cols-2 rounded-full bg-cinema-ink/[0.06] p-1" role="group" aria-label="Account form">
+                    <button class="@modeButtonClass" type="button" aria-controls="auth-login-panel" aria-pressed="true" data-auth-mode-button="login">Login</button>
+                    <button class="@modeButtonClass" type="button" aria-controls="auth-register-panel" aria-pressed="false" data-auth-mode-button="register">Register</button>
+                </div>
+            </div>
             <aside class="auth-art signup-art auth-poster relative isolate z-10 min-w-0 overflow-hidden p-5 sm:p-7 lg:p-7" aria-label="Your movie buddy" data-signup-art>
                 @await Html.PartialAsync("_AuthPosterBackdrop")
                 <div class="auth-poster-heading" data-reveal-up>

@@ -483,6 +483,13 @@ scrolled into view (1.25s, 50ms stagger), and on hover letters near the cursor
 The account page centers a compact card in a cream viewport. Its container is
 980px including side padding (916px card on desktop). Panels use 20px padding
 on phones and 28px from 640px, with tighter 12px form gaps and 24px heading gaps.
+The card uses equal side-by-side columns from 1024px. Below 1024px the mascot
+panel is hidden, and a segmented Login / Register toggle sits above the selected
+form within a centered 560px maximum width. Its 44px controls expose their selected
+state with `aria-pressed`; an ink pill slides between them over 280ms with
+signature-out easing, instantly for reduced motion. The inactive compact form
+is positioned out of flow so Login does not reserve Register's extra height.
+Account page top padding leaves room for the floating navbar.
 Rounded-rectangle inputs are at least 44px on phones and 48px from 640px;
 actions retain at least 44px touch targets. Form headings range from 30–36px.
 The mascot stage caps at 250px, with a 220px desktop minimum height, and its
@@ -493,8 +500,7 @@ arched black-weight "POPPED" lettering, a sun-yellow "freshly" accent, and Poppy
 centered among outlined cream sparkles. Georgia italic provides the printed
 script-like accents using system fonts, with no font downloads. A "made for
 movie nights" footer sits above the single Register/Login pill, without an extra
-caption or surrounding box in either mode. On phones the heading and mascot sit side by
-side above the footer to keep the artwork compact. The poster's red accents use
+caption or surrounding box in either mode. The poster's red accents use
 the dedicated `cinema-poster-red` token mixed with 18% ink in the artwork-scoped
 `--auth-poster-red` variable; other colors use the core palette.
 The mascot panel starts directly with its headline; there is no club label or
@@ -513,8 +519,8 @@ field, matching the reference's flowing stripe pattern rather than radial rays.
 the mascot SVG. They rise only 110 SVG units within a narrow clipped area above
 the cup, following its tilt and bob. White glints, 3–6s durations, staggered
 negative delays, and 4–6-unit sideways drift keep the fizz local to the cup.
-There are no bubbles across the poster background. They only animate in Register mode, pause
-in hidden tabs and on pagehide, and are omitted for reduced motion. The existing
+There are no bubbles across the poster background. They only animate in desktop Register mode, pause
+in compact layouts, hidden tabs and on pagehide, and are omitted for reduced motion. The existing
 grain, lighting, layout, copy, character, and switch treatment remain intact.
 
 `_AuthPosterBackdrop` repeats eight curved SVG rays behind the Login mascot
@@ -535,7 +541,7 @@ reset the scene. Reduced motion shows static, complete artwork. The bespoke
 scene rules live in the hand-written `wwwroot/css/hero.css`; no generated CSS
 is edited.
 
-Switching uses a 0.9s GSAP sequence: both panels slide with `power3.inOut`, the
+Desktop switching uses a 0.9s GSAP sequence: both panels slide with `power3.inOut`, the
 poster corners swell and settle, red rays bend while the green wave field reveals, and
 Poppy's silhouette morphs into the cup over 0.72s. Matching SVG path command
 topology allows actual `d` interpolation with GSAP core; no extra plugin is
@@ -553,8 +559,8 @@ the correct artwork immediately, retaining the existing CSS panel fallback.
 with Login on the paper right half. Selecting Register slides the poster panel to
 the right and form surface to the left (0.9s GSAP, 720ms CSS fallback); its switch becomes
 Login. Only the selected form is visible and interactive. Inactive panels use
-`inert` and `aria-hidden`, and mode changes are announced. The form grid reserves
-space for the taller panel so the card stays steady. Values survive switching;
+`inert` and `aria-hidden`, and mode changes are announced. From 1024px the form grid
+reserves space for the taller panel so the card stays steady. Values survive switching;
 shown passwords are masked again. Login uses a left-aligned, sentence-case
 "Welcome back." heading in bold system sans, with "Sign into your account below."
 underneath. Email and password are visible together in white, softly shadowed
@@ -581,16 +587,18 @@ Register's Sign up and Google buttons match the Login buttons' styling and
 motion, including the same shadows. Their goo fills match their base colors
 (ink and white respectively), keeping the text and background colors constant
 on hover and keyboard focus. The mascot and panel-switch motion stay intact.
-Form-side account-switch prompts are omitted; the poster's Register/Login
-button switches between the forms.
+Form-side account-switch prompts are omitted. The poster's Register/Login
+button switches between the forms on desktop; the compact toggle switches them
+on mobile and small tablets. Both controls stay in sync, and resizing transfers
+keyboard focus if its control becomes hidden.
 Google feedback is scoped to the selected form. Both Google actions remain
 local previews, and the existing Privacy page is still placeholder content.
-On phones the mascot stays above the selected form; reduced motion switches
-instantly. Without JavaScript both form sections remain readable.
+Reduced motion switches instantly. Without JavaScript the compact toggle is
+hidden and both form sections remain readable.
 The cream popcorn mascot is layered SVG in `_PopcornMascot`; its shaded puffs and
 glossy eyes use existing palette tokens. Both forms share one card with a 28px outer edge and clay
 shadow. Desktop uses equal-width, stretched columns with no gap or rounded
-internal corners. On smaller screens the two halves stack within the same card.
+internal corners. Mobile and small tablets show only the toggle and selected form.
 Poppy springs into place with `back.out(1.8)`. White eyeballs follow the mouse
 with a smaller offset than the clipped pupils, with 360ms and 260ms signature-out
 easing respectively. The body settles with the same easing over 500ms. Mouse
