@@ -225,18 +225,15 @@ test('Google sign-in bypasses the email form and reports its preview status', ()
   } finally { ui.dom.window.close(); }
 });
 
-test('Forgot password reports its preview status without requiring login fields', () => {
-  const ui = setup({ mode: 'login' });
+test('Forgot password links to the reset page without requiring JavaScript', () => {
+  const dom = new JSDOM(view);
   try {
-    const login = ui.document.querySelector('[data-login-form]');
-    const forgot = login.querySelector('[data-forgot-password]');
+    const forgot = dom.window.document.querySelector('[data-forgot-password]');
+    assert.equal(forgot.tagName, 'A');
     assert.equal(forgot.hidden, false);
-    assert.equal(login.checkValidity(), false);
-    forgot.click();
-    const status = login.querySelector('[data-login-status]');
-    assert.equal(status.hidden, false);
-    assert.match(status.textContent, /Password reset is not available yet/);
-  } finally { ui.dom.window.close(); }
+    assert.equal(forgot.getAttribute('asp-controller'), 'Forgotpassword');
+    assert.equal(forgot.getAttribute('asp-action'), 'Index');
+  } finally { dom.window.close(); }
 });
 
 test('Register requires privacy acknowledgement and still validates matching passwords', () => {

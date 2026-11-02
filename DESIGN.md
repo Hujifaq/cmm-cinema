@@ -616,10 +616,36 @@ uses the shared goo treatment. Login actions keep their labels centered without
 a trailing arrow. Reduced motion shows the final state immediately;
 the 3s reveal guard and animation cleanup also apply. Password visibility and
 native form validation work independently of GSAP. Each form validates independently.
-This is UI only: Login, Register, password reset and Google sign-in show an
+This is UI only: Login, Register and Google sign-in show an
 unavailable message and do not transmit or store account details.
 The Google action works independently of email/password validation and does not
 start an OAuth flow.
+
+### 8.20 Forgot password — `forgot-password.js`
+
+`/Forgotpassword` uses `_HeroLayout`, the shared marquee and `_AccountFooter`
+(also used by Login/Register). A single 480px-wide paper card is centered below
+the navbar on a cream viewport, with 28px corners, clay shadow, and a fine ink
+outline. It contains the sentence-case "Forgot your password?" heading, an
+email field, a full-width Send reset link action, and Back to login underneath.
+The 48px white email input and ink/cream button match the account forms. Goo
+motion preserves the button's colors, including on keyboard focus. The card
+rises while its corners settle, title characters unmask, and fields stagger up;
+reduced motion, missing libraries and the 3s reveal guard leave content usable.
+Login's Forgot password link navigates here without requiring JavaScript.
+The MVC form validates a required email (up to 254 characters) and uses an
+anti-forgery token. Valid submissions show an unavailable status: no reset token
+is created and no email is sent until an account/email service is implemented.
+
+### 8.21 Reset password preview
+
+`/Resetpassword` is a separate UI preview using the same centered 480px card,
+cream background, marquee, navbar, footer and guarded entrance as Forgot password.
+It displays "Reset your password", New password and Confirm new password fields,
+a full-width Reset password button, and Back to login underneath. Password fields
+are masked. Both buttons are presentation-only `type="button"` controls: there
+is no form submission, password update, token handling, storage or navigation
+from this preview. No recovery flow links to this page yet.
 
 ---
 

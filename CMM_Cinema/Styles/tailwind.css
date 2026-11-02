@@ -353,6 +353,10 @@
   [data-mascot-alert]:not([data-mascot-private], [data-mascot-blinking]) .popcorn-mascot__eyes-open { transform: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
+  :is([data-forgot-password-page], [data-reset-password-page]):not([data-revealed]) :is([data-reset-card], [data-reveal-chars], [data-reveal-up]) {
+    visibility: hidden;
+    animation: movie-detail-unhide 0s 3s forwards;
+  }
   [data-signup-page]:not([data-revealed]) :is([data-signup-card], [data-signup-art], [data-reveal-chars], [data-reveal-up], [data-mascot-entrance]) {
     visibility: hidden;
     animation: movie-detail-unhide 0s 3s forwards;

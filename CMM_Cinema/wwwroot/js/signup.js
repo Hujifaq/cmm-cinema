@@ -38,12 +38,6 @@
       loginStatus.hidden = false;
     });
     loginForm.querySelector('[data-login-submit]').disabled = false;
-    const forgotPassword = loginForm.querySelector('[data-forgot-password]');
-    forgotPassword.hidden = false;
-    forgotPassword.addEventListener('click', () => {
-      loginStatus.textContent = 'Password reset is not available yet. Please check back soon.';
-      loginStatus.hidden = false;
-    });
   }
   root.querySelectorAll('[data-google-login]').forEach(googleLogin => {
     const googleStatus = googleLogin.closest('[data-auth-view]').querySelector('[data-google-login-status]');
