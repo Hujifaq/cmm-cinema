@@ -1,0 +1,23 @@
+@model BookingDetailsViewModel
+@{
+    ViewData["Title"] = "Booking Confirmed";
+}
+
+<div class="bk-flow bk-success">
+    <div class="bk-success-card">
+        <span class="bk-success-stamp" aria-hidden="true">✓</span>
+        <p class="bk-kicker">✦ &nbsp; CMM Cinema</p>
+        <h1>You're <em>all set!</em></h1>
+        <p>Demo booking confirmed. This is a sample confirmation only: it is not a valid cinema ticket and no money was charged.</p>
+        <div class="bk-confirm-id">Demo reference <strong>@Model.Booking.Reference</strong></div>
+    </div>
+
+    <div class="bk-confirm-order">
+        @await Html.PartialAsync("_OrderCard", Model)
+    </div>
+
+    <div class="bk-success-actions">
+        <a class="bk-primary" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">Book another screening <span aria-hidden="true">→</span></a>
+        <a class="bk-secondary" href="/">Return to homepage</a>
+    </div>
+</div>

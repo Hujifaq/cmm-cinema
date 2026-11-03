@@ -5,7 +5,9 @@
     var eyebrow = Model.Status == MovieStatus.Upcoming
         ? "Coming Soon" + (Model.ReleaseDate is { } date ? " · " + date.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")
         : "Now Showing";
-    var buttons = new[] { (Label: "Book Now!", Href: "#", Accent: "bg-cinema-brick"), (Label: "Showtimes", Href: "#", Accent: "bg-cinema-logo") };
+    
+    var bookingHref = Model.Status == MovieStatus.NowShowing ? $"/Booking/Showtimes?movie={Uri.EscapeDataString(Model.Slug)}" : null;
+    var buttons = new[] { (Label: "Book Now!", Href: bookingHref ?? "#", Accent: "bg-cinema-brick"), (Label: "Showtimes", Href: bookingHref is null ? "#" : bookingHref + "#screenings-title", Accent: "bg-cinema-logo") };
 }
 
 @section TopBanner {

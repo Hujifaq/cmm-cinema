@@ -1,0 +1,74 @@
+/*
+ * Booking pages: shared page shell.
+ * Page styles live next to this file: showtimes.css (step 1) and checkout.css (steps 2-4 and confirmation).
+ */
+
+.booking-page {
+  min-height: 100vh;
+  padding: 150px clamp(18px, 5vw, 80px) 90px;
+  background: #fff;
+  color: var(--color-cinema-ink);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  color-scheme: light;
+}
+
+.booking-page *,
+.booking-page *::before,
+.booking-page *::after {
+  box-sizing: border-box;
+}
+
+.booking-page :is(button, input, select) {
+  font: inherit;
+}
+
+.booking-page :is(a, button, select) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Low specificity so component colors (buttons, links) win without !important. */
+:where(.booking-page) a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.booking-page button {
+  cursor: pointer;
+}
+
+.booking-page button:disabled {
+  cursor: not-allowed;
+}
+
+.booking-page :is(a, button, select):focus-visible {
+  outline: 3px solid var(--color-cinema-cyan);
+  outline-offset: 4px;
+}
+
+.booking-page :is(.showtimes, .bk-flow) {
+  position: relative;
+  isolation: isolate;
+  max-width: 1290px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1023px) {
+  .booking-page {
+    padding: 128px clamp(18px, 4vw, 40px) 64px;
+  }
+}
+
+@media (max-width: 767px) {
+  .booking-page {
+    padding: 112px 16px 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booking-page * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

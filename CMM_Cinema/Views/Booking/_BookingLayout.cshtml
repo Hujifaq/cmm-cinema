@@ -1,0 +1,22 @@
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = $"{ViewData["Title"]} - CMM Cinema";
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+@* Booking pages share the site layout; their stylesheets and scripts are only loaded here. *@
+<link rel="stylesheet" href="~/css/booking/booking.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/booking/showtimes.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/booking/checkout.css" asp-append-version="true" />
+
+<div class="booking-page">
+    @RenderBody()
+</div>
+
+<script src="~/js/booking/showtimes.js" asp-append-version="true" defer></script>
+<script src="~/js/booking/seat-selection.js" asp-append-version="true" defer></script>
+<script src="~/js/booking/hold-timer.js" asp-append-version="true" defer></script>
+<script src="~/js/booking/payment.js" asp-append-version="true" defer></script>

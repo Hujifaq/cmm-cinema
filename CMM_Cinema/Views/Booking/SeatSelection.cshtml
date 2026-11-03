@@ -1,0 +1,95 @@
+@model SeatSelectionViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Choose Seats";
+    var culture = CultureInfo.InvariantCulture;
+    var showtime = Model.Showtime;
+}
+
+<div class="bk-flow">
+    @await Html.PartialAsync("_BookingSteps", 2)
+
+    <header class="bk-heading">
+        <div>
+            <p class="bk-kicker">✦ &nbsp; Step 02 / The best seat in the house</p>
+            <h1>Make yourself <em>comfy.</em></h1>
+            <p>Pick your favorite seats. The big screen is waiting.</p>
+            <a class="bk-secondary bk-seat-back" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">← Back</a>
+        </div>
+        <img class="bk-heading-art bk-heading-art--glasses" src="~/images/hero/glasses.svg" alt="" aria-hidden="true" />
+    </header>
+
+    <div class="bk-grid bk-seat-layout">
+        <section class="bk-panel bk-seat-panel" aria-labelledby="seat-heading">
+            <div class="bk-panel-title">
+                <div>
+                    <p class="bk-kicker">Your screening</p>
+                    <h2 id="seat-heading">@Model.Movie.Title</h2>
+                    <p>@Model.Cinema.Name · @showtime.Date.ToString("ddd dd MMM", culture) · @showtime.Time.ToString("HH:mm", culture)</p>
+                </div>
+                <span class="bk-tag">@showtime.Format</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Error))
+            {
+                <p class="bk-alert" role="alert">@Model.Error</p>
+            }
+
+            <div class="bk-screen" aria-hidden="true"><span>Screen</span></div>
+
+            <form method="post" asp-action="Reserve" data-seat-form data-price="@Model.PricePerSeat.ToString(culture)" data-max="8">
+                <input type="hidden" name="showtimeId" value="@showtime.Id" />
+
+                <div class="bk-seat-scroller" role="group" aria-label="Choose seats, rows A to J">
+                    <div class="bk-seat-map">
+                        @foreach (var row in Model.Seats.GroupBy(seat => seat.Row))
+                        {
+                            <div class="bk-seat-row">
+                                <span class="bk-row-label">@row.Key</span>
+                                @foreach (var seat in row)
+                                {
+                                    var sold = seat.State == SeatState.Sold;
+                                    <label class="bk-seat @(sold ? "bk-seat--sold" : "bk-seat--available")" title="Seat @seat.Id, @seat.State">
+                                        <input type="checkbox" name="seatIds" value="@seat.Id" aria-label="Seat @seat.Id, @seat.State" disabled="@sold" />
+                                        <span>@seat.Number</span>
+                                    </label>
+                                }
+                                <span class="bk-row-label">@row.Key</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="bk-legend" aria-label="Seat states">
+                    <span><i class="bk-legend--available"></i> Available</span>
+                    <span><i class="bk-legend--selected"></i> Selected</span>
+                    <span><i class="bk-legend--sold"></i> Sold</span>
+                </div>
+                <p class="bk-seat-feedback" role="status" data-seat-feedback>Please select your seats (maximum 8).</p>
+
+                <div class="bk-seat-bottom">
+                    <div><small>Selected seats</small><strong data-selected-seats>None yet</strong></div>
+                    <div class="bk-price"><small>Total</small><strong data-seat-total>฿0</strong></div>
+                    <button class="bk-primary" type="submit" data-seat-submit disabled>Continue to summary <span aria-hidden="true">→</span></button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="bk-panel bk-show-info">
+            <div class="bk-poster-small" aria-hidden="true">
+                <span>CMM Cinema</span>
+                <strong>@Model.Movie.Title</strong>
+                <b></b>
+            </div>
+            <div class="bk-show-facts">
+                <p class="bk-kicker">You're watching</p>
+                <h2>@Model.Movie.Title</h2>
+                <p>@showtime.Format · @showtime.Language · @Model.Movie.Rating</p>
+                <p>@Model.Movie.Runtime · @Model.Movie.Genre</p>
+            </div>
+            <div class="bk-price-tag">Tickets from <strong>฿@Model.PricePerSeat.ToString("N0", culture)</strong> / seat</div>
+            <p class="bk-muted">Selected seats are held for 10 minutes after you continue. This is a demo, so no payment will be charged.</p>
+            <a class="bk-text-link" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">← Change showtime</a>
+        </aside>
+    </div>
+</div>

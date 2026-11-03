@@ -1,0 +1,32 @@
+@model BookingDetailsViewModel
+@using System.Globalization
+@{
+    var culture = CultureInfo.InvariantCulture;
+    var booking = Model.Booking;
+}
+
+<aside class="bk-ticket" aria-label="Order information">
+    <div class="bk-ticket-top">
+        <p class="bk-kicker">✦ &nbsp; Your movie night</p>
+        <div class="bk-mini-poster" aria-hidden="true">
+            @await Html.PartialAsync("_MoviePoster", Model.Movie)
+        </div>
+        <div class="bk-ticket-movie">
+            <h2>@Model.Movie.Title</h2>
+            <p>@Model.Movie.Rating &nbsp;·&nbsp; @Model.Showtime.Format &nbsp;·&nbsp; @Model.Showtime.Language</p>
+            <p>@Model.Cinema.Name</p>
+        </div>
+    </div>
+
+    <div class="bk-dotted" aria-hidden="true"></div>
+
+    <dl class="bk-receipt-lines">
+        <div><dt>Date</dt><dd>@Model.Showtime.Date.ToString("ddd, dd MMM yyyy", culture)</dd></div>
+        <div><dt>Showtime</dt><dd>@Model.Showtime.Time.ToString("HH:mm", culture)</dd></div>
+        <div><dt>Seats</dt><dd>@string.Join(", ", booking.Seats)</dd></div>
+        <div><dt>Tickets</dt><dd>@booking.Seats.Count × ฿@booking.PricePerSeat.ToString("N0", culture)</dd></div>
+        <div class="bk-total"><dt>Total</dt><dd>฿@booking.Total.ToString("N0", culture)</dd></div>
+    </dl>
+
+    <p class="bk-ticket-note">CMM Cinema · Demo booking</p>
+</aside>

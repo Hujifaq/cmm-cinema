@@ -19,6 +19,9 @@ else
     builder.Services.AddSingleton<IMovieRepository, EmptyMovieRepository>();
 }
 
+// Demo booking flow: showtimes, seat holds and payments are kept in memory until bookings move to D1.
+builder.Services.AddSingleton<IBookingService, DemoBookingService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

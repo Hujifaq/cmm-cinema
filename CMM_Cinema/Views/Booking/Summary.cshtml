@@ -1,0 +1,81 @@
+@model BookingDetailsViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Booking Summary";
+    var culture = CultureInfo.InvariantCulture;
+    var booking = Model.Booking;
+}
+
+<div class="bk-flow">
+    @await Html.PartialAsync("_BookingSteps", 3)
+
+    <header class="bk-heading">
+        <div>
+            <p class="bk-kicker">✦ &nbsp; Step 03 / One last look</p>
+            <h1>All set for <em>the show?</em></h1>
+            <p>Check your movie night details before continuing.</p>
+        </div>
+        <img class="bk-heading-art" src="~/images/hero/star.svg" alt="" aria-hidden="true" />
+    </header>
+
+    <div class="bk-grid">
+        <section class="bk-panel" aria-labelledby="summary-heading">
+            <div class="bk-panel-title">
+                <div>
+                    <p class="bk-kicker">Your booking</p>
+                    <h2 id="summary-heading">Booking summary</h2>
+                </div>
+                <span class="bk-tag">03 / 04</span>
+            </div>
+
+            <div class="bk-summary-feature">
+                <div class="bk-mini-poster bk-mini-poster--large" aria-hidden="true">
+                    @await Html.PartialAsync("_MoviePoster", Model.Movie)
+                </div>
+                <div>
+                    <p class="bk-kicker">Now showing</p>
+                    <h3>@Model.Movie.Title</h3>
+                    <p>@Model.Movie.Rating · @Model.Movie.Genre · @Model.Movie.Runtime</p>
+                    <p>@Model.Cinema.Name</p>
+                </div>
+            </div>
+
+            <div class="bk-details-grid">
+                <div>
+                    <span class="bk-detail-icon" aria-hidden="true">▣</span>
+                    <small>Date & time</small>
+                    <strong>@Model.Showtime.Date.ToString("dd MMM yyyy", culture)<br />@Model.Showtime.Time.ToString("HH:mm", culture)</strong>
+                </div>
+                <div>
+                    <span class="bk-detail-icon" aria-hidden="true">◎</span>
+                    <small>Format</small>
+                    <strong>@Model.Showtime.Format · @Model.Showtime.Language</strong>
+                </div>
+                <div>
+                    <span class="bk-detail-icon" aria-hidden="true">▦</span>
+                    <small>Seats</small>
+                    <strong>@string.Join(", ", booking.Seats)</strong>
+                </div>
+                <div>
+                    <span class="bk-detail-icon" aria-hidden="true">✦</span>
+                    <small>Tickets</small>
+                    <strong>@booking.Seats.Count @(booking.Seats.Count == 1 ? "ticket" : "tickets")</strong>
+                </div>
+            </div>
+
+            <p class="bk-hold" role="status" data-hold-expiry="@booking.ExpiresAt.ToUnixTimeSeconds()">
+                Your seats are held for <b data-countdown>10:00</b>. Complete this demo booking before the timer runs out.
+            </p>
+
+            <div class="bk-actions">
+                <form method="post" asp-action="Cancel">
+                    <input type="hidden" name="bookingId" value="@booking.Id" />
+                    <button class="bk-secondary" type="submit">← Start over</button>
+                </form>
+                <a class="bk-primary" asp-action="Payment" asp-route-bookingId="@booking.Id" data-hold-action>Continue to payment <span aria-hidden="true">→</span></a>
+            </div>
+        </section>
+
+        @await Html.PartialAsync("_OrderCard", Model)
+    </div>
+</div>
