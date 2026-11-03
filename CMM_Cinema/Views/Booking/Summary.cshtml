@@ -1,0 +1,24 @@
+@model CMM_Cinema.ViewModels.Booking.BookingDetailsViewModel
+@using System.Globalization
+@{ ViewData["Title"] = "Booking Summary"; }
+@section Styles { <link rel="stylesheet" href="~/css/booking/flow.css" asp-append-version="true" /> }
+<div class="bk-flow">
+    @await Html.PartialAsync("_BookingSteps", 3)
+    <header class="bk-heading"><div><p class="bk-kicker">✦ &nbsp; STEP 03 / ONE LAST LOOK</p><h1>ALL SET FOR <em>THE SHOW?</em></h1><p>Check your movie night details before continuing.</p></div><img class="bk-heading-star" src="~/images/hero/star.svg" alt="" aria-hidden="true" /></header>
+    <div class="bk-grid">
+        <section class="bk-panel bk-summary-panel" aria-label="Booking summary details">
+            <div class="bk-panel-title"><div><p class="bk-kicker">YOUR BOOKING</p><h2>Booking summary</h2></div><span class="bk-tag">03 / 04</span></div>
+            <div class="bk-summary-feature"><div class="bk-mini-poster bk-mini-poster--large" aria-hidden="true"><span>THE LAST<br />HORIZON</span><b>◉</b></div><div><p class="bk-kicker">NOW SHOWING</p><h3>@Model.Movie.Title</h3><p>@Model.Movie.Rating · @Model.Movie.Genre · @(Model.Movie.DurationMinutes / 60)h @(Model.Movie.DurationMinutes % 60)m</p><p>@Model.Cinema.Name</p></div></div>
+            <div class="bk-details-grid">
+                <div><span class="bk-detail-icon">▣</span><small>Date & time</small><strong>@Model.Showtime.Date.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)<br />@Model.Showtime.Time.ToString("HH:mm")</strong></div>
+                <div><span class="bk-detail-icon">◎</span><small>Format</small><strong>@Model.Showtime.Format · @Model.Showtime.Language</strong></div>
+                <div><span class="bk-detail-icon">▦</span><small>Seats</small><strong>@string.Join(", ", Model.Booking.SeatIds)</strong></div>
+                <div><span class="bk-detail-icon">✦</span><small>Tickets</small><strong>@Model.Booking.SeatIds.Count tickets</strong></div>
+            </div>
+            <p class="bk-hold" data-expiry="@Model.Booking.HoldExpiresAt.ToUnixTimeSeconds()" role="status">Your seats are held for <b data-countdown>10:00</b>. Complete this demo booking before the timer expires.</p>
+            <div class="bk-actions"><form method="post" asp-action="Cancel"><input type="hidden" name="bookingId" value="@Model.Booking.Id" /><button type="submit" class="bk-secondary">← Start over</button></form><a class="bk-primary" asp-action="Payment" asp-route-bookingId="@Model.Booking.Id">Continue to payment <span aria-hidden="true">→</span></a></div>
+        </section>
+        @await Html.PartialAsync("_OrderCard", Model)
+    </div>
+</div>
+@section Scripts { <script src="~/js/booking/hold-timer.js" asp-append-version="true" defer></script> }

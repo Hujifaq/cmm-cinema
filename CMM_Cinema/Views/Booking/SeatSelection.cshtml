@@ -1,0 +1,63 @@
+@model CMM_Cinema.ViewModels.Booking.SeatSelectionViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Choose Seats";
+}
+@section Styles { <link rel="stylesheet" href="~/css/booking/flow.css" asp-append-version="true" /> }
+<div class="bk-flow bk-seats-page">
+    @await Html.PartialAsync("_BookingSteps", 2)
+    <header class="bk-heading">
+        <div>
+            <p class="bk-kicker">✦ &nbsp; STEP 02 / THE BEST SEAT IN THE HOUSE</p>
+            <h1>MAKE YOURSELF <em>COMFY.</em></h1>
+            <p>Pick your favorite seats. The big screen is waiting.</p>
+            <a class="bk-secondary bk-seat-back" asp-action="BackToShowtimes" asp-route-showtimeId="@Model.Showtime.Id" data-back-link>← Back</a>
+        </div>
+        <img src="~/images/hero/glasses.svg" alt="" aria-hidden="true" class="bk-floating-glasses" />
+    </header>
+    <div class="bk-grid bk-seat-layout">
+        <section class="bk-panel bk-seat-panel" aria-labelledby="seat-heading">
+            <div class="bk-panel-title"><div><p class="bk-kicker">YOUR SCREENING</p><h2 id="seat-heading">@Model.Movie.Title</h2><p>@Model.Cinema.Name · @Model.Showtime.Date.ToString("ddd dd MMM", CultureInfo.InvariantCulture) · @Model.Showtime.Time.ToString("HH:mm")</p></div><span class="bk-format">@Model.Showtime.Format</span></div>
+            @if (!string.IsNullOrWhiteSpace(Model.Error)) {<p class="bk-alert" role="alert">@Model.Error</p>}
+            <div class="bk-screen" aria-hidden="true"><span>SCREEN</span></div>
+            <form method="post" asp-action="Reserve" asp-controller="Booking" id="bk-seat-form" data-seat-form data-price="@Model.PricePerSeat" data-max="8">
+                <input type="hidden" name="showtimeId" value="@Model.Showtime.Id" />
+                <div class="bk-seat-scroller" role="group" aria-label="Choose seats, A through J">
+                    <div class="bk-seat-map">
+                        @foreach (var group in Model.Seats.GroupBy(s => s.Row))
+                        {
+                            <div class="bk-seat-row">
+                                <span class="bk-row-label">@group.Key</span>
+                                @foreach (var seat in group)
+                                {
+                                    <label class="bk-seat bk-seat-@seat.State.ToLowerInvariant()" title="Seat @seat.Id — @seat.State">
+                                        <input type="checkbox" name="seatIds" value="@seat.Id" aria-label="Seat @seat.Id, @seat.State" disabled="@(seat.State != "Available")" />
+                                        <span>@seat.Number</span>
+                                    </label>
+                                }
+                                <span class="bk-row-label bk-row-end">@group.Key</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="bk-legend" aria-label="Seat statuses">
+                    <span><i class="bk-legend-available"></i> Available</span><span><i class="bk-legend-selected"></i> Selected</span><span><i class="bk-legend-sold"></i> Sold</span>
+                </div>
+                <p class="bk-seat-feedback" role="status" data-seat-feedback>Please select your seats (maximum 8).</p>
+                <div class="bk-seat-bottom">
+                    <div><small>Selected seats</small><strong data-selected-seats>None yet</strong></div>
+                    <div class="bk-price"><small>Total</small><strong data-seat-total>฿0</strong></div>
+                    <button class="bk-primary" type="submit" data-seat-submit disabled>Continue to summary <span aria-hidden="true">→</span></button>
+                </div>
+            </form>
+        </section>
+        <aside class="bk-panel bk-show-info">
+            <div class="bk-poster-small"><span>CMM CINEMA ORIGINAL</span><strong>@Model.Movie.Title</strong><b aria-hidden="true">◯</b></div>
+            <div class="bk-show-facts"><p class="bk-kicker">YOU'RE WATCHING</p><h2>@Model.Movie.Title</h2><p>@Model.Showtime.Format · @Model.Showtime.Language · @Model.Movie.Rating</p><p>@(Model.Movie.DurationMinutes / 60)h @(Model.Movie.DurationMinutes % 60)m · @Model.Movie.Genre</p></div>
+            <div class="bk-price-tag">Tickets from <strong>฿@Model.PricePerSeat.ToString("N0")</strong> / seat</div>
+            <p class="bk-muted">Selected seats are held for 10 minutes after you continue. This is a demo — no payment will be charged.</p>
+            <a class="bk-text-link" asp-action="BackToShowtimes" asp-route-showtimeId="@Model.Showtime.Id">← Change showtime</a>
+        </aside>
+    </div>
+</div>
+@section Scripts { <script src="~/js/booking/seat-selection.js" asp-append-version="true" defer></script> }

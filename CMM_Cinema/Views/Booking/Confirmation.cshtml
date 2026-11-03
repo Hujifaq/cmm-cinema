@@ -1,0 +1,8 @@
+@model CMM_Cinema.ViewModels.Booking.BookingDetailsViewModel
+@{ ViewData["Title"] = "Demo Booking Confirmed"; var shortId = Model.Booking.Id.ToString("N")[..12].ToUpperInvariant(); }
+@section Styles { <link rel="stylesheet" href="~/css/booking/flow.css" asp-append-version="true" /> }
+<div class="bk-flow bk-success-wrap">
+    <div class="bk-success-card"><span class="bk-success-stamp" aria-hidden="true">✓</span><p class="bk-kicker">✦ &nbsp; CMM CINEMA</p><h1>YOU'RE <em>ALL SET!</em></h1><p>Demo booking confirmed! This is a sample confirmation only — not a valid cinema ticket and no money was charged.</p><div class="bk-confirm-id">Demo reference <strong>@shortId</strong></div></div>
+    <div class="bk-confirm-order">@await Html.PartialAsync("_OrderCard", Model)</div>
+    <div class="bk-success-actions"><a class="bk-primary" asp-action="Showtimes" asp-route-movieId="@Model.Movie.Id">Book another screening <span aria-hidden="true">→</span></a><a class="bk-secondary" asp-controller="Home" asp-action="Index">Return to homepage</a></div>
+</div>

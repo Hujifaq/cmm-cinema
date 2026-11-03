@@ -1,0 +1,175 @@
+@model CMM_Cinema.ViewModels.Booking.ShowtimesViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Showtimes";
+    var culture = CultureInfo.InvariantCulture;
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/booking/showtimes-redesign.css" asp-append-version="true" />
+}
+@section TopBanner {
+    <div class="booking-banner cinema-marquee" data-marquee aria-label="Cinema promotions">
+        <div class="cinema-marquee__track" data-marquee-track>
+            @for (var i = 0; i < 2; i++)
+            {
+                <div class="cinema-marquee__group" aria-hidden="@(i == 1 ? "true" : "false")">
+                    <span>Movie night, made better — tickets from ฿150</span>
+                    <span aria-hidden="true">✦</span>
+                    <span>Student perks — save 20% on your next screening</span>
+                    <span aria-hidden="true">✦</span>
+                </div>
+            }
+        </div>
+        <button class="booking-marquee-toggle" type="button" data-marquee-toggle hidden aria-label="Pause promotions" aria-pressed="false">
+            <span data-marquee-pause-icon>Ⅱ</span><span data-marquee-play-icon hidden>▶</span>
+        </button>
+    </div>
+}
+
+<div class="showtimes" data-showtimes>
+    <div class="booking-mobile-intro">
+        <ol class="booking-steps" aria-label="Booking progress">
+            <li aria-current="step">Showtimes</li><li>Seats</li><li>Summary</li><li>Payment</li>
+        </ol>
+    </div>
+
+    <header class="showtimes-head">
+        <div class="showtimes-head__copy">
+            <p class="showtimes-eyebrow"><span aria-hidden="true">✦</span> THE CMM MOVIE CLUB <span aria-hidden="true">✦</span> BOOK YOUR MAGIC</p>
+            <h1>IT'S <span>SHOWTIME!</span></h1>
+            <p class="showtimes-head__sub">Your next movie moment starts here. Choose a cinema, find your favorite time, and get comfy.</p>
+        </div>
+        <div class="showtimes-head__badge" aria-hidden="true"><strong>01</strong><span>OF 04 STEPS</span></div>
+        <img class="showtimes-head__star" src="~/images/hero/star.svg" alt="" aria-hidden="true" asp-append-version="true" />
+    </header>
+
+    <form method="get" asp-action="Showtimes" class="showtimes-form" data-booking-filters>
+        <input type="hidden" name="movieId" value="@Model.Movie.Id" />
+
+        <div class="booking-poster" role="img" aria-label="Illustrated demo poster for @Model.Movie.Title">
+            <span class="poster-caption">CMM CINEMA <em>ORIGINAL</em></span>
+            <div class="poster-orbit" aria-hidden="true"></div>
+            <div class="poster-planet" aria-hidden="true"></div>
+            <strong>@Model.Movie.Title</strong>
+            <span class="poster-bottom">BEYOND THE EVERYDAY <span aria-hidden="true">✳</span></span>
+        </div>
+
+        <div class="booking-movie-info">
+            <p class="booking-overline">✦ NOW SHOWING</p>
+            <h2>@Model.Movie.Title</h2>
+            <p class="movie-meta"><span>@Model.Movie.Rating</span><span>@(Model.Movie.DurationMinutes / 60)h @(Model.Movie.DurationMinutes % 60)m</span><span>@Model.Movie.Genre</span></p>
+            <p class="movie-synopsis">@Model.Movie.Synopsis</p>
+        </div>
+
+        <label class="booking-field cinema-filter">
+            <span class="booking-field__name"><span class="booking-field__number">01</span> SELECT CINEMA</span>
+            <select name="cinemaId" data-auto-submit>
+                <option value="">All Cinemas</option>
+                @foreach (var cinema in Model.Cinemas)
+                {
+                    <option value="@cinema.Id" selected="@(Model.CinemaId == cinema.Id)">@cinema.Name</option>
+                }
+            </select>
+        </label>
+
+        <fieldset class="booking-dates">
+            <legend><span class="booking-field__number">02</span> PICK A DATE</legend>
+            <div class="date-heading">
+                <button type="button" data-date-scroll="-1" aria-label="Previous dates">←</button>
+                <span>@Model.SelectedDate.ToString("MMMM yyyy", culture)</span>
+                <button type="button" data-date-scroll="1" aria-label="Next dates">→</button>
+            </div>
+            <div class="date-options" data-date-options>
+                @foreach (var date in Model.Dates)
+                {
+                    <label class="date-option">
+                        <input type="radio" name="date" value="@date.ToString("yyyy-MM-dd", culture)" checked="@(date == Model.SelectedDate)" data-auto-submit />
+                        <span>
+                            <small>@date.ToString("ddd", culture).ToUpperInvariant()</small>
+                            <strong>@date.ToString("dd", culture)</strong>
+                            <small>@date.ToString("MMM", culture).ToUpperInvariant()</small>
+                        </span>
+                    </label>
+                }
+            </div>
+        </fieldset>
+
+        <div class="booking-filters">
+            <label class="booking-field">
+                <span class="booking-field__name">FORMAT</span>
+                <select name="format" data-auto-submit>
+                    <option value="">All Formats</option>
+                    @foreach (var format in new[] { "2D", "3D", "IMAX" })
+                    {
+                        <option value="@format" selected="@(Model.Format == format)">@format</option>
+                    }
+                </select>
+            </label>
+            <label class="booking-field language-filter">
+                <span class="booking-field__name">LANGUAGE</span>
+                <select name="language" data-auto-submit>
+                    <option value="">All Languages</option>
+                    @foreach (var language in new[] { "English", "Thai (Sub)" })
+                    {
+                        <option value="@language" selected="@(Model.Language == language)">@language</option>
+                    }
+                </select>
+            </label>
+        </div>
+        <noscript><button class="booking-button" type="submit">Update showtimes</button></noscript>
+    </form>
+
+    <section class="screenings" aria-label="Available showtimes" data-screenings>
+        <div class="screenings-heading"><div><p class="showtimes-eyebrow">CHOOSE A SESSION</p><h2>PICK YOUR <span>TIME.</span></h2></div><span class="screenings-hint">Tap a showtime to choose seats <span aria-hidden="true">↘</span></span></div>
+        @foreach (var cinema in Model.Cinemas.Where(c => Model.Showtimes.Any(s => s.CinemaId == c.Id)))
+        {
+            <section class="cinema-screenings">
+                <div class="cinema-screenings__info">
+                    <p class="cinema-screenings__eyebrow"><span class="cinema-screenings__dot" aria-hidden="true"></span> NOW BOOKING</p>
+                    <h3>@cinema.Name</h3>
+                    <label class="booking-field booking-row-format">
+                        <span class="booking-field__name">SELECT FORMAT</span>
+                        <select data-format-mirror>
+                            <option value="">All Formats</option>
+                            @foreach (var format in new[] { "2D", "3D", "IMAX" })
+                            {
+                                <option value="@format" selected="@(Model.Format == format)">@format</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="screening-groups">
+                    @foreach (var group in Model.Showtimes.Where(s => s.CinemaId == cinema.Id).GroupBy(s => new { s.Format, s.Language }))
+                    {
+                        <div class="screening-group">
+                            <h4>@group.Key.Format <span>·</span> @group.Key.Language</h4>
+                            <div class="screening-times">
+                                @foreach (var show in group)
+                                {
+                                    @if (show.IsAvailable)
+                                    {
+                                        <a class="showtime-button" asp-action="SeatSelection" asp-route-showtimeId="@show.Id" aria-label="@cinema.Name @show.Format @show.Language @show.Time.ToString("HH:mm")">
+                                            <span>@show.Time.ToString("HH:mm")</span><span class="showtime-button__arrow" aria-hidden="true">↗</span>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="showtime-button" disabled aria-label="@show.Time.ToString("HH:mm") unavailable"><span>@show.Time.ToString("HH:mm")</span><small>FULL</small></button>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+        @if (Model.Showtimes.Count == 0)
+        {
+            <p class="booking-empty">No showtimes match your filters. Try another cinema, format or language.</p>
+        }
+    </section>
+    <p class="booking-status" role="status" data-booking-status></p>
+</div>
+@section Scripts {
+    <script src="~/js/booking/showtimes.js" asp-append-version="true" defer></script>
+}

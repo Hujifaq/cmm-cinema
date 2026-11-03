@@ -1,0 +1,13 @@
+@model int
+@{
+    var labels = new[] { "Showtimes", "Seats", "Summary", "Payment" };
+}
+<ol class="bk-steps" aria-label="Booking progress">
+    @for (var i = 1; i <= labels.Length; i++)
+    {
+        <li class="@(i == Model ? "bk-step-current" : (i < Model ? "bk-step-done" : ""))" aria-current="@(i == Model ? "step" : null)">
+            <span class="bk-step-number">@(i < Model ? "✓" : $"0{i}")</span>
+            <span>@labels[i - 1]</span>
+        </li>
+    }
+</ol>

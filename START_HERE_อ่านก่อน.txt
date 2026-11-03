@@ -1,0 +1,49 @@
+CMM CINEMA — โปรเจกต์รวมพร้อมเปิด (Homepage เพื่อน + Booking 4 หน้า)
+===========================================================
+
+ออยไม่ต้องย้ายไฟล์ ไม่ต้องเอา Home/Shared กลับมาใส่เอง และไม่ต้องแก้ CSS ทีละจุด
+แพ็กนี้รวมโค้ดจาก ZIP ของออยแล้ว และเก็บ Homepage, Navigation, Assets และ Promotions ของเพื่อนไว้
+
+เปิดเว็บบน Mac:
+1) แตกไฟล์ CMM_CINEMA_READY.zip
+2) เปิดโฟลเดอร์ CMM_CINEMA_READY ใน VS Code
+3) เปิด Terminal แล้วรัน:
+      dotnet run --project CMM_Cinema/CMM_Cinema.csproj
+4) เมื่อขึ้น 'Now listening on: http://localhost:XXXX' เปิดเบราว์เซอร์ตามลิงก์นั้น
+5) ทดสอบ URL:
+      /                         Homepage ของเพื่อน
+      /Booking/Showtimes         หน้าจองตั๋วของออย
+
+หรือบน Mac ลองดับเบิลคลิกไฟล์ 'RUN_CMM_CINEMA.command' ถ้า macOS อนุญาต
+
+รายการหน้าที่ทำแล้ว:
+- Showtimes: เลือกหนัง/โรง/วันที่/ภาษา/รูปแบบการฉาย และกดเลือกรอบได้
+- Seats: ผังที่นั่ง เลือก 1–8 ที่นั่ง แสดงสถานะว่าง/จองไว้/ขายแล้ว และยอดรวม
+- Summary: แสดงรอบ วัน โรง ที่นั่ง ราคา และเวลาที่เหลือของการกันที่นั่ง
+- Payment: เลือก Card demo หรือ PromptPay demo แล้วจำลองจ่ายสำเร็จ
+- Confirmation: แสดงรหัสอ้างอิงแบบจำลองและรายละเอียดการจอง
+
+สำคัญ: เป็น DEMO BOOKING เท่านั้น
+- ไม่เก็บข้อมูลบัตรหรือเงินจริง
+- ไม่ใช้ PromptPay จริง ไม่มีธุรกรรมเกิดขึ้น
+- ข้อมูลรายการจองและที่นั่งอยู่ในหน่วยความจำของแอป และจะหายเมื่อปิดเซิร์ฟเวอร์
+- ต้องเชื่อมฐานข้อมูล + ระบบสมาชิก + Payment Gateway ก่อนให้ลูกค้าใช้จริง
+
+สถานะการทดสอบ:
+- ตรวจสอบว่าไฟล์ Homepage, Layout, CSS/JS และ View สำหรับ Booking ครบ
+- ผ่านการตรวจ syntax JavaScript ด้วย Node.js
+- ทดสอบการคลิกที่นั่ง คำนวณราคา และจำกัด 8 ที่นั่งใน Chromium จำลอง
+- ตรวจตัวอย่าง layout ที่ความกว้าง 1440, 820, 390 และ 320 px โดยหน้าไม่ล้นแนวนอน
+- ยังไม่ได้ dotnet build หรือทดสอบ Razor จริง เพราะสภาพแวดล้อมจัดทำไม่มี .NET SDK
+  (Mac ของออยที่มี dotnet 10.0.402 สามารถใช้ dotnet watch run เพื่อทดสอบได้)
+
+เมื่อเพื่อนต้องการรวม GitHub ให้ใช้ไฟล์รายการแก้ไขใน CHANGELOG_BOOKING_TH.md
+
+อัปเดต 17 ต.ค. 2026 (FIXED v2):
+- แก้ C# compiler error CS1628 ที่ Services/Booking/DemoBookingService.cs
+  สาเหตุ: ใช้ out parameter 'booking' จากใน lambda 
+  วิธีแก้: คัดลอก reference ไปยัง local variable ก่อนตรวจสอบที่นั่ง
+- ตั้งค่า RUN_CMM_CINEMA.command ให้ใช้ dotnet run แทน dotnet watch run
+  เพื่อเลี่ยงข้อความ watch/staticwebassets ระหว่างทดสอบครั้งแรก
+- แตก ZIP นี้เป็นโฟลเดอร์ใหม่ ไม่ต้องวางทับของเก่าหรือย้ายไฟล์เอง
+- โปรเจกต์จัดทำโดยไม่มี .NET SDK ในระบบทดสอบ จึงยังต้องตรวจ build จริงบน Mac ของออย

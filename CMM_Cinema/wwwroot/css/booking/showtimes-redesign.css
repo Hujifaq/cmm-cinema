@@ -1,0 +1,224 @@
+/*
+ * CMM CINEMA · Showtimes art direction (standalone page stylesheet)
+ * Scoped to Showtimes; loaded AFTER existing booking.css by its Razor view.
+ * Palette and shared navbar/assets come from the current Homepage.
+ */
+.booking-page {
+  color: #071c1e;
+  background: #fff;
+}
+.booking-page .booking-main { max-width: 1500px; min-height: 78vh; padding: 145px clamp(20px,5.2vw,84px) 82px; }
+.showtimes { max-width: 1290px; margin: auto; }
+.showtimes .booking-mobile-intro { display: none; }
+
+/* Hero headline: intentionally typographic like the Homepage. */
+.showtimes-head { isolation:isolate; position:relative; display:flex; align-items:end; justify-content:space-between; gap:22px; min-height:170px; margin:0 0 32px; }
+.showtimes-head__copy { position:relative; z-index:1; max-width:980px; }
+.showtimes-eyebrow { margin:0; font-size:12px; font-weight:800; line-height:1.6; letter-spacing:.2em; color:#56eaed; }
+.showtimes-eyebrow span { padding:0 8px; color:#071c1e; }
+.showtimes-head h1 { font-family:Arial,Helvetica,sans-serif; font-weight:950; font-size:clamp(64px,8vw,116px); line-height:.94; letter-spacing:-.09em; margin:11px 0 16px; color:#071c1e; }
+.showtimes-head h1 span { color:#29d9dd; }
+.showtimes-head__sub { font-size:16px; line-height:1.5; color:#35595d; margin:0; max-width:600px; }
+.showtimes-head__star { position:absolute; z-index:0; width:clamp(116px,15vw,216px); height:auto; right:6%; top:-66px; transform:rotate(-13deg); filter:drop-shadow(0 18px 24px #0005); pointer-events:none; }
+.showtimes-head__badge { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:0 0 auto; min-width:106px; height:106px; padding:18px; margin-bottom:2px; border-radius:50%; background:radial-gradient(circle at 32% 20%,#fffce7,#d7ffed 50%,#a9d5d3); color:#0a393b; box-shadow:inset 3px 3px 8px #fff, inset -8px -10px 16px #6daaaa90, 6px 12px 24px #020e11a8; transform:rotate(11deg); }
+.showtimes-head__badge strong { font-size:35px; line-height:1.05; letter-spacing:-.09em; }
+.showtimes-head__badge span { font-size:9px; font-weight:900; letter-spacing:.07em; }
+
+/* Poster and booking choices share one dimensional ticket-shaped panel. */
+.showtimes .showtimes-form {
+  position:relative; isolation:isolate; display:grid;
+  grid-template-columns:minmax(225px,270px) minmax(0,1fr);
+  grid-template-rows:auto auto auto auto;
+  gap:22px clamp(24px,3.8vw,58px);
+  align-items:start; padding:clamp(24px,3.5vw,44px);
+  margin:0; border:1px solid #a9f5ef3d; border-radius:40px;
+  background:
+    radial-gradient(ellipse at 100% 0%,#2b888951 0%,transparent 40%),
+    linear-gradient(128deg,rgba(27,86,88,.91),rgba(13,54,57,.93) 61%,rgba(16,78,78,.9));
+  box-shadow: 0 28px 68px #0415168a, inset 2px 2px 0 #fffde625, inset -1px -2px 0 #041c2080;
+}
+.showtimes .showtimes-form::before { content:""; position:absolute; width:325px; aspect-ratio:1; border:65px solid #48e5e516; border-radius:50%; right:-140px; top:-155px; z-index:-1; pointer-events:none; transform:rotate(20deg); }
+.showtimes .booking-poster {
+  position:relative; grid-column:1; grid-row:1/5; width:100%; max-width:none; min-height:438px; aspect-ratio: .68;
+  justify-content:space-between; padding:24px 21px; border-radius:26px; overflow:hidden; isolation:isolate;
+  background:radial-gradient(circle at 87% 39%,#1f8e91 0%,#103e46 33%,#061e27 68%,#04181d 100%);
+  border:1px solid #a9faf871;
+  box-shadow:inset 3px 3px 7px #defef436,inset -7px -9px 22px #010e1cb8,10px 17px 24px #061d20ba,0 0 0 7px #c9fffa0b;
+}
+.showtimes .booking-poster::before { content:""; position:absolute; z-index:0; right:-77px; top:45px; width:270px; height:270px; border-radius:50%; background:radial-gradient(circle at 32% 25%,#b0fdf4 0%,#5ce9e6 26%,#198c97 71%,#08535c 100%); box-shadow:inset -16px -18px 26px #083e51ac,8px 16px 32px #031a2099; }
+.showtimes .booking-poster::after { content:""; position:absolute; z-index:0; left:-105px; bottom:35px; width:285px; height:74px; border-radius:90px; background:linear-gradient(180deg,#46e7ea,#0785a2 44%,#075a70 100%); transform:rotate(-29deg); box-shadow:inset 7px 9px 9px #c5fffa61,inset -7px -12px 14px #033f5388,4px 16px 25px #02161baa; }
+.showtimes .poster-orbit { position:absolute; width:205px; height:205px; top:78px; left:46px; border:27px solid #66f0ee; z-index:0; transform:rotate(-25deg); border-radius:50%; box-shadow:inset 10px 10px 12px #033b4eaa,inset -6px -7px 9px #dbffefaa,7px 12px 17px #04172099; }
+.showtimes .poster-planet { position:absolute; bottom:18%; right:-22px; width:85px; height:85px; border-radius:50%; background:radial-gradient(circle at 28% 25%,#ffffdd,#adffdb 48%,#44beb7); box-shadow:inset -8px -10px 10px #18727a,9px 12px 17px #01161c85; }
+.showtimes .booking-poster strong { position:relative; z-index:1; max-width:220px; font-family:Arial,Helvetica,sans-serif; font-size:clamp(36px,3vw,48px); font-weight:950; text-transform:uppercase; line-height:.95; letter-spacing:-.06em; text-shadow:0 3px 12px #00191caa; }
+.showtimes .poster-caption,.showtimes .poster-bottom { position:relative; z-index:1; font-weight:850; letter-spacing:.17em; font-size:10px; text-transform:uppercase; }
+.showtimes .poster-caption em { font-weight:400; font-style:normal; color:#a8e9e7; }
+.showtimes .poster-bottom { display:flex; align-items:end; justify-content:space-between; font-size:8px; }
+.showtimes .poster-bottom span { font-size:22px; }
+.showtimes .booking-movie-info { display:block; grid-column:2; grid-row:1; max-width:none; min-width:0; }
+.showtimes .booking-overline { margin:0 0 7px; font-size:11px; font-weight:800; letter-spacing:.18em; color:#29d9dd; }
+.showtimes .booking-movie-info h2 { font-family:Arial,Helvetica,sans-serif; font-size:clamp(32px,4vw,52px); line-height:1; letter-spacing:-.055em; text-transform:uppercase; margin:0 0 16px; }
+.showtimes .movie-meta { display:flex; flex-wrap:wrap; gap:9px; margin:0 0 14px; }
+.showtimes .movie-meta span { font-size:11px; padding:5px 11px; background:#113b3eb8; border:1px solid #a7f3ef4d; border-radius:99px; font-weight:700; }
+.showtimes .movie-synopsis { color:#eafbf2a9; font-size:13px; line-height:1.6; margin:0; max-width:590px; }
+.showtimes .booking-field { gap:10px; font-size:12px; font-weight:800; letter-spacing:.06em; }
+.showtimes .booking-field__name { display:flex; align-items:center; gap:9px; }
+.showtimes .booking-field__number { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#29d9dd; color:#052c30; font-size:11px; font-weight:950; letter-spacing:0; vertical-align:middle; }
+.showtimes .booking-field select { min-height:54px; padding:14px 42px 14px 20px; border-radius:17px; background-color:#082f32; border:1px solid #a8ecec5e; color:#fffde6; font-size:14px; letter-spacing:0; font-weight:700; box-shadow:inset 3px 4px 7px #03191dab,inset -1px -2px 2px #b8faf53b,3px 6px 8px #04151866; }
+.showtimes .booking-field select:hover { border-color:#29d9dd; }
+.showtimes .cinema-filter { grid-column:2; grid-row:2; width:min(100%,430px); max-width:none; }
+.showtimes .booking-dates { grid-column:2; grid-row:3; display:grid; grid-template-columns:minmax(130px,160px) minmax(0,1fr); gap:12px 18px; align-items:center; border-top:1px solid #fffde638; padding:21px 0 0; margin:0; min-width:0; }
+.showtimes .booking-dates legend { position:static; width:auto; height:auto; margin:0 0 2px; padding:0; clip-path:none; overflow:visible; grid-column:1/-1; font-size:12px; font-weight:850; letter-spacing:.08em; }
+.showtimes .booking-dates legend .booking-field__number { margin-right:8px; }
+.showtimes .date-heading { grid-column:1; display:flex; flex:initial; gap:8px; justify-content:space-between; align-items:center; font-size:12px; font-weight:750; }
+.showtimes .date-heading button { width:30px; height:30px; display:grid; place-items:center; background:#0d3538; border:1px solid #fffde63d; box-shadow:inset 2px 2px 3px #7dcdca2a,3px 4px 9px #051b1e78; }
+.showtimes .date-heading button:disabled { opacity:.4; }
+.showtimes .date-options { grid-column:2; display:flex; gap:10px; padding:6px 2px 17px; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; }
+.showtimes .date-option { flex:1 0 67px; min-width:67px; scroll-snap-align:start; }
+.showtimes .date-option span { min-height:93px; border-radius:19px; border:1px solid #a4eeed68; background:linear-gradient(155deg,#2e7677,#14484b 70%); box-shadow:inset 2px 3px 3px #d7fff834,inset -4px -5px 8px #051e2287,5px 8px 12px #0216197d; }
+.showtimes .date-option strong { font-size:30px; line-height:1.2; font-weight:900; }
+.showtimes .date-option small { font-size:10px; font-weight:850; letter-spacing:.075em; }
+.showtimes .date-option input:checked+span { background:linear-gradient(150deg,#acfff2 0%,#51e4e6 48%,#1cc9d7 100%); color:#053138; border-color:#c9fff8; box-shadow:inset 3px 4px 5px #ffffffa8,inset -5px -7px 10px #0598a683,5px 10px 14px #001f2580; transform:translateY(-3px); }
+.showtimes .booking-filters { grid-column:2; grid-row:4; display:flex; gap:16px; align-items:end; }
+.showtimes .booking-filters .booking-field { width:min(100%,260px); }
+
+/* Dark surfaces use cream typography for consistent contrast. */
+.showtimes .showtimes-form,
+.showtimes .showtimes-form .booking-movie-info h2,
+.showtimes .showtimes-form .movie-meta span,
+.showtimes .showtimes-form .booking-field,
+.showtimes .showtimes-form .booking-field__name,
+.showtimes .showtimes-form .booking-dates legend,
+.showtimes .showtimes-form .date-heading,
+.showtimes .cinema-screenings,
+.showtimes .cinema-screenings .screening-group h4,
+.showtimes .screenings-hint {
+  color:#fffde6;
+}
+@media (min-width:1024px) { .showtimes[data-enhanced] .booking-filters>.booking-field:first-child { display:none; } }
+
+/* Showtime cards: each cinema is a deliberately lit, tactile panel. */
+.showtimes .screenings { margin:0; padding-top:58px; }
+.showtimes .screenings-heading { display:flex; justify-content:space-between; align-items:end; gap:18px; margin:0 0 22px; }
+.showtimes .screenings-heading h2 { margin:5px 0 0; font-weight:950; font-size:clamp(37px,4.6vw,65px); letter-spacing:-.067em; line-height:1; }
+.showtimes .screenings-heading h2 span { color:#29d9dd; }
+.showtimes .screenings-hint { color:#c0e9e2b8; font-size:12px; padding-bottom:5px; }
+.showtimes .screenings-hint span { color:#29d9dd; font-size:18px; }
+.showtimes .cinema-screenings { position:relative; display:grid; grid-template-columns:220px minmax(0,1fr); gap:26px; margin-bottom:18px; padding:29px 32px; border-radius:28px; border:1px solid #a6ece94d; background:linear-gradient(125deg,#215d5d 0%,#10383b 44%,#0d3436 100%); box-shadow:inset 2px 3px 3px #d1fffa23,inset -2px -2px 5px #031f228a,7px 14px 28px #04161882; }
+.showtimes .cinema-screenings__eyebrow { display:flex; align-items:center; gap:8px; margin:0 0 11px; font-size:10px; font-weight:850; letter-spacing:.17em; color:#a8e9df; }
+.showtimes .cinema-screenings__dot { width:8px; height:8px; border-radius:50%; background:#37eece; box-shadow:0 0 0 4px #37eece26; }
+.showtimes .cinema-screenings h3 { font-size:clamp(20px,2vw,27px); font-weight:900; letter-spacing:-.045em; line-height:1.08; margin:0 0 20px; }
+.showtimes .booking-row-format { max-width:185px; }
+.showtimes .cinema-screenings h3,
+.showtimes .booking-row-format .booking-field__name { color:#fffde6; }
+.showtimes .booking-row-format select { min-height:48px; background-color:#0b3336; }
+.showtimes .screening-groups { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px 28px; }
+.showtimes .screening-group h4 { margin:0 0 12px; font-size:12px; font-weight:800; color:#c3efe8; }
+.showtimes .screening-group h4 span { padding:0 3px; color:#29d9dd; }
+.showtimes .screening-times { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.showtimes .showtime-button { position:relative; display:flex; flex-direction:row; gap:7px; min-height:55px; border-radius:16px; border:1px solid #f4e8ba; background:linear-gradient(155deg,#fffef2,#f7efd5 62%,#ede0bc); box-shadow:inset 2px 3px 3px #fff,inset -3px -4px 7px #c8bfa58c,4px 7px 9px #041b1f36; font-weight:850; font-size:14px; letter-spacing:.02em; color:#0d3436; transition:transform .18s ease,box-shadow .18s ease, background-color .18s ease; }
+.showtimes .showtime-button__arrow { font-size:16px; opacity:.62; }
+.showtimes .showtime-button:disabled { background:#d8d1b9; color:#6f746f; opacity:.58; border-style:dashed; box-shadow:inset 2px 2px 7px #7b7768a8; }
+.showtimes .showtime-button small { font-size:9px; font-weight:850; letter-spacing:.08em; }
+.showtimes .booking-empty { background:#1b5153; border:1px solid #a9f4ef3f; padding:24px; border-radius:20px; }
+.showtimes .booking-status { color:#abf0e5; min-height:24px; margin:14px 0 0; }
+@media(hover:hover) and (pointer:fine) {
+  .showtimes .showtime-button:not(:disabled):hover { background:linear-gradient(155deg,#b9fff0,#37d9e1); color:#062c32; transform:translateY(-3px); box-shadow:inset 3px 4px 4px #fff9,6px 12px 19px #04131999; }
+  .showtimes .date-option:not(:has(input:checked)):hover span { transform:translateY(-2px); }
+}
+.showtimes .showtime-button:focus-visible,.showtimes .booking-field select:focus-visible,.showtimes .date-heading button:focus-visible { outline:3px solid #29d9dd; outline-offset:4px; }
+
+/* Tablet: preserve the poster / detail relationship, move the calendar underneath. */
+@media(max-width:1023px) {
+  .booking-page .booking-main { padding:125px 34px 58px; }
+  .showtimes-head { min-height:140px; }
+  .showtimes-head h1 { font-size:clamp(58px,8vw,84px); }
+  .showtimes-head__star { right:12%; width:118px; top:-42px; }
+  .showtimes .showtimes-form { grid-template-columns:175px minmax(0,1fr); grid-template-rows:auto auto auto auto; gap:22px 24px; padding:26px; border-radius:32px; }
+  .showtimes .booking-poster { grid-column:1; grid-row:1/3; min-height:258px; max-height:340px; aspect-ratio:.68; padding:17px; }
+  .showtimes .booking-poster strong { font-size:31px; }
+  .showtimes .booking-poster::before { width:180px; height:180px; right:-54px; top:40px; }
+  .showtimes .poster-orbit { width:140px; height:140px; left:18px; top:67px; border-width:18px; }
+  .showtimes .booking-poster::after { bottom:27px; }
+  .showtimes .booking-movie-info { grid-column:2; grid-row:1; }
+  .showtimes .booking-movie-info h2 { font-size:35px; margin-bottom:12px; }
+  .showtimes .movie-synopsis { font-size:13px; }
+  .showtimes .cinema-filter { grid-column:2; grid-row:2; width:100%; }
+  .showtimes .booking-dates { grid-column:1/-1; grid-row:3; display:block; padding:20px 0 0; }
+  .showtimes .booking-dates legend { margin-bottom:12px; }
+  .showtimes .date-heading { display:none; }
+  .showtimes .date-options { gap:13px; }
+  .showtimes .booking-filters { grid-column:1/-1; grid-row:4; display:grid; grid-template-columns:1fr 1fr; }
+  .showtimes .booking-filters .booking-field { width:100%; }
+  .showtimes .cinema-screenings { grid-template-columns:1fr; gap:20px; }
+  .showtimes .cinema-screenings__info { display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px; }
+  .showtimes .cinema-screenings__eyebrow { width:100%; margin-bottom:0; }
+  .showtimes .cinema-screenings h3 { margin:0; }
+  .showtimes .booking-row-format { display:none; }
+}
+
+/* Mobile: legible typography / thumb sized controls / independent horizontal date scrolling. */
+@media(max-width:767px) {
+  .booking-page .booking-main { padding:108px 17px 42px; }
+  .showtimes .booking-mobile-intro { display:block; margin-bottom:22px; }
+  .showtimes .booking-steps { margin:0; }
+  .showtimes-head { display:block; margin-bottom:24px; min-height:0; }
+  .showtimes-eyebrow { font-size:10px; letter-spacing:.12em; }
+  .showtimes-eyebrow span { padding:0 3px; }
+  .showtimes-head h1 { font-size:clamp(40px,11vw,65px); margin:9px 0 12px; }
+  .showtimes-head__sub { max-width:95%; font-size:13px; }
+  .showtimes-head__badge,.showtimes-head__star { display:none; }
+  .showtimes .showtimes-form { display:grid; grid-template-columns:105px minmax(0,1fr); grid-template-rows:auto auto auto auto auto; align-items:start; gap:18px 16px; padding:18px; border-radius:27px; }
+  .showtimes .booking-poster { grid-column:1; grid-row:1/3; width:100%; min-height:173px; max-height:200px; aspect-ratio:.65; border-radius:16px; padding:11px 9px; }
+  .showtimes .booking-poster strong { font-size:21px; line-height:.95; }
+  .showtimes .poster-caption { font-size:7px; }
+  .showtimes .poster-caption em { display:none; }
+  .showtimes .poster-bottom { font-size:5px; }
+  .showtimes .booking-poster::before { width:110px; height:110px; top:39px; right:-34px; }
+  .showtimes .booking-poster::after { width:160px; height:33px; left:-90px; bottom:26px; }
+  .showtimes .poster-orbit { width:100px; height:100px; left:7px; top:38px; border-width:13px; }
+  .showtimes .poster-planet { display:none; }
+  .showtimes .booking-movie-info { grid-column:2; grid-row:1/3; align-self:center; }
+  .showtimes .booking-movie-info h2 { font-size:clamp(21px,5vw,29px); margin:0 0 10px; }
+  .showtimes .movie-meta { gap:5px; margin-bottom:8px; }
+  .showtimes .movie-meta span { padding:4px 7px; font-size:9px; }
+  .showtimes .booking-overline { font-size:9px; }
+  .showtimes .movie-synopsis { font-size:11px; line-height:1.35; }
+  .showtimes .cinema-filter { grid-column:1/-1; grid-row:3; width:100%; }
+  .showtimes .booking-dates { grid-column:1/-1; grid-row:4; margin:0; padding:16px 0 0; }
+  .showtimes .date-options { gap:10px; padding:5px 2px 17px; }
+  .showtimes .date-option { flex:0 0 63px; min-width:63px; }
+  .showtimes .date-option span { min-height:83px; border-radius:15px; }
+  .showtimes .date-option strong { font-size:27px; }
+  .showtimes .booking-filters { grid-column:1/-1; grid-row:5; display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+  .showtimes .booking-filters .booking-field { width:100%; }
+  .showtimes .booking-field__name { font-size:10px; }
+  .showtimes .booking-field select { padding:12px 24px 12px 11px; min-height:48px; font-size:12px; border-radius:13px; }
+  .showtimes .screenings { padding-top:45px; }
+  .showtimes .screenings-heading { display:block; margin-bottom:20px; }
+  .showtimes .screenings-heading h2 { font-size:42px; }
+  .showtimes .screenings-hint { display:block; font-size:11px; margin-top:6px; }
+  .showtimes .cinema-screenings { padding:20px 15px; border-radius:23px; }
+  .showtimes .cinema-screenings h3 { font-size:21px; }
+  .showtimes .screening-groups { grid-template-columns:1fr; gap:20px; }
+  .showtimes .screening-times { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .showtimes .showtime-button { min-height:49px; border-radius:13px; font-size:12px; }
+  .showtimes .showtime-button__arrow { font-size:11px; }
+  .showtimes .showtime-button small { font-size:8px; }
+}
+@media(max-width:359px) {
+  .showtimes .showtimes-form { grid-template-columns:88px minmax(0,1fr); padding:14px; gap:14px 10px; }
+  .showtimes .booking-poster { min-height:143px; }
+  .showtimes .booking-poster strong { font-size:17px; }
+  .showtimes .booking-movie-info h2 { font-size:19px; }
+  .showtimes .movie-synopsis { display:none; }
+  .showtimes .booking-filters { grid-template-columns:1fr; }
+}
+@media(prefers-reduced-motion:reduce) { .showtimes * { scroll-behavior:auto !important; transition:none !important; } }
+
+/* Integration fixes: constrain decorative ring to its panel and cancel inherited
+   grid placements from the original tablet/mobile stylesheet. */
+.showtimes .showtimes-form { overflow:clip; }
+@media(max-width:1023px) {
+  .showtimes .booking-filters .booking-field,
+  .showtimes .booking-filters .language-filter { grid-column:auto; }
+}

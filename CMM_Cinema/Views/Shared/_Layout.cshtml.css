@@ -1,0 +1,18 @@
+/* Custom Bootstrap component overrides retained for the scaffold pages. */
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+button.accept-policy {
+  font-size: 1rem;
+  line-height: inherit;
+}
