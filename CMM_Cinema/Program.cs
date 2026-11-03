@@ -2,16 +2,18 @@ using CMM_Cinema.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
+builder.Services.AddHsts(options => options.MaxAge = TimeSpan.FromDays(365));
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Movies come from Cloudflare D1 once Cloudflare:AccountId, DatabaseId and ApiToken are set (user-secrets);
-// until then the site runs with no movies instead of crashing.
+
 builder.Services.Configure<CloudflareD1Options>(builder.Configuration.GetSection("Cloudflare"));
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<D1Client>(client => client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/"));
 if (builder.Configuration.GetSection("Cloudflare").Get<CloudflareD1Options>()?.IsConfigured == true)
 {
-    builder.Services.AddHttpClient<D1Client>(client => client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/"));
     builder.Services.AddScoped<IMovieRepository, D1MovieRepository>();
 }
 else
@@ -22,19 +24,25 @@ else
 // Demo booking flow: showtimes, seat holds and payments are kept in memory until bookings move to D1.
 builder.Services.AddSingleton<IBookingService, DemoBookingService>();
 
+builder.Services.AddCinemaAuth(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    // HSTS stays off in development: browsers would remember it for every localhost port.
     app.UseHsts();
-    app.UseHttpsRedirection();
 }
+
+app.UseSecurityHeaders(SecurityHeadersSetup.Policies());
+app.UseHttpsRedirection();
 
 app.UseRouting();
 
+app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

@@ -6,12 +6,12 @@
     <meta name="theme-color" content="#103d3e" />
     <meta name="description" content="CMM Cinema. A little movie magic." />
     <title>@ViewData["Title"]</title>
-    <style>
+    <style nonce="@Context.GetNonce()">
         @@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
             @@view-transition { navigation: auto; }
         }
     </style>
-    <script>
+    <script nonce="@Context.GetNonce()">
         // Arriving through a view transition: keep the navbar still instead of replaying its entrance.
         window.addEventListener('pagereveal', function (event) {
             if (event.viewTransition) document.documentElement.setAttribute('data-page-arrived', '');
