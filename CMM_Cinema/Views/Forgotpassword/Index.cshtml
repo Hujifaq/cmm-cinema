@@ -1,8 +1,11 @@
 @model ForgotPasswordViewModel
+@inject Microsoft.Extensions.Options.IOptions<CMM_Cinema.Services.TurnstileOptions> Turnstile
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "Forgot password - CMM Cinema";
     var hasEmailError = ViewData.ModelState[nameof(Model.Email)]?.Errors.Count > 0;
+    var formErrors = ViewData.ModelState[string.Empty]?.Errors.Select(error => error.ErrorMessage).ToList() ?? [];
+    var sentTo = ViewData["ResetSentTo"] as string;
 }
 
 @section TopBanner {
@@ -17,7 +20,7 @@
             <p class="mb-0 mt-3 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Let's get you back to your next movie night.</p>
         </header>
 
-        <form class="grid gap-5" asp-controller="Forgotpassword" asp-action="Index" method="post">
+        <form class="grid gap-5" asp-controller="Forgotpassword" asp-action="Index" method="post" data-ajax-form>
             <div data-reveal-up>
                 <label class="mb-2 block text-sm font-bold text-cinema-ink" for="reset-email">Email address</label>
                 <div class="relative">
@@ -27,20 +30,24 @@
                 <span class="mt-2 block text-xs leading-relaxed text-cinema-brick" id="reset-email-error" asp-validation-for="Email"></span>
             </div>
 
-            <div data-reveal-up>
-                <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-3 font-sans text-sm font-bold text-cinema-cream shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-goo-button>
-                    <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
-                        <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
-                        <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
-                        <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
-                    </span>
-                    <span class="relative" data-goo-label>Send reset link</span>
-                </button>
+            <div>
+                <div class="cf-turnstile" data-sitekey="@Turnstile.Value.SiteKey" data-action="forgot" data-theme="light" data-size="flexible" data-appearance="interaction-only"></div>
+                <div data-reveal-up>
+                    <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-3 font-sans text-sm font-bold text-cinema-cream shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-goo-button>
+                        <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                            <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
+                            <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
+                            <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
+                        </span>
+                        <span class="relative" data-goo-label>Send reset link</span>
+                    </button>
+                </div>
             </div>
 
-            @if (ViewData["ResetUnavailable"] is true)
+            <p class="m-0 text-center text-sm leading-relaxed text-cinema-ink/70 data-[tone=error]:font-medium data-[tone=error]:text-cinema-brick data-[tone=success]:rounded-2xl data-[tone=success]:bg-cinema-cyan/15 data-[tone=success]:px-4 data-[tone=success]:py-3 data-[tone=success]:text-cinema-ink" role="status" data-form-status data-tone="@(formErrors.Count > 0 ? "error" : null)" hidden="@(formErrors.Count == 0)">@string.Join(" ", formErrors)</p>
+            @if (sentTo is not null)
             {
-                <p class="m-0 rounded-2xl bg-cinema-ink/[0.04] px-4 py-3 text-center text-sm leading-relaxed text-cinema-ink/70" role="status">Password reset is not available yet. Please check back soon.</p>
+                <p class="m-0 rounded-2xl bg-cinema-cyan/15 px-4 py-3 text-center text-sm leading-relaxed text-cinema-ink" role="status">If an account exists for <strong class="break-all">@sentTo</strong>, we sent a reset link. It expires in 30 minutes.</p>
             }
         </form>
 
@@ -54,3 +61,4 @@
 </section>
 
 @await Html.PartialAsync("_AccountFooter")
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

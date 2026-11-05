@@ -1,0 +1,51 @@
+@model VerifyEmailViewModel
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = (Model.IsValid ? "Confirm your email" : "Link expired") + " - CMM Cinema";
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+<section class="flex min-h-[calc(100svh_-_36px)] items-center justify-center bg-cinema-paper px-5 pb-14 pt-28 font-sans text-cinema-ink scheme-light md:pb-20 md:pt-36" aria-labelledby="verify-title" data-forgot-password-page>
+    @await Html.PartialAsync("_GooFilter")
+    <div class="w-full max-w-[480px] rounded-[28px] bg-cinema-paper p-6 text-center shadow-clay ring-1 ring-cinema-ink/10 sm:p-10" data-reset-card>
+        @if (Model.IsValid)
+        {
+            <h1 class="m-0 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="verify-title" data-reveal-chars>Confirm your email</h1>
+            <p class="mb-0 mt-3 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>One click and your CMM Cinema account is ready.</p>
+            <form class="mt-8" asp-action="VerifyEmail" method="post" data-reveal-up>
+                <input type="hidden" name="token" value="@Model.Token" />
+                <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-3 font-sans text-sm font-bold text-cinema-cream shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-goo-button>
+                    <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                        <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
+                        <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
+                        <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
+                    </span>
+                    <span class="relative" data-goo-label>Confirm my email</span>
+                </button>
+            </form>
+        }
+        else
+        {
+            <h1 class="m-0 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="verify-title" data-reveal-chars>This link has expired</h1>
+            <p class="mb-0 mt-3 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>It may have been used already, or it's more than 24 hours old. If your email is already confirmed, just sign in. Otherwise, we can send a new link.</p>
+            <div class="mt-6">
+                <partial name="_ResendVerificationForm" model="Model.Email" view-data='new ViewDataDictionary(ViewData) { ["AskForEmail"] = true }' />
+            </div>
+        }
+        <div class="mt-6" data-reveal-up>
+            <a class="inline-flex min-h-[44px] items-center justify-center gap-2 text-sm font-bold text-cinema-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" asp-controller="LoginRegister" asp-action="Index">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                Back to login
+            </a>
+        </div>
+    </div>
+</section>
+
+@await Html.PartialAsync("_AccountFooter")
+@if (!Model.IsValid)
+{
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+}

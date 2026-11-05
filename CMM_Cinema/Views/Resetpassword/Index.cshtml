@@ -1,7 +1,9 @@
+@model ResetPasswordViewModel
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "Reset password - CMM Cinema";
     var inputClass = "block min-h-[48px] w-full min-w-0 rounded-2xl border-0 bg-white px-4 py-3 font-sans text-base text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink";
+    var formErrors = ViewData.ModelState.Values.SelectMany(entry => entry.Errors).Select(error => error.ErrorMessage).Distinct().ToList();
 }
 
 @section TopBanner {
@@ -11,31 +13,52 @@
 <section class="flex min-h-[calc(100svh_-_36px)] items-center justify-center bg-cinema-paper px-5 pb-14 pt-28 font-sans text-cinema-ink scheme-light md:pb-20 md:pt-36" aria-labelledby="reset-password-title" data-reset-password-page>
     @await Html.PartialAsync("_GooFilter")
     <div class="w-full max-w-[480px] rounded-[28px] bg-cinema-paper p-6 shadow-clay ring-1 ring-cinema-ink/10 sm:p-10" data-reset-card>
-        <h1 class="mb-8 mt-0 text-center text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="reset-password-title" data-reveal-chars>Reset your password</h1>
+        @if (Model.IsValid)
+        {
+            <h1 class="mb-8 mt-0 text-center text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="reset-password-title" data-reveal-chars>Reset your password</h1>
 
-        <div class="grid gap-5" role="group" aria-label="New password details">
-            <div data-reveal-up>
-                <label class="mb-2 block text-sm font-bold text-cinema-ink" for="reset-new-password">New password</label>
-                <input class="@inputClass" id="reset-new-password" type="password" autocomplete="new-password" placeholder="Enter your new password" />
-            </div>
-            <div data-reveal-up>
-                <label class="mb-2 block text-sm font-bold text-cinema-ink" for="reset-confirm-password">Confirm new password</label>
-                <input class="@inputClass" id="reset-confirm-password" type="password" autocomplete="new-password" placeholder="Confirm your new password" />
-            </div>
-            <div class="mt-1" data-reveal-up>
-                <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-3 font-sans text-sm font-bold text-cinema-cream shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button" data-goo-button>
+            <form class="grid gap-5" asp-controller="Resetpassword" asp-action="Index" method="post" aria-label="New password details" data-ajax-form>
+                <input type="hidden" name="token" value="@Model.Token" />
+                <div data-reveal-up>
+                    <label class="mb-2 block text-sm font-bold text-cinema-ink" for="reset-new-password">New password</label>
+                    <input class="@inputClass" id="reset-new-password" name="password" type="password" autocomplete="new-password" placeholder="Enter your new password" minlength="8" maxlength="128" aria-describedby="reset-password-hint" required />
+                    <p class="mb-0 mt-2 px-2 text-xs text-cinema-ink/50" id="reset-password-hint">At least 8 characters.</p>
+                </div>
+                <div data-reveal-up>
+                    <label class="mb-2 block text-sm font-bold text-cinema-ink" for="reset-confirm-password">Confirm new password</label>
+                    <input class="@inputClass" id="reset-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Confirm your new password" minlength="8" maxlength="128" required />
+                </div>
+                <div class="mt-1" data-reveal-up>
+                    <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-3 font-sans text-sm font-bold text-cinema-cream shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-goo-button>
+                        <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                            <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
+                            <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
+                            <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
+                        </span>
+                        <span class="relative" data-goo-label>Reset password</span>
+                    </button>
+                </div>
+                <p class="m-0 text-center text-sm leading-relaxed text-cinema-ink/70 data-[tone=error]:font-medium data-[tone=error]:text-cinema-brick" role="status" data-form-status data-tone="@(formErrors.Count > 0 ? "error" : null)" hidden="@(formErrors.Count == 0)">@string.Join(" ", formErrors)</p>
+            </form>
+        }
+        else
+        {
+            <h1 class="m-0 text-center text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="reset-password-title" data-reveal-chars>This link has expired</h1>
+            <p class="mb-0 mt-3 text-center text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Reset links work once and expire after 30 minutes. Request a new one and use the newest email.</p>
+            <div class="mt-8" data-reveal-up>
+                <a class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-3 font-sans text-sm font-bold text-cinema-cream no-underline shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" asp-controller="Forgotpassword" asp-action="Index" data-goo-button>
                     <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
                         <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
                         <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
                         <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
                     </span>
-                    <span class="relative" data-goo-label>Reset password</span>
-                </button>
+                    <span class="relative" data-goo-label>Request a new link</span>
+                </a>
             </div>
-        </div>
+        }
 
         <div class="mt-3 text-center" data-reveal-up>
-            <button class="inline-flex min-h-[44px] cursor-pointer items-center justify-center border-0 bg-transparent p-0 font-sans text-sm font-bold text-cinema-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button">Back to login</button>
+            <a class="inline-flex min-h-[44px] cursor-pointer items-center justify-center border-0 bg-transparent p-0 font-sans text-sm font-bold text-cinema-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" asp-controller="LoginRegister" asp-action="Index">Back to login</a>
         </div>
     </div>
 </section>

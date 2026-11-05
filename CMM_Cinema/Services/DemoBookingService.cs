@@ -2,8 +2,6 @@ using CMM_Cinema.Models;
 
 namespace CMM_Cinema.Services;
 
-// Demo only: showtimes are generated, and holds and payments live in memory, so a restart clears every booking.
-// Nothing here charges money or issues a real ticket. Registered as a singleton, so all state sits behind one lock.
 public sealed class DemoBookingService : IBookingService
 {
     private const string Rows = "ABCDEFGHIJ";
@@ -17,7 +15,7 @@ public sealed class DemoBookingService : IBookingService
     private static readonly (string Format, string Language)[] Screenings =
         [("2D", "English"), ("2D", "Thai (Sub)"), ("3D", "English"), ("IMAX", "English")];
     private static readonly int[] StartHours = [13, 16, 19];
-    // A few seats start sold so the seat map does not look empty.
+    
     private static readonly HashSet<string> PresoldSeats = new(StringComparer.OrdinalIgnoreCase) { "A3", "B5", "D11", "F14", "H7", "J2" };
 
     private readonly Lock gate = new();
@@ -170,7 +168,7 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
-    // Showtimes are created the first time a movie and day are asked for, then kept so their ids stay stable.
+   
     private Showtime[] GetOrCreateDay(string movieSlug, DateOnly date)
     {
         var key = (movieSlug.ToLowerInvariant(), date);
@@ -184,7 +182,7 @@ public sealed class DemoBookingService : IBookingService
                 foreach (var hour in StartHours)
                 {
                     var id = showtimesById.Count + 1;
-                    // Roughly one session in seven shows as full.
+                   
                     var isAvailable = (date.DayNumber + cinema.Id * 3 + screening * 5 + hour) % 7 != 0;
                     var showtime = new Showtime(id, key.Item1, cinema.Id, date, new TimeOnly(hour, 0),
                         Screenings[screening].Format, Screenings[screening].Language, isAvailable);

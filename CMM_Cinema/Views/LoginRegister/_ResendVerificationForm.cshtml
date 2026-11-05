@@ -1,0 +1,35 @@
+@model string
+@inject Microsoft.Extensions.Options.IOptions<CMM_Cinema.Services.TurnstileOptions> Turnstile
+@{
+    var askForEmail = ViewData["AskForEmail"] is true;
+    var errors = ViewData.ModelState.Values.SelectMany(entry => entry.Errors).Select(error => error.ErrorMessage).Distinct().ToList();
+}
+
+<form class="grid gap-3 text-left" asp-controller="LoginRegister" asp-action="ResendVerification" method="post" data-ajax-form data-reveal-up>
+    @if (askForEmail)
+    {
+        <div>
+            <label class="sr-only" for="resend-email">Email address</label>
+            <div class="relative">
+                <svg class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 6 9 7 9-7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <input class="block min-h-[48px] w-full min-w-0 rounded-2xl border-0 bg-white py-3 pl-11 pr-4 font-sans text-base text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" id="resend-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" maxlength="254" value="@Model" required />
+            </div>
+        </div>
+    }
+    else
+    {
+        <input type="hidden" name="email" value="@Model" />
+    }
+    <div>
+        <div class="cf-turnstile" data-sitekey="@Turnstile.Value.SiteKey" data-action="resend" data-theme="light" data-size="flexible" data-appearance="interaction-only"></div>
+        <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 font-sans text-sm font-bold text-cinema-ink shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-goo-button>
+            <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                <span class="absolute inset-0 rounded-2xl bg-white"></span>
+                <span class="absolute inset-0 overflow-hidden rounded-2xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-white" data-goo-fill></span></span>
+                <span class="absolute left-0 top-0 size-9 rounded-full bg-white" data-goo-blob></span>
+            </span>
+            <span class="relative" data-goo-label>@(askForEmail ? "Send a new link" : "Resend email")</span>
+        </button>
+    </div>
+    <p class="m-0 text-center text-sm leading-relaxed text-cinema-ink/70 data-[tone=error]:font-medium data-[tone=error]:text-cinema-brick" role="status" data-form-status data-tone="@(errors.Count > 0 ? "error" : null)" hidden="@(errors.Count == 0)">@string.Join(" ", errors)</p>
+</form>

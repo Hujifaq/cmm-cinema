@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Resend;
@@ -17,11 +18,11 @@ public static class AuthSetup
         services.AddSingleton<PasswordHasher>();
         services.AddScoped<UserRepository>();
         services.AddScoped<EmailTokenService>();
+        services.AddSingleton<EmailThrottle>();
         services.AddScoped<AuthCookieEvents>();
         services.AddResend(options => options.ApiToken = configuration["Resend:ApiKey"] ?? "");
         services.AddScoped<IEmailSender, ResendEmailSender>();
         services.AddHttpClient<TurnstileValidator>();
-        services.AddHttpClient<BreachedPasswordChecker>();
         services.AddAuthRateLimits();
 
         // Keys encrypt the auth cookie. Without a fixed folder in production, a restart or redeploy signs everyone out.
@@ -61,6 +62,7 @@ public static class AuthSetup
                 options.ClientId = google["ClientId"]!;
                 options.ClientSecret = google["ClientSecret"]!;
                 options.SignInScheme = ExternalScheme;
+                options.ClaimActions.MapJsonKey(AuthClaims.GoogleEmailVerified, "email_verified");
                 options.AccessDeniedPath = "/LoginRegister";
                 options.Events.OnRemoteFailure = context =>
                 {

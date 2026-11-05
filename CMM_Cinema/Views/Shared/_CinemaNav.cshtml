@@ -4,6 +4,8 @@
     var hrefs = new[] { "/", "/Movies", "/About", "/MyTickets" };
     var currentPath = (Context.Request.Path.Value ?? "").TrimEnd('/');
     var active = Math.Max(0, Array.FindIndex(hrefs, href => string.Equals(href.TrimEnd('/'), currentPath, StringComparison.OrdinalIgnoreCase) || (href != "/" && currentPath.StartsWith(href + "/", StringComparison.OrdinalIgnoreCase))));
+    var signedIn = Context.User.Identity?.IsAuthenticated == true;
+    var userName = Context.User.Identity?.Name;
     var pillClass = "inline-flex min-h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border-0 bg-transparent px-3 py-3 font-sans text-sm font-medium leading-none transition-colors duration-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream lg:px-5";
 }
 
@@ -36,7 +38,14 @@
                 <button class="relative z-10 inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream" type="button" aria-label="Search" aria-expanded="false" aria-controls="cinema-search" data-nav-search data-nav-action>
                     @await Html.PartialAsync("_SearchIcon")
                 </button>
-                <a class="relative z-10 hidden min-h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border-0 bg-transparent px-2 text-sm font-medium text-cinema-cream no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream md:inline-flex lg:px-3" asp-controller="LoginRegister" asp-action="Index" aria-current="@(currentPath.Equals("/LoginRegister", StringComparison.OrdinalIgnoreCase) ? "page" : null)" data-nav-account data-nav-action>Login / Register</a>
+                @if (signedIn)
+                {
+                    <button class="relative z-10 hidden min-h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border-0 bg-transparent px-2 text-sm font-medium text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream md:inline-flex lg:px-3" type="submit" form="cinema-logout-form" title="Signed in as @userName" data-nav-account data-nav-action>Sign out</button>
+                }
+                else
+                {
+                    <a class="relative z-10 hidden min-h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border-0 bg-transparent px-2 text-sm font-medium text-cinema-cream no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream md:inline-flex lg:px-3" asp-controller="LoginRegister" asp-action="Index" aria-current="@(currentPath.Equals("/LoginRegister", StringComparison.OrdinalIgnoreCase) ? "page" : null)" data-nav-account data-nav-action>Login / Register</a>
+                }
                 <button class="group relative hidden min-h-11 min-w-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-3 text-sm font-medium text-white transition-colors hover:text-cinema-cyan aria-expanded:text-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cyan" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="cinema-mobile-menu" data-nav-toggle>
                     <span class="pointer-events-none block h-5 overflow-hidden leading-5" aria-hidden="true">
                         <span class="block transition-transform duration-300 ease-out group-aria-expanded:-translate-y-1/2 motion-reduce:transition-none">
@@ -64,8 +73,20 @@
                         </li>
                     }
                 </ul>
-                <a class="mt-8 inline-flex min-h-12 w-full shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-cream px-5 py-3 font-sans text-sm font-semibold text-cinema-ink no-underline transition-colors duration-150 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cyan" asp-controller="LoginRegister" asp-action="Index" aria-current="@(currentPath.Equals("/LoginRegister", StringComparison.OrdinalIgnoreCase) ? "page" : null)" data-nav-account>Login / Register</a>
+                @if (signedIn)
+                {
+                    <p class="mb-0 mt-8 text-center text-sm text-white/60">Signed in as <span class="font-semibold text-white">@userName</span></p>
+                    <button class="mt-3 inline-flex min-h-12 w-full shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-cream px-5 py-3 font-sans text-sm font-semibold text-cinema-ink transition-colors duration-150 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cyan" type="submit" form="cinema-logout-form" data-nav-account>Sign out</button>
+                }
+                else
+                {
+                    <a class="mt-8 inline-flex min-h-12 w-full shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-cream px-5 py-3 font-sans text-sm font-semibold text-cinema-ink no-underline transition-colors duration-150 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cyan" asp-controller="LoginRegister" asp-action="Index" aria-current="@(currentPath.Equals("/LoginRegister", StringComparison.OrdinalIgnoreCase) ? "page" : null)" data-nav-account>Login / Register</a>
+                }
             </div>
         </div>
     </nav>
+    @if (signedIn)
+    {
+        <form id="cinema-logout-form" asp-controller="LoginRegister" asp-action="Logout" method="post" hidden></form>
+    }
 </header>
