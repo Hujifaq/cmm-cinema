@@ -1,0 +1,127 @@
+@model SeatSelectionViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Choose Seats";
+    var culture = CultureInfo.InvariantCulture;
+    var showtime = Model.Showtime;
+    var legendCardClass = "flex min-h-[88px] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-solid bg-cinema-ink/15 px-2 py-3 text-center text-[10px] font-bold text-cinema-cream sm:min-h-[108px] sm:rounded-2xl sm:py-4 sm:text-xs";
+    var zones = Model.Seats.GroupBy(seat => seat.Category).OrderBy(zone => zone.Key).ToArray();
+}
+
+<div class="bk-flow">
+    @await Html.PartialAsync("_BookingSteps", 2)
+
+    <header class="bk-heading">
+        <div>
+            <h1 id="seat-heading" class="break-words">@Model.Movie.Title</h1>
+            <p class="bk-screening-meta text-lg font-semibold sm:text-xl">@Model.Cinema.Name · @showtime.Date.ToString("ddd dd MMM", culture) · @showtime.Time.ToString("HH:mm", culture)</p>
+            <p>Pick your favorite seats. The big screen is waiting.</p>
+            <a class="bk-secondary bk-seat-back" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">← Back</a>
+        </div>
+        <img class="bk-heading-art bk-heading-art--glasses" src="~/images/hero/glasses.svg" alt="" aria-hidden="true" />
+    </header>
+
+    <div class="bk-grid bk-seat-layout" data-seat-selection>
+        <section class="bk-panel bk-seat-panel relative isolate" aria-labelledby="seat-heading">
+            <div class="mb-6 flex justify-end">
+                <span class="bk-tag">@showtime.Format</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Error))
+            {
+                <p class="bk-alert" role="alert">@Model.Error</p>
+            }
+
+            <div class="bk-screen" aria-hidden="true">
+                <svg class="bk-screen-art" viewBox="0 0 540 140" preserveAspectRatio="none" focusable="false">
+                    <defs>
+                        <linearGradient id="booking-screen-light" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="var(--color-cinema-poster-peach)" stop-opacity="0.28" />
+                            <stop offset="0.5" stop-color="var(--color-cinema-poster-peach)" stop-opacity="0.1" />
+                            <stop offset="1" stop-color="var(--color-cinema-poster-peach)" stop-opacity="0" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M18 42 Q270 -14 522 42 L538 138 H2 Z" fill="url(#booking-screen-light)" />
+                    <path class="bk-screen-rim" d="M18 42 Q270 -14 522 42" fill="none" />
+                </svg>
+                <span>Screen</span>
+            </div>
+
+            <form id="seat-reservation" method="post" asp-action="Reserve" data-seat-form data-max="8">
+                <input type="hidden" name="showtimeId" value="@showtime.Id" />
+
+                <div class="bk-seat-scroller" role="group" aria-label="Choose seats, rows F to A and VIP pairs">
+                    <div class="bk-seat-map">
+                        @foreach (var zone in zones)
+                        {
+                            var zoneClass = zone.Key.ToString().ToLowerInvariant();
+                            <section class="bk-seat-zone bk-seat-zone--@zoneClass" aria-label="@zone.Key.DisplayName() seating">
+                                @foreach (var row in zone.GroupBy(seat => seat.Row).OrderByDescending(row => row.Key))
+                                {
+                                    <div class="bk-seat-row @(zone.Key == SeatCategory.Vip ? "bk-seat-row--vip" : null) @(row.Key == "C" ? "bk-seat-row--cream" : null)">
+                                        <span class="bk-row-label">@row.Key</span>
+                                        @foreach (var seat in row.OrderBy(seat => seat.Number))
+                                        {
+                                            var sold = seat.State == SeatState.Sold;
+                                            var unit = seat.Capacity == 2 ? "Pair" : "Seat";
+                                            <label class="bk-seat bk-seat--@zoneClass @(sold ? "bk-seat--sold" : "bk-seat--available")">
+                                                <input type="checkbox" name="seatIds" value="@seat.Id" aria-label="@seat.Category.DisplayName(), row @seat.Row, @unit @seat.Number, ฿@seat.Price.ToString("N0", culture) per @(seat.Capacity == 2 ? "pair, 2 seats" : "seat"), @seat.State" data-seat-row="@seat.Row" data-seat-number="@seat.Number" data-seat-type="@seat.Category.DisplayName()" data-seat-price="@seat.Price.ToString(culture)" data-seat-capacity="@seat.Capacity" disabled="@sold" />
+                                                @await Html.PartialAsync("_SeatVisual", seat)
+                                            </label>
+                                        }
+                                        <span class="bk-row-label">@row.Key</span>
+                                    </div>
+                                }
+                            </section>
+                        }
+                    </div>
+                </div>
+
+                <div class="bk-seat-prices mx-auto mb-4 mt-5 grid w-full max-w-[420px] grid-cols-3 gap-2" role="group" aria-label="Seat types and prices">
+                    @foreach (var zone in zones)
+                    {
+                        var sample = zone.First() with { State = SeatState.Available };
+                        var colorClass = zone.Key == SeatCategory.Vip ? "border-cinema-sun/70" : zone.Key == SeatCategory.Premium ? "border-cinema-sky/70" : "border-cinema-cream/50";
+                        <span class="bk-seat--@zone.Key.ToString().ToLowerInvariant() @legendCardClass @colorClass">
+                            @await Html.PartialAsync("_SeatVisual", sample)
+                            <span>@zone.Key.DisplayName()</span>
+                            <span class="text-sm font-black">฿@sample.Price.ToString("N0", culture)</span>
+                        </span>
+                    }
+                </div>
+                <p class="sr-only" role="status" data-seat-feedback></p>
+
+            </form>
+        </section>
+
+        <aside class="bk-panel bk-show-info relative isolate lg:sticky lg:top-32 lg:self-center">
+            <div class="bk-poster-small" aria-hidden="true">
+                <span>CMM Cinema</span>
+                <strong>@Model.Movie.Title</strong>
+                <b></b>
+            </div>
+            <div class="bk-show-facts">
+                <p class="bk-kicker">You're watching</p>
+                <h2>@Model.Movie.Title</h2>
+                <p>@showtime.Format · @showtime.Language · @Model.Movie.Rating</p>
+                <p>@(Model.Movie.DurationMinutes)m · @Model.Movie.Genre</p>
+            </div>
+            <p class="bk-muted">Selected seats are held for 10 minutes after you continue. This is a demo, so no payment will be charged.</p>
+            <a class="bk-text-link" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">← Change showtime</a>
+            <div class="bk-seat-bottom mt-6">
+                <div><small class="text-sm sm:text-base">Selected seats</small><div class="break-words text-2xl font-bold leading-relaxed text-cinema-cream sm:text-3xl" data-selected-seats>None yet</div></div>
+                <div class="bk-price shrink-0 text-right"><small class="text-sm sm:text-base">Total</small><strong class="text-2xl sm:text-3xl" data-seat-total>฿0</strong></div>
+                <div class="basis-full items-end">
+                    <button class="bk-primary bk-seat-continue relative isolate w-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cream" type="submit" form="seat-reservation" data-seat-submit data-goo-button disabled>
+                        <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                            <span class="absolute inset-0 rounded-full" data-goo-base></span>
+                            <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full" data-goo-fill></span></span>
+                            <span class="absolute left-0 top-0 size-9 rounded-full" data-goo-blob></span>
+                        </span>
+                        <span class="relative inline-flex items-center gap-4" data-goo-label>Continue to summary <span aria-hidden="true">→</span></span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>

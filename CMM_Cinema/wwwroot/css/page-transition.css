@@ -1,8 +1,3 @@
-/* Cross-document View Transition modelled on paulkalkbrenner.net (Barba + GSAP):
-   the old page shrinks from its bottom edge, then swings out to the left while the
-   new page swings in from the right. The navbar keeps its own snapshot and stays still. */
-/* The @view-transition opt-in (desktop only) lives inline in _HeroLayout's <head>:
-   Chrome can reveal a heavy page before this file applies, which skips the transition. */
 
 :root {
   --page-ease: cubic-bezier(0.625, 0.05, 0, 1);
@@ -22,7 +17,7 @@
   display: none;
 }
 
-/* Seen behind the shrinking pages. */
+
 ::view-transition {
   background: #000;
 }

@@ -1,0 +1,31 @@
+@model Seat
+@if (Model.Capacity == 2)
+{
+    <span class="bk-seat-chair bk-seat-pair @(Model.State != SeatState.Sold ? "bk-seat-sofa" : null)" aria-hidden="true">
+        @if (Model.State == SeatState.Sold)
+        {
+            @for (var half = 0; half < 2; half++)
+            {
+                @await Html.PartialAsync("_OccupiedSeat")
+            }
+        }
+        else
+        {
+            <i class="bk-seat-sofa-half"></i>
+            <i class="bk-seat-sofa-half"></i>
+            <i class="bk-seat-armrests"></i>
+        }
+        <span class="bk-seat-selected-mark" aria-hidden="true"></span>
+    </span>
+}
+else if (Model.State == SeatState.Sold)
+{
+    @await Html.PartialAsync("_OccupiedSeat")
+}
+else
+{
+    <span class="bk-seat-chair" aria-hidden="true">
+        <i class="bk-seat-armrests"></i>
+        <span class="bk-seat-selected-mark" aria-hidden="true"></span>
+    </span>
+}

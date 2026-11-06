@@ -1,0 +1,86 @@
+@model BookingDetailsViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Booking Summary";
+    var culture = CultureInfo.InvariantCulture;
+    var booking = Model.Booking;
+}
+
+<div class="bk-flow">
+    @await Html.PartialAsync("_BookingSteps", 3)
+
+    <header class="bk-heading">
+        <div>
+            <h1>All set for <em>the show?</em></h1>
+            <p>Check your movie night details before continuing.</p>
+        </div>
+        <img class="bk-heading-art" src="~/images/hero/star.svg" alt="" aria-hidden="true" />
+    </header>
+
+    <div class="bk-grid">
+        <section class="bk-panel bk-summary-panel relative isolate" aria-labelledby="summary-heading">
+            <div class="bk-panel-title flex-wrap">
+                <h2 id="summary-heading">Booking summary</h2>
+                <p class="m-0 flex flex-wrap items-center gap-2 rounded-xl border border-solid border-cinema-cyan/40 bg-cinema-ink/30 px-4 py-2 text-xs text-cinema-cream/70 sm:text-sm" role="timer" aria-live="off" data-hold-expiry="@booking.ExpiresAt.ToUnixTimeSeconds()">
+                    <span>Time remaining</span>
+                    <b class="text-xl tabular-nums text-cinema-cyan" data-countdown>10:00</b>
+                </p>
+            </div>
+
+            @if (ViewData["BookingError"] is string error)
+            {
+                <p class="bk-alert" role="alert">@error</p>
+            }
+
+            <div class="border-0 border-b border-solid border-cinema-cream/15 pb-5">
+                <h3 class="m-0 text-lg font-bold text-cinema-cream sm:text-xl">@Model.Movie.Title</h3>
+                <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-cream/70">@Model.Cinema.Name · @Model.Showtime.Date.ToString("ddd dd MMM yyyy", culture) · @Model.Showtime.Time.ToString("HH:mm", culture)</p>
+                <p class="mb-0 mt-1 text-xs leading-relaxed text-cinema-cream/60">@Model.Showtime.Format · @Model.Showtime.Language · @Model.Movie.Rating · @(Model.Movie.DurationMinutes)m</p>
+            </div>
+
+            <div class="mt-5 flex items-center justify-between gap-4 text-sm text-cinema-cream/70 sm:text-base">
+                <span>Quantity</span>
+                <strong class="text-cinema-cream">@booking.TicketCount @(booking.TicketCount == 1 ? "seat" : "seats")</strong>
+            </div>
+
+            <ul class="m-0 list-none p-0" aria-label="Selected seat types and prices">
+                @foreach (var tier in booking.SeatItems.GroupBy(seat => (seat.Category, seat.Price, seat.Capacity)).OrderBy(tier => tier.Key.Category))
+                {
+                    var pair = tier.Key.Capacity == 2;
+                    var icon = new Seat(tier.First().Id, "", 0, SeatState.Available, tier.Key.Category, tier.Key.Price, tier.Key.Capacity);
+                    var borderClass = tier.Key.Category == SeatCategory.Vip ? "border-cinema-sun/60" : tier.Key.Category == SeatCategory.Premium ? "border-cinema-sky/50" : "border-cinema-cream/40";
+                    <li class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-0 border-b border-solid border-cinema-cream/10 py-5 sm:gap-4 sm:py-6">
+                        <span class="flex items-center justify-center rounded-xl border border-solid bg-cinema-ink/20 p-2 @borderClass" aria-hidden="true">
+                            <span class="bk-summary-seat-icon bk-seat--@tier.Key.Category.ToString().ToLowerInvariant() relative block h-9 @(pair ? "w-16" : "w-9")">
+                                @await Html.PartialAsync("_SeatVisual", icon)
+                            </span>
+                        </span>
+                        <div class="min-w-0">
+                            <h3 class="m-0 text-base font-bold text-cinema-sun sm:text-lg">@tier.Key.Category.DisplayName()</h3>
+                            <p class="mb-0 mt-1 break-words text-base font-bold leading-relaxed text-cinema-cream">@string.Join(", ", tier.Select(seat => seat.Id))</p>
+                        </div>
+                        <strong class="text-lg tabular-nums text-cinema-cream sm:text-2xl">฿@tier.Sum(seat => seat.Price).ToString("N0", culture)</strong>
+                    </li>
+                }
+            </ul>
+
+            <div class="mt-5 flex items-center justify-between gap-4 rounded-2xl bg-cinema-cyan px-4 py-4 text-cinema-ink shadow-clay-pill sm:px-5">
+                <span class="text-lg font-extrabold sm:text-xl">Net total</span>
+                <strong class="text-2xl font-black tabular-nums sm:text-3xl">฿@booking.Total.ToString("N0", culture)</strong>
+            </div>
+
+            <div class="bk-actions">
+                <form method="post" asp-action="Cancel">
+                    <input type="hidden" name="bookingId" value="@booking.Id" />
+                    <button class="bk-secondary" type="submit">← Start over</button>
+                </form>
+                <form method="post" asp-action="Confirm">
+                    <input type="hidden" name="bookingId" value="@booking.Id" />
+                    <button class="bk-primary" type="submit" data-hold-action>Confirm booking <span aria-hidden="true">→</span></button>
+                </form>
+            </div>
+        </section>
+
+        @await Html.PartialAsync("_OrderCard", Model)
+    </div>
+</div>

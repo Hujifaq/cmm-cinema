@@ -1,0 +1,1342 @@
+
+.bk-kicker {
+  margin: 0 0 12px;
+  color: #5be6e9;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.65;
+  letter-spacing: 0.21em;
+  text-transform: uppercase;
+}
+
+
+
+.bk-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 50px;
+  padding: 15px 17px;
+  border: 1px solid rgb(255 253 230 / 0.09);
+  border-radius: 100px;
+  background: rgb(5 32 35 / 0.48);
+  color: var(--color-cinema-cream);
+  list-style: none;
+  box-shadow:
+    0 12px 32px rgb(0 0 0 / 0.14),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.bk-steps li {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-width: 0;
+  color: #a6c6c2;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bk-steps .bk-step-current {
+  color: var(--color-cinema-cream);
+}
+
+.bk-step-number {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgb(255 253 230 / 0.13);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #275355, #0e2f31);
+  color: #ebf9f4;
+  font-size: 12px;
+  box-shadow:
+    3px 4px 9px #0003,
+    inset 1px 1px 1px #fff2;
+}
+
+.bk-step-current .bk-step-number {
+  background: var(--color-cinema-cyan);
+  color: var(--color-cinema-ink);
+  box-shadow:
+    0 6px 20px #29d9dd33,
+    inset 1px 1px 0 #fffd;
+}
+
+.bk-step-done .bk-step-number {
+  background: var(--color-cinema-cream);
+  color: var(--color-cinema-ink);
+}
+
+/* Page heading with a floating hero prop behind it */
+
+.bk-heading {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 172px;
+  margin-bottom: 30px;
+}
+
+.bk-heading h1 {
+  max-width: 1030px;
+  margin: 0 0 19px;
+  color: var(--color-cinema-ink);
+  font-size: clamp(42px, 6.5vw, 92px);
+  font-weight: 950;
+  line-height: 0.96;
+  letter-spacing: -0.085em;
+  text-transform: uppercase;
+}
+
+.bk-heading h1 em {
+  color: var(--color-cinema-cyan);
+  font-style: normal;
+}
+
+.bk-heading p:not(.bk-kicker) {
+  margin: 0;
+  color: #35595d;
+  line-height: 1.5;
+}
+.bk-heading p:not(.bk-kicker, .bk-screening-meta) { font-size: 16px; }
+
+.bk-heading-art {
+  position: absolute;
+  z-index: -1;
+  top: -27%;
+  right: 2%;
+  width: clamp(96px, 14vw, 190px);
+  transform: rotate(-14deg);
+  filter: drop-shadow(5px 12px 18px #0006);
+}
+
+.bk-heading-art--glasses {
+  top: -43%;
+  right: 3%;
+  width: clamp(110px, 17vw, 225px);
+  transform: rotate(18deg);
+  filter: drop-shadow(8px 18px 10px #0005);
+}
+
+/* Two-column body */
+
+.bk-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.48fr) minmax(310px, 0.77fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.bk-panel {
+  overflow: hidden;
+  padding: clamp(21px, 3vw, 35px);
+  border: 1px solid rgb(255 253 230 / 0.14);
+  border-radius: 34px;
+  background: linear-gradient(145deg, rgb(40 100 102 / 0.88), rgb(14 57 59 / 0.92) 55%, rgb(12 45 48 / 0.98));
+  color: var(--color-cinema-cream);
+  box-shadow:
+    18px 22px 46px rgb(0 0 0 / 0.23),
+    inset 2px 2px 2px rgb(255 253 230 / 0.15),
+    inset -3px -3px 9px #05272950;
+}
+
+.bk-panel-title {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+/* Film grain stays beneath panel content and interactive controls. */
+.bk-seat-layout > .bk-panel::after,
+.bk-summary-panel::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncG type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncB type='linear' slope='2.2' intercept='-.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: soft-light;
+  opacity: 0.32;
+}
+
+.bk-panel-title h2 {
+  margin: 0 0 9px;
+  font-size: clamp(23px, 2.5vw, 34px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.bk-panel-title p:not(.bk-kicker) {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bk-tag {
+  padding: 9px 15px;
+  border: 1px solid #fff7;
+  border-radius: 100px;
+  background: linear-gradient(130deg, #fefce4, #e0ead4);
+  color: #0d3434;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+  box-shadow:
+    inset 1px 1px 1px #fff,
+    3px 5px 9px #0003;
+}
+
+/* Buttons and links */
+
+.bk-primary,
+.bk-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 52px;
+  padding: 14px 23px;
+  border: 0;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 0.16s,
+    filter 0.16s;
+}
+
+.bk-primary {
+  --booking-primary-fill: linear-gradient(140deg, #e8ffff 0%, #61eced 35%, var(--color-cinema-cyan) 100%);
+  background: var(--booking-primary-fill);
+  color: #062627;
+  box-shadow:
+    7px 8px 0 #03282b69,
+    11px 14px 22px #0004,
+    inset 2px 2px 2px #fff8,
+    inset -2px -2px 7px #008d9275;
+}
+
+.bk-primary:disabled,
+.bk-primary[aria-disabled="true"] {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.bk-secondary {
+  border: 1px solid #fff6;
+  background: linear-gradient(150deg, #376a6b, #184144);
+  color: var(--color-cinema-cream);
+  box-shadow: 4px 5px 9px #0003;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bk-primary:not(:disabled, [aria-disabled="true"], [data-goo-button]):hover,
+  .bk-secondary:hover {
+    filter: brightness(1.07);
+    transform: translateY(-3px);
+  }
+}
+
+.bk-seat-continue :is([data-goo-base], [data-goo-fill], [data-goo-blob]) {
+  background: var(--booking-primary-fill);
+}
+
+.bk-text-link {
+  display: inline-flex;
+  margin-top: 22px;
+  color: #8af8f0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Hold timer and alerts */
+
+.bk-hold {
+  margin: 24px 0;
+  padding: 13px 17px;
+  border: 1px solid #38afb366;
+  border-radius: 16px;
+  background: #051f2188;
+  color: #ceefea;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.bk-hold b {
+  color: #6df6ef;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bk-alert {
+  padding: 13px 16px;
+  border: 1px solid #f5c88699;
+  border-radius: 14px;
+  background: #5e3e24;
+  color: #ffefce;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bk-alert--demo {
+  border-color: #61cfd299;
+  background: #143d42;
+  color: #dcf8ed;
+}
+
+/* ---------- Order ticket (cream card on the right) ---------- */
+
+.bk-receipt-shell {
+  filter: drop-shadow(0 14px 18px rgb(7 28 30 / 0.24));
+}
+
+.bk-ticket {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 28px 38px;
+  border: 1px solid rgb(255 253 230 / 0.14);
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(153deg, #f9f6dd, #e9ebd9 70%, #c8e8d8);
+  color: #123d3e;
+  box-shadow: inset 1px 1px 2px #fff;
+  /* A solid paper body meets repeating triangular teeth at the torn edge.
+     The wrapper casts the shadow around this silhouette rather than a rectangle. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, transparent 0) bottom / 16px 8px repeat-x;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, transparent 0) bottom / 16px 8px repeat-x;
+}
+
+.bk-ticket .bk-kicker {
+  color: #266f6a;
+}
+
+.bk-ticket-top {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.bk-ticket-top > .bk-kicker {
+  grid-column: 1 / -1;
+  margin: 0 0 4px;
+}
+
+/* Small movie poster (rendered by _MoviePoster) */
+.bk-mini-poster {
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 13px;
+  box-shadow: 4px 6px 10px #0003;
+}
+
+/* _MoviePoster sizes its drawn title for full-size cards; shrink it to fit here. */
+.bk-mini-poster p {
+  font-size: 13px;
+}
+
+.bk-mini-poster--large p {
+  font-size: 18px;
+}
+
+.bk-ticket-movie h2 {
+  margin: 0 0 11px;
+  font-size: clamp(21px, 2vw, 28px);
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+
+.bk-ticket-movie p {
+  margin: 4px 0;
+  color: #52746f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Tear line across the full card width */
+.bk-dotted {
+  margin: 28px -28px;
+  border-top: 2px dashed #9bbaae;
+}
+
+.bk-receipt-lines {
+  margin: 0;
+}
+
+.bk-receipt-lines > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 22px;
+  margin-bottom: 17px;
+  font-size: 13px;
+}
+
+.bk-receipt-lines dt {
+  color: #6a8279;
+}
+
+.bk-receipt-lines dd {
+  margin: 0;
+  font-weight: 800;
+  text-align: right;
+}
+
+.bk-receipt-lines .bk-total {
+  margin-top: 25px;
+  padding-top: 24px;
+  border-top: 1px solid #adc8bd;
+  font-size: 19px;
+}
+
+.bk-receipt-lines .bk-total dd {
+  color: #037f87;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.bk-ticket-note {
+  margin: 22px 0 0;
+  color: #65867c;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ---------- Step 2: Seat selection ---------- */
+
+.bk-seat-back {
+  position: relative;
+  z-index: 3;
+  margin-top: 16px;
+  border-color: #fff8;
+  box-shadow: 0 8px 18px #0004;
+}
+
+.bk-screen {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+  max-width: 680px;
+  height: clamp(80px, 12vw, 120px);
+  margin: 10px auto 24px;
+}
+
+.bk-screen-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bk-screen-rim {
+  stroke: var(--color-cinema-poster-peach);
+  stroke-opacity: 0.75;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+}
+.bk-screen span {
+  position: relative;
+  color: color-mix(in srgb, var(--color-cinema-cream) 75%, transparent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.bk-seat-scroller {
+  max-width: 100%;
+  padding: 32px 0 18px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-color: #67b6b5 #164346;
+  scrollbar-width: thin;
+}
+
+.bk-seat-map {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 580px;
+  max-width: 680px;
+  margin: auto;
+}
+
+/* Continuous rows of sixteen chairs, with horizontal cross-aisles between blocks. */
+.bk-seat-row {
+  display: grid;
+  grid-template-columns: 22px repeat(16, minmax(22px, 1fr)) 22px;
+  align-items: center;
+  gap: 5px;
+}
+
+.bk-seat-zone { display: flex; flex-direction: column; gap: 6px; }
+.bk-seat-zone + .bk-seat-zone { margin-top: clamp(22px, 3vw, 36px); }
+.bk-seat-zone--premium .bk-seat-row { margin-left: 20px; }
+.bk-seat-zone--vip .bk-seat-row { grid-template-columns: 22px repeat(8, minmax(44px, 1fr)) 22px; gap: 12px; }
+.bk-seat.bk-seat--vip { aspect-ratio: 2.1; }
+.bk-seat-chair.bk-seat-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }
+.bk-seat-chair.bk-seat-pair::before, .bk-seat-chair.bk-seat-pair::after { content: none; }
+.bk-seat-pair > .bk-seat-chair { min-width: 0; }
+.bk-seat-pair > .bk-seat-selected-mark {
+  width: 76%;
+  height: 76%;
+  aspect-ratio: auto;
+  border-radius: 999px;
+}
+
+.bk-row-label {
+  color: #add5d2;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Compact cinema chairs: rounded backrest, soft armrests and a padded cushion.
+   The native checkbox still covers the whole chair and supplies its state. */
+:where(.bk-seat, .bk-legend > span, .bk-seat-prices > span, .bk-summary-seat-icon) {
+  --seat-fabric: var(--color-cinema-cream);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-cream) 72%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-cream) 52%, var(--color-cinema-deep));
+  --seat-highlight: rgb(255 255 255 / 0.8);
+  --seat-text: var(--color-cinema-deep);
+}
+
+.bk-seat {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 34px;
+  aspect-ratio: 1.05;
+  cursor: pointer;
+}
+
+.bk-seat input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.bk-seat-chair {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--seat-text);
+  font-style: normal;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgb(7 28 30 / 0.35));
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms;
+}
+
+/* The backrest is inset so both armrests have a distinct silhouette. */
+.bk-seat-chair::before,
+.bk-seat-sofa-half::before {
+  content: "";
+  position: absolute;
+  top: 7%;
+  left: 12%;
+  width: 76%;
+  height: 66%;
+  border: 1px solid var(--seat-edge);
+  border-radius: 32% 32% 18% 18%;
+  background: linear-gradient(160deg, var(--seat-fabric) 70%, var(--seat-shade));
+  box-shadow: inset 0 1px 0 var(--seat-highlight);
+}
+
+/* A horizontal seam separates the rounded backrest from the soft seat cushion. */
+.bk-seat-chair::after,
+.bk-seat-sofa-half::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 10%;
+  bottom: 6%;
+  width: 80%;
+  height: 23%;
+  border: 1px solid var(--seat-edge);
+  border-bottom: 3px solid var(--seat-edge);
+  border-radius: 35% 35% 40% 40%;
+  background: linear-gradient(var(--seat-fabric), var(--seat-shade));
+  box-shadow: inset 0 1px 0 var(--seat-highlight);
+}
+
+.bk-seat-armrests::before,
+.bk-seat-armrests::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 48%;
+  width: 10%;
+  height: 46%;
+  border: 1px solid var(--seat-edge);
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--seat-fabric), var(--seat-shade));
+  box-shadow: inset 0 1px 0 var(--seat-highlight);
+}
+.bk-seat-armrests::before { left: 0; }
+.bk-seat-armrests::after { right: 0; }
+
+/* VIP loveseat: two padded sections with a clear center gap and outer arms. */
+.bk-seat-chair.bk-seat-sofa {
+  display: block;
+  padding: 0;
+  box-sizing: border-box;
+}
+.bk-seat-chair.bk-seat-sofa::after {
+  content: "";
+  z-index: 1;
+  left: 7%;
+  width: 86%;
+  height: 17%;
+  box-sizing: border-box;
+  border-radius: 6% 6% 10% 10% / 20% 20% 35% 35%;
+}
+.bk-seat-sofa-half {
+  position: absolute;
+  top: 0;
+  width: calc(41% - 1px);
+  height: 100%;
+}
+.bk-seat-sofa-half:first-child { left: 9%; }
+.bk-seat-sofa-half:nth-child(2) { right: 9%; }
+.bk-seat-sofa-half::before {
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 18% 18% 7% 7%;
+}
+.bk-seat-sofa-half::after {
+  left: 0;
+  width: 100%;
+  height: 27%;
+  box-sizing: border-box;
+  border-radius: 8% 8% 12% 12% / 20% 20% 30% 30%;
+}
+.bk-seat-sofa > .bk-seat-armrests { position: absolute; inset: 0; }
+.bk-seat-sofa > .bk-seat-armrests::before,
+.bk-seat-sofa > .bk-seat-armrests::after {
+  top: 42%;
+  width: 8%;
+  height: 52%;
+  box-sizing: border-box;
+  border-radius: 35% 35% 20% 20% / 15% 15% 10% 10%;
+}
+.bk-seat-sofa > .bk-seat-armrests::before { left: 3%; }
+.bk-seat-sofa > .bk-seat-armrests::after { right: 3%; }
+/* A sun-yellow circle and ink tick identify every selected chair. */
+.bk-seat-selected-mark {
+  position: absolute;
+  z-index: 4;
+  top: 47%;
+  left: 50%;
+  width: 76%;
+  height: 76%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-cinema-sun);
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -50%);
+  transition: opacity 160ms ease;
+}
+.bk-seat-selected-mark::before {
+  content: "";
+  position: absolute;
+  top: 22%;
+  left: 35%;
+  width: 25%;
+  height: 43%;
+  border-right: 3px solid var(--color-cinema-ink);
+  border-bottom: 3px solid var(--color-cinema-ink);
+  transform: rotate(45deg);
+}
+.bk-seat-pair > .bk-seat-selected-mark::before {
+  left: 43%;
+  width: 12%;
+}
+.bk-seat input:checked + .bk-seat-chair .bk-seat-selected-mark,
+.bk-legend--selected .bk-seat-selected-mark {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bk-seat--premium {
+  --seat-fabric: var(--color-cinema-sky);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-sky) 72%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-sky) 52%, var(--color-cinema-deep));
+}
+.bk-seat-row--cream .bk-seat {
+  --seat-fabric: var(--color-cinema-cream);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-cream) 72%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-cream) 52%, var(--color-cinema-deep));
+}
+.bk-seat--vip {
+  --seat-fabric: var(--color-cinema-sun);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-sun) 72%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-sun) 52%, var(--color-cinema-deep));
+}
+
+.bk-seat input:checked + .bk-seat-chair,
+.bk-legend--selected {
+  --seat-fabric: var(--color-cinema-cyan);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-cyan) 76%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-cyan) 45%, var(--color-cinema-deep));
+  --seat-highlight: rgb(255 255 255 / 0.5);
+  --seat-text: var(--color-cinema-ink);
+}
+.bk-seat input:checked + .bk-seat-chair { transform: translateY(-2px); }
+
+.bk-seat input:focus-visible + .bk-seat-chair {
+  outline: 2px solid var(--color-cinema-cream);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.bk-seat--sold,
+.bk-legend--sold {
+  --seat-fabric: color-mix(in srgb, var(--color-cinema-ink) 85%, var(--color-cinema-deep));
+  --seat-shade: var(--color-cinema-ink);
+  --seat-edge: color-mix(in srgb, var(--color-cinema-deep) 80%, var(--color-cinema-cream));
+  --seat-highlight: rgb(255 255 255 / 0.06);
+  --seat-text: color-mix(in srgb, var(--color-cinema-cream) 45%, var(--color-cinema-deep));
+}
+.bk-seat--sold { cursor: not-allowed; }
+.bk-seat--sold .bk-seat-chair { filter: none; }
+.bk-seat-occupied::before,
+.bk-seat-occupied::after { content: none; }
+.bk-seat-occupant { display: block; width: 100%; height: 100%; }
+.bk-seat--available input:disabled + .bk-seat-chair { opacity: 0.5; }
+
+@media (hover: hover) and (pointer: fine) {
+  .bk-seat--available:has(input:not(:disabled)):hover .bk-seat-chair {
+    filter: brightness(1.06) drop-shadow(0 4px 3px rgb(7 28 30 / 0.4));
+    transform: translateY(-2px);
+  }
+}
+
+@media (pointer: coarse) {
+  /* Keep touch targets at least 44px; the existing scroller contains the wider map. */
+  .bk-seat-map { min-width: 865px; }
+  .bk-seat { min-height: 44px; }
+}
+
+.bk-seat-prices > span > .bk-seat-chair { width: clamp(24px, 4vw, 32px); height: clamp(24px, 4vw, 32px); flex: none; }
+.bk-seat-prices > span > .bk-seat-pair { width: clamp(48px, 8vw, 64px); }
+.bk-legend > span > .bk-seat-chair { width: 20px; height: 22px; flex: none; }
+
+.bk-seat-feedback {
+  min-height: 22px;
+  margin: 0 0 18px;
+  color: #bfe6df;
+  font-size: 12px;
+  text-align: center;
+}
+
+.bk-seat-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-top: 22px;
+  border-top: 1px dashed #fff5;
+}
+
+.bk-show-info .bk-seat-bottom { grid-column: 1 / -1; }
+.bk-seat-bottom > div:first-child { flex: 1 1 0; }
+.bk-seat-bottom > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bk-seat-bottom small {
+  color: #b2d0cb;
+}
+
+.bk-seat-bottom strong {
+  letter-spacing: -0.03em;
+}
+
+.bk-seat-bottom .bk-price strong {
+  color: var(--color-cinema-cyan);
+}
+
+/* Screening info card beside the seat map */
+
+.bk-show-info {
+  padding: 24px;
+}
+
+.bk-poster-small {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 300px;
+  padding: 20px;
+  overflow: hidden;
+  border-radius: 23px;
+  background:
+    radial-gradient(circle at 75% 45%, #6adfe1aa, transparent 44%),
+    linear-gradient(145deg, #042a2d, #124b50 60%, #2cb9c3);
+  box-shadow:
+    6px 11px 20px #0005,
+    inset 2px 2px 2px #ffffff44;
+}
+
+.bk-poster-small > span {
+  color: #c6f5ea;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.bk-poster-small > strong {
+  position: relative;
+  z-index: 1;
+  max-width: 80%;
+  font-size: clamp(28px, 3vw, 45px);
+  font-weight: 950;
+  line-height: 0.97;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+}
+
+/* Cyan ring artwork */
+.bk-poster-small > b {
+  position: absolute;
+  top: 40px;
+  right: -86px;
+  width: 250px;
+  height: 250px;
+  border: 40px solid #68e1e3;
+  border-radius: 50%;
+  box-shadow:
+    inset 9px 9px 18px #0007,
+    8px 12px 16px #0006;
+}
+
+.bk-show-facts {
+  margin: 28px 4px 22px;
+}
+
+.bk-show-facts h2 {
+  margin: 4px 0 14px;
+  font-size: 28px;
+}
+
+.bk-show-facts p:not(.bk-kicker) {
+  margin: 6px 0;
+  color: #d1e9e2;
+  font-size: 13px;
+}
+
+.bk-muted {
+  color: #bad6cf;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ---------- Step 3: Summary ---------- */
+
+
+
+
+
+
+
+
+
+.bk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.bk-actions form {
+  margin: 0;
+}
+
+.bk-actions .bk-primary {
+  margin-left: auto;
+}
+
+/* ---------- Step 4: Payment ---------- */
+
+.bk-methods {
+  margin: 18px 0 27px;
+  padding: 0;
+  border: 0;
+}
+
+.bk-methods legend {
+  margin-bottom: 16px;
+  color: #d4e6df;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.bk-method {
+  display: block;
+  margin-bottom: 13px;
+  cursor: pointer;
+}
+
+/* The radio stays focusable but invisible; the card face shows its state. */
+.bk-method input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.bk-method-face {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  min-height: 98px;
+  padding: 18px 20px;
+  border: 1px solid #fffc;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #2d6869, #1a4446);
+  box-shadow:
+    6px 7px 13px #0003,
+    inset 1px 1px 2px #fff2;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.15s;
+}
+
+.bk-method-icon {
+  flex: none;
+  width: 50px;
+  height: 50px;
+  padding: 8px;
+  object-fit: contain;
+  border-radius: 15px;
+  background: #0e3a3d;
+  box-shadow: inset 2px 2px 2px #fff2;
+}
+
+.bk-method-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bk-method-text strong {
+  font-size: 16px;
+}
+
+.bk-method-text small {
+  color: #c1d6d0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.bk-radio-dot {
+  position: relative;
+  flex: none;
+  width: 21px;
+  height: 21px;
+  margin-left: auto;
+  border: 2px solid #f9f6dc;
+  border-radius: 50%;
+}
+
+.bk-method input:checked + .bk-method-face {
+  border-color: #50ebeb;
+  background: linear-gradient(135deg, #348889, #195357);
+  box-shadow:
+    0 0 0 2px #25d6df44,
+    6px 9px 16px #0004,
+    inset 1px 1px 2px #fff4;
+}
+
+.bk-method input:checked + .bk-method-face .bk-radio-dot {
+  border-color: #71f6ed;
+}
+
+.bk-method input:checked + .bk-method-face .bk-radio-dot::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #75f7f0;
+}
+
+.bk-method input:focus-visible + .bk-method-face {
+  outline: 3px solid var(--color-cinema-cream);
+  outline-offset: 3px;
+}
+
+.bk-payment-note {
+  margin: 0;
+  padding: 16px 20px;
+  border: 1px dashed #fff4;
+  border-radius: 16px;
+  background: #0a3738bb;
+  color: #ceebe6;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bk-pay-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px dashed #fff7;
+  font-size: 14px;
+}
+
+.bk-pay-total strong {
+  color: #6df5ef;
+  font-size: 36px;
+  letter-spacing: -0.06em;
+}
+
+.bk-pay-submit {
+  width: 100%;
+  font-size: 15px;
+}
+
+/* ---------- Confirmation ---------- */
+
+.booking-page .bk-success {
+  max-width: 810px;
+}
+
+.bk-admission-ticket {
+  box-shadow: 0 24px 48px -16px rgb(7 28 30 / 0.3);
+}
+
+/* Paper-colored holes form the tear line and half-round ticket notches. */
+.bk-admission-perforation {
+  position: relative;
+  height: 28px;
+}
+.bk-admission-perforation span {
+  display: block;
+  height: 100%;
+  margin: 0 30px;
+  background: radial-gradient(circle, var(--color-cinema-paper) 0 3px, transparent 3.5px) center / 24px 28px repeat-x;
+}
+.bk-admission-perforation::before,
+.bk-admission-perforation::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-cinema-paper);
+}
+.bk-admission-perforation::before { left: -14px; }
+.bk-admission-perforation::after { right: -14px; }
+
+.bk-confirm-book { color: var(--color-cinema-ink); }
+.bk-confirm-home { color: var(--color-cinema-cream); }
+
+.bk-confirm-action {
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .bk-confirm-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgb(7 28 30 / 0.18), inset 0 1px 1px rgb(255 255 255 / 0.3);
+  }
+}
+
+/* ---------- Tablet ---------- */
+
+@media (max-width: 1023px) {
+  .bk-steps {
+    margin-bottom: 42px;
+  }
+
+  .bk-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+    gap: 17px;
+  }
+
+  .bk-seat-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .bk-panel {
+    border-radius: 27px;
+  }
+
+  .bk-seat-map {
+    max-width: 700px;
+  }
+
+  .bk-show-info {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    column-gap: 26px;
+  }
+
+  .bk-show-info .bk-poster-small {
+    grid-row: 1 / 4;
+    min-height: 225px;
+  }
+
+  .bk-show-facts {
+    margin: 14px 0;
+  }
+
+  .bk-show-info > .bk-muted {
+    margin: 0;
+  }
+
+  .bk-show-info > .bk-text-link {
+    grid-column: 2;
+    margin-top: 5px;
+  }
+}
+
+/* ---------- Phone ---------- */
+
+@media (max-width: 767px) {
+  .bk-steps {
+    gap: 4px;
+    margin: 0 0 30px;
+    padding: 12px 5px;
+    border-radius: 20px;
+  }
+
+  .bk-steps li {
+    flex-direction: column;
+    gap: 7px;
+    font-size: 10px;
+  }
+
+  .bk-step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .bk-heading {
+    min-height: 120px;
+    margin-bottom: 24px;
+  }
+
+  .bk-heading h1 {
+    max-width: 540px;
+    margin-bottom: 14px;
+    font-size: clamp(39px, 8.8vw, 66px);
+  }
+
+  .bk-heading p:not(.bk-kicker, .bk-screening-meta) {
+    max-width: 340px;
+    font-size: 13px;
+  }
+
+  .bk-heading-art {
+    top: -18px;
+    right: -5px;
+    width: 100px;
+    opacity: 0.64;
+  }
+
+  .bk-heading-art--glasses {
+    top: -22px;
+    right: 0;
+    width: 105px;
+    opacity: 0.65;
+  }
+
+  .bk-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .bk-panel {
+    padding: 19px;
+    border-radius: 23px;
+  }
+
+  .bk-panel-title {
+    margin-bottom: 23px;
+  }
+
+  .bk-panel-title h2 {
+    font-size: 24px;
+  }
+
+  .bk-panel-title p:not(.bk-kicker) {
+    font-size: 12px;
+  }
+
+  .bk-seat-panel {
+    padding: 19px 11px;
+  }
+
+  .bk-seat-panel > .bk-panel-title {
+    padding: 0 10px;
+  }
+
+  .bk-seat-scroller {
+    padding-right: 3px;
+    padding-left: 3px;
+  }
+
+  .bk-screen {
+    max-width: 85%;
+    margin-bottom: 22px;
+  }
+
+  .bk-seat-bottom {
+    gap: 10px;
+    padding: 18px 8px 6px;
+  }
+
+  .bk-seat-bottom .bk-primary {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .bk-show-info {
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 10px;
+    padding: 18px;
+  }
+
+  .bk-show-info .bk-poster-small {
+    grid-row: auto;
+    min-height: 170px;
+    padding: 10px;
+  }
+
+  .bk-show-info .bk-poster-small > strong {
+    font-size: 19px;
+  }
+
+  .bk-show-facts {
+    margin: 5px 0;
+  }
+
+  .bk-show-facts h2 {
+    margin: 4px 0;
+    font-size: 20px;
+  }
+
+  .bk-show-facts p:not(.bk-kicker) {
+    font-size: 11px;
+  }
+
+  .bk-show-info .bk-muted,
+  .bk-show-info .bk-text-link {
+    grid-column: 1 / -1;
+  }
+
+
+
+
+
+
+
+  .bk-ticket {
+    padding: 25px 24px 33px;
+  }
+
+  .bk-dotted {
+    margin: 25px -24px;
+  }
+
+  .bk-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .bk-actions form,
+  .bk-actions button,
+  .bk-actions .bk-primary {
+    width: 100%;
+  }
+
+  .bk-method-face {
+    gap: 11px;
+    padding: 15px;
+  }
+
+  .bk-method-text strong {
+    font-size: 13px;
+  }
+
+  .bk-method-text small {
+    font-size: 11px;
+  }
+
+  .bk-method-icon {
+    width: 43px;
+    height: 43px;
+  }
+
+  .bk-pay-total strong {
+    font-size: 29px;
+  }
+
+}
+
+@media (max-width: 360px) {
+  .bk-steps li {
+    font-size: 9px;
+  }
+
+  .bk-heading h1 {
+    font-size: 38px;
+  }
+
+  .bk-heading-art {
+    width: 70px;
+  }
+
+
+  .bk-ticket-top {
+    gap: 11px;
+  }
+
+  .bk-ticket-movie h2 {
+    font-size: 20px;
+  }
+}

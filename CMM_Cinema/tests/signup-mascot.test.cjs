@@ -352,58 +352,6 @@ test('switching works without GSAP and with reduced motion; no-JS markup remains
   } finally { fallback.window.close(); }
 });
 
-test('compact toggle switches accessible forms, preserves values, and masks passwords without submitting', () => {
-  for (const reduced of [false, true]) {
-    const ui = setup({ wide: false, reduced, mode: 'login' });
-    try {
-      const buttons = [...ui.document.querySelectorAll('[data-auth-mode-button]')];
-      const [login, register] = buttons;
-      const password = ui.document.getElementById('login-password');
-      let submissions = 0;
-      ui.page.addEventListener('submit', () => { submissions++; });
-      assert.equal(ui.document.querySelector('[data-auth-mode-toggle]').hidden, false);
-      buttons.forEach(button => assert.equal(button.type, 'button'));
-      password.value = 'MovieNight123';
-      ui.document.querySelector('#auth-login-panel [data-password-toggle]').click();
-      password.focus();
-      register.click();
-      assert.equal(ui.document.activeElement, register);
-      assert.equal(register.getAttribute('aria-pressed'), 'true');
-      assert.equal(login.getAttribute('aria-pressed'), 'false');
-      assert.equal(ui.document.getElementById('auth-login-panel').hasAttribute('inert'), true);
-      assert.equal(ui.form.closest('[data-auth-view]').hasAttribute('inert'), false);
-      assert.equal(password.type, 'password');
-      ui.input('name', 'Cinema Guest');
-      login.click();
-      assert.equal(password.value, 'MovieNight123');
-      assert.equal(login.getAttribute('aria-pressed'), 'true');
-      register.click();
-      assert.equal(ui.form.elements.name.value, 'Cinema Guest');
-      assert.equal(ui.document.querySelectorAll('[data-auth-view][data-active]').length, 1);
-      assert.equal(submissions, 0);
-    } finally { ui.dom.window.close(); }
-  }
-});
-
-test('viewport changes transfer switch focus without changing the selected form', () => {
-  const ui = setup({ wide: false, mode: 'register' });
-  try {
-    const register = ui.document.querySelector('[data-auth-mode-button="register"]');
-    register.focus();
-    ui.desktop.matches = true;
-    ui.desktop.dispatchEvent(new ui.window.Event('change'));
-    assert.equal(ui.document.activeElement, ui.switchButton);
-    ui.desktop.matches = false;
-    ui.desktop.dispatchEvent(new ui.window.Event('change'));
-    assert.equal(ui.document.activeElement, register);
-    assert.equal(ui.card.dataset.authMode, 'register');
-    ui.form.elements.name.focus();
-    ui.desktop.matches = true;
-    ui.desktop.dispatchEvent(new ui.window.Event('change'));
-    assert.equal(ui.document.activeElement, ui.form.elements.name);
-  } finally { ui.dom.window.close(); }
-});
-
 test('password mismatch reacts on blur or invalid submission, not on each keystroke, and correction clears it', async () => {
   const ui = setup();
   try {

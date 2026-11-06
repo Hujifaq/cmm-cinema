@@ -22,6 +22,9 @@
   --color-cinema-brick: #b94734;
   --color-cinema-logo: #1a4466;
   --color-cinema-linen: #fbf6e8;
+  /* Neutral avatar treatment for occupied cinema seats. */
+  --color-cinema-seat-occupied: #68696d;
+  --color-cinema-seat-person: #c6c8ca;
   /* Accents reserved for the account posters. */
   --color-cinema-poster-red: #ff2638;
   --color-cinema-poster-amber: #ffb52e;
@@ -43,6 +46,9 @@
 
 @layer base {
   *, ::before, ::after { box-sizing: border-box; }
+  :root {
+    --cinema-hero-gradient: linear-gradient(128deg, #020c0d 2%, #124d4e 38%, #218e91 70%, #29d9dd 100%);
+  }
 }
 
 /* One moving surface connects the navbar's search and account actions. */

@@ -1,0 +1,78 @@
+@model BookingDetailsViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Payment";
+    var booking = Model.Booking;
+}
+
+<div class="bk-flow">
+    @await Html.PartialAsync("_BookingSteps", 4)
+
+    <header class="bk-heading">
+        <div>
+            <p class="bk-kicker">✦ &nbsp; Step 04 / Almost there</p>
+            <h1>The magic <em>awaits.</em></h1>
+            <p>Choose a demo payment option to finish your booking.</p>
+        </div>
+        <img class="bk-heading-art" src="~/images/hero/star.svg" alt="" aria-hidden="true" />
+    </header>
+
+    <div class="bk-grid">
+        <section class="bk-panel" aria-labelledby="pay-heading">
+            <div class="bk-panel-title">
+                <div>
+                    <h2 id="pay-heading">Payment method</h2>
+                </div>
+            </div>
+
+            <p class="bk-alert bk-alert--demo">DEMO CHECKOUT: no real payment is made. Do not enter any card or banking information.</p>
+            @if (ViewData["PaymentError"] is string error)
+            {
+                <p class="bk-alert" role="alert">@error</p>
+            }
+
+            <form method="post" asp-action="Pay" data-payment-form>
+                <input type="hidden" name="bookingId" value="@booking.Id" />
+
+                <fieldset class="bk-methods">
+                    <legend>Choose one option</legend>
+                    <label class="bk-method">
+                        <input type="radio" name="paymentMethod" value="card" checked />
+                        <span class="bk-method-face">
+                            <img class="bk-method-icon" src="~/images/payment/credit.png" alt="" loading="lazy" />
+                            <span class="bk-method-text">
+                                <strong>Credit / Debit Card</strong>
+                                <small>Simulated card payment · no card details needed</small>
+                            </span>
+                            <span class="bk-radio-dot" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    <label class="bk-method">
+                        <input type="radio" name="paymentMethod" value="promptpay" />
+                        <span class="bk-method-face">
+                            <img class="bk-method-icon" src="~/images/payment/qr.png" alt="" loading="lazy" />
+                            <span class="bk-method-text">
+                                <strong>PromptPay / QR</strong>
+                                <small>Simulated QR confirmation · no transfer needed</small>
+                            </span>
+                            <span class="bk-radio-dot" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                </fieldset>
+
+                <p class="bk-payment-note" aria-live="polite" data-payment-description>Card selected. Tap confirm to simulate a successful payment. No card details will be collected.</p>
+
+                <div class="bk-pay-total">
+                    <span>Total to confirm</span>
+                    <strong>฿@booking.Total.ToString("N0", CultureInfo.InvariantCulture)</strong>
+                </div>
+                <p class="bk-hold" role="status" data-hold-expiry="@booking.ExpiresAt.ToUnixTimeSeconds()">Seats held for <b data-countdown>10:00</b></p>
+                <button class="bk-primary bk-pay-submit" type="submit" data-hold-action>Confirm demo booking <span aria-hidden="true">→</span></button>
+            </form>
+
+            <a class="bk-text-link" asp-action="Summary" asp-route-bookingId="@booking.Id">← Back to summary</a>
+        </section>
+
+        @await Html.PartialAsync("_OrderCard", Model)
+    </div>
+</div>

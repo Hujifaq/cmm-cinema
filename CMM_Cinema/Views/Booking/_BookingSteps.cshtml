@@ -1,0 +1,46 @@
+@model int
+@{
+    var steps = new[] { "Showtimes", "Seats", "Summary" };
+    var complete = Model > steps.Length;
+    var currentStep = Math.Clamp(Model, 1, steps.Length);
+    var itemClass = "relative flex min-w-0 items-center justify-center text-[10px] font-bold sm:text-xs";
+    var contentClass = "booking-step-content relative isolate inline-flex min-w-0 items-center justify-center rounded-[20px] px-3 py-2 sm:rounded-full sm:px-5";
+    var labelClass = "relative flex min-w-0 flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3";
+    var numberClass = "booking-step-badge relative inline-flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] sm:size-10 sm:text-xs";
+}
+
+<ol class="mb-10 mt-0 grid list-none grid-cols-3 gap-2 rounded-[24px] bg-cinema-ink/[0.04] p-2 font-sans sm:mb-12 sm:rounded-full" aria-label="Booking progress" data-booking-progress>
+    @for (var step = 1; step <= steps.Length; step++)
+    {
+        var done = complete || step < currentStep;
+        var current = !complete && step == currentStep;
+        var state = done ? "completed" : current ? "current" : "upcoming";
+        var circleColor = current ? "bg-cinema-ink text-cinema-cream shadow-clay-pill" : done ? "bg-cinema-logo text-white" : "bg-cinema-ink/[0.06] text-cinema-ink/40";
+        <li class="@itemClass @(current || done ? "text-cinema-ink" : "text-cinema-ink/40")" aria-current="@(current ? "step" : null)" data-booking-step-state="@state">
+            <span class="@contentClass" data-goo-button="@(current || done ? "" : null)">
+                @if (current || done)
+                {
+                    <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                        <span class="booking-step-base absolute inset-0 rounded-[20px] sm:rounded-full"></span>
+                        <span class="absolute inset-0 overflow-hidden rounded-[20px] sm:rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full" data-goo-fill></span></span>
+                        <span class="absolute left-0 top-0 size-9 rounded-full" data-goo-blob></span>
+                    </span>
+                }
+                <span class="@labelClass" data-goo-label>
+                    <span class="@numberClass @circleColor" aria-hidden="true">
+                        @if (done)
+                        {
+                            <svg class="size-4 sm:size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m6 12 4 4 8-9" /></svg>
+                        }
+                        else
+                        {
+                            <span>@step.ToString("00")</span>
+                        }
+                    </span>
+                    <span>@steps[step - 1]<span class="sr-only">: @(done ? "Completed" : current ? "Current step" : "Upcoming")</span></span>
+                </span>
+            </span>
+        </li>
+    }
+</ol>
+<p class="sr-only">@(complete ? $"Booking complete. All {steps.Length} steps completed." : $"Step {currentStep} of {steps.Length}: {steps[currentStep - 1]}.")</p>

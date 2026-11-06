@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Filled-in copy of secrets.example.json; real values, never commit
+secrets.local.json
