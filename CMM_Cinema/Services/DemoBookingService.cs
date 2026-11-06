@@ -75,7 +75,7 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
-    public bool TryHoldSeats(int showtimeId, IEnumerable<string> seatIds, out BookingHold? booking, out string error)
+    public bool TryHoldSeats(int ownerId, int showtimeId, IEnumerable<string> seatIds, out BookingHold? booking, out string error)
     {
         booking = null;
         var seats = seatIds.Select(id => (id ?? "").Trim().ToUpperInvariant()).Distinct().ToArray();
@@ -106,7 +106,7 @@ public sealed class DemoBookingService : IBookingService
             }
 
             var ordered = seats.OrderBy(id => id[0]).ThenBy(id => int.Parse(id[1..])).ToArray();
-            booking = new BookingHold(Guid.NewGuid(), showtimeId, ordered, GetSeatPrice(showtime),
+            booking = new BookingHold(Guid.NewGuid(), ownerId, showtimeId, ordered, GetSeatPrice(showtime),
                 DateTimeOffset.UtcNow + HoldLength, BookingStatus.Held);
             bookings.Add(booking.Id, booking);
             error = "";
@@ -114,16 +114,16 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
-    public BookingHold? GetBooking(Guid bookingId)
+    public BookingHold? GetBooking(int ownerId, Guid bookingId)
     {
         lock (gate)
         {
             RemoveExpiredHolds();
-            return bookings.GetValueOrDefault(bookingId);
+            return FindOwned(ownerId, bookingId);
         }
     }
 
-    public bool TryConfirmPayment(Guid bookingId, string paymentMethod, out string error)
+    public bool TryConfirmPayment(int ownerId, Guid bookingId, string paymentMethod, out string error)
     {
         if (paymentMethod is not ("card" or "promptpay"))
         {
@@ -135,7 +135,7 @@ public sealed class DemoBookingService : IBookingService
         {
             RemoveExpiredHolds();
 
-            if (!bookings.TryGetValue(bookingId, out var booking) || booking.Status != BookingStatus.Held)
+            if (FindOwned(ownerId, bookingId) is not { Status: BookingStatus.Held } booking)
             {
                 error = "Booking has expired or is already complete.";
                 return false;
@@ -159,14 +159,17 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
-    public void CancelHold(Guid bookingId)
+    public void CancelHold(int ownerId, Guid bookingId)
     {
         lock (gate)
         {
-            if (bookings.TryGetValue(bookingId, out var booking) && booking.Status == BookingStatus.Held)
+            if (FindOwned(ownerId, bookingId) is { Status: BookingStatus.Held })
                 bookings.Remove(bookingId);
         }
     }
+
+    private BookingHold? FindOwned(int ownerId, Guid bookingId) =>
+        bookings.TryGetValue(bookingId, out var booking) && booking.OwnerId == ownerId ? booking : null;
 
    
     private Showtime[] GetOrCreateDay(string movieSlug, DateOnly date)

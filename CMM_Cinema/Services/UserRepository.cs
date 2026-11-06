@@ -23,6 +23,11 @@ public sealed class UserRepository(D1Client d1)
             $"SELECT {Columns} FROM users WHERE id = (SELECT user_id FROM user_logins WHERE provider = ? AND provider_key = ?)",
             [provider, providerKey], cancellationToken));
 
+    public async Task<IReadOnlyList<string>> GetLoginProvidersAsync(int userId, CancellationToken cancellationToken = default) =>
+        (await d1.QueryAsync("SELECT provider FROM user_logins WHERE user_id = ? ORDER BY provider", [userId], cancellationToken))
+            .Select(row => Text(row, "provider") ?? "")
+            .ToArray();
+
     // Returns null when the email is already taken, instead of throwing on the UNIQUE constraint.
     public async Task<User?> CreateAsync(string email, string name, string? passwordHash, bool emailVerified, CancellationToken cancellationToken = default)
     {

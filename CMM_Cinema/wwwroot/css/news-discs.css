@@ -1,0 +1,326 @@
+/* News page: 3D disc gallery. The discs are drawn by news-disc-gallery.js into [data-disc-canvas]. */
+
+.disc-news {
+  --pad-x: clamp(0.75rem, 2.5vw, 2rem);
+  /* The site's theme colours when present; otherwise the original's light grey and black. */
+  --ink: var(--color-cinema-ink, #000000);
+  --paper: var(--color-cinema-paper, #f2f2f2);
+  --rule: color-mix(in srgb, var(--ink) 85%, transparent);
+  --text-dir: 1;
+  position: relative;
+  height: 100svh;
+  min-height: 520px;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.disc-news:focus-visible { box-shadow: inset 0 0 0 2px var(--ink); }
+
+.disc-news__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.disc-news[data-disc-ready] .disc-news__canvas { opacity: 1; }
+
+/* ---------- Story info, top left ---------- */
+
+.disc-news__info {
+  position: absolute;
+  top: clamp(6.5rem, 13svh, 8rem);
+  left: var(--pad-x);
+  z-index: 3;
+  width: min(19rem, calc(100% - var(--pad-x) * 2));
+  pointer-events: none;
+}
+
+.disc-news__kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.disc-news__title {
+  margin: 0;
+  padding-bottom: 0.4rem;
+  font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.disc-news__meta { margin: 0; }
+
+.disc-news__meta > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.3rem 0 0.4rem;
+  border-top: 1px solid var(--rule);
+}
+
+.disc-news__meta dt {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.disc-news__meta dd { margin: 0; font-size: 0.85rem; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* The masked text reveal (news-disc-gallery.js) sets up before the first paint of the copy, so nothing flashes. */
+.disc-news:not([data-text-ready]) :is(.disc-news__kicker, .disc-news__title, .disc-news__meta > div, .disc-news__excerpt) { visibility: hidden; }
+
+/* Text swap when the front disc changes */
+.disc-news__title,
+.disc-news__meta dd,
+.disc-news__excerpt {
+  transition: opacity 0.42s ease, transform 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.disc-news .is-leaving {
+  opacity: 0;
+  transform: translateY(calc(var(--text-dir) * -0.45em));
+  transition-duration: 0.18s, 0.18s;
+  transition-timing-function: ease-in, ease-in;
+}
+
+.disc-news .is-entering {
+  opacity: 0;
+  transform: translateY(calc(var(--text-dir) * 0.45em));
+  transition: none;
+}
+
+/* Opening a story: the text steps aside while the discs fly out */
+.disc-news__info,
+.disc-news__footer { transition: opacity 0.35s ease; }
+.disc-news[data-disc-leaving] .disc-news__info,
+.disc-news[data-disc-leaving] .disc-news__footer { opacity: 0; }
+.disc-news[data-disc-leaving] { cursor: default !important; }
+
+/* ---------- Footer: excerpt and controls ---------- */
+
+.disc-news__footer {
+  position: absolute;
+  left: var(--pad-x);
+  right: var(--pad-x);
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 26rem) auto;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  pointer-events: none;
+}
+
+.disc-news__footer > * { pointer-events: auto; }
+.disc-news__excerpt { pointer-events: none; }
+
+.disc-news__excerpt {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.disc-news__controls { display: flex; align-items: center; gap: clamp(1rem, 3vw, 2.5rem); }
+
+.disc-news__read {
+  position: relative;
+  display: inline-block;
+  padding: 0.5rem 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.disc-news__read svg { position: absolute; left: -4%; bottom: 0; width: 108%; height: 0.6rem; overflow: visible; }
+
+.disc-news__read path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.disc-news__read:hover path,
+.disc-news__read:focus-visible path { stroke-dashoffset: 0; }
+.disc-news__read:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 4px; }
+
+.disc-news__nav { display: flex; align-items: center; gap: 0.75rem; }
+
+.disc-news__btn {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
+}
+
+.disc-news__btn svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.disc-news__btn:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+.disc-news__btn:active:not(:disabled) { transform: scale(0.94); }
+.disc-news__btn:disabled { opacity: 0.3; cursor: default; }
+.disc-news__btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.disc-news__progress {
+  position: relative;
+  width: clamp(3.5rem, 8vw, 7rem);
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgb(7 28 30 / 0.16);
+}
+
+.disc-news__progress > span {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform-origin: left center;
+  transform: scaleX(0.125);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.disc-news__hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.disc-news__hint-touch { display: none; }
+
+@media (hover: none), (pointer: coarse) {
+  .disc-news__hint-fine { display: none; }
+  .disc-news__hint-touch { display: inline; }
+}
+
+/* Story list: the source for the discs; also the fallback when WebGL is unavailable. */
+.disc-news__list {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.disc-news__list img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(60vmin, 520px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  translate: -50% -50%;
+  -webkit-mask: radial-gradient(circle closest-side, transparent 24%, #000 calc(24% + 1px));
+  mask: radial-gradient(circle closest-side, transparent 24%, #000 calc(24% + 1px));
+  box-shadow: 0 0 0 3px #e9ecef;
+}
+
+.disc-news.is-static .disc-news__list { visibility: visible; }
+.disc-news.is-static .disc-news__list li:not([data-disc-status="active"]) { display: none; }
+.disc-news.is-static:not([data-active-index]) .disc-news__list li:first-child { display: block; }
+
+.disc-news__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Tablet and phone (991px and below): discs drop toward the lower right ---------- */
+
+@media (max-width: 991px) {
+  .disc-news__info { top: clamp(6rem, 12svh, 7.5rem); width: min(24rem, calc(100% - var(--pad-x) * 2)); }
+}
+
+@media (max-width: 767px) {
+  .disc-news { min-height: 480px; }
+  .disc-news__info { top: calc(max(12px, env(safe-area-inset-top)) + 5rem); width: calc(100% - var(--pad-x) * 2); }
+  .disc-news__title { font-size: clamp(1.3rem, 6.4vw, 1.8rem); }
+  .disc-news__meta dd { font-size: 0.8rem; }
+  .disc-news__footer { grid-template-columns: 1fr; bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .disc-news__excerpt { -webkit-line-clamp: 2; font-size: 0.88rem; }
+  .disc-news__controls { justify-content: space-between; }
+  .disc-news__hint { display: none; }
+}
+
+/* Short landscape screens: keep the text compact */
+@media (max-height: 540px) and (orientation: landscape) {
+  .disc-news { min-height: 0; }
+  .disc-news__info { top: 4.75rem; width: min(16rem, 34vw); }
+  .disc-news__meta > div:nth-child(n + 2) { display: none; }
+  .disc-news__excerpt, .disc-news__hint { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disc-news__canvas, .disc-news__title, .disc-news__meta dd, .disc-news__excerpt,
+  .disc-news__read path, .disc-news__btn, .disc-news__progress > span { transition: none; }
+}
+
+/* ---------- Arriving from the bottom of a story ----------
+   The gallery is already "below" the story: the story page lifts away to the top while the gallery
+   waits underneath, so the two read as one long page. The navbar keeps its own layer and stays put. */
+
+:root[data-news-drop]::view-transition { background: transparent; }
+
+:root[data-news-drop]::view-transition-group(root) { animation-duration: 1s; }
+
+:root[data-news-drop]::view-transition-new(root) {
+  z-index: 1;
+  animation: news-gallery-settle 1s cubic-bezier(0.65, 0, 0.15, 1) both;
+}
+
+:root[data-news-drop]::view-transition-old(root) {
+  z-index: 2;
+  animation: news-story-lift 1s cubic-bezier(0.65, 0, 0.15, 1) both;
+}
+
+@keyframes news-story-lift { to { translate: 0 -100%; } }
+@keyframes news-gallery-settle { from { translate: 0 22%; } to { translate: 0 0; } }

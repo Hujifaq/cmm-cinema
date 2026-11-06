@@ -16,8 +16,9 @@ public interface IBookingService
     decimal GetSeatPrice(Showtime showtime);
     IReadOnlyList<Seat> GetSeats(int showtimeId);
 
-    bool TryHoldSeats(int showtimeId, IEnumerable<string> seatIds, out BookingHold? booking, out string error);
-    BookingHold? GetBooking(Guid bookingId);
-    bool TryConfirmPayment(Guid bookingId, string paymentMethod, out string error);
-    void CancelHold(Guid bookingId);
+    // Bookings belong to the signed-in user who held them; another user's id behaves as if the booking doesn't exist.
+    bool TryHoldSeats(int ownerId, int showtimeId, IEnumerable<string> seatIds, out BookingHold? booking, out string error);
+    BookingHold? GetBooking(int ownerId, Guid bookingId);
+    bool TryConfirmPayment(int ownerId, Guid bookingId, string paymentMethod, out string error);
+    void CancelHold(int ownerId, Guid bookingId);
 }

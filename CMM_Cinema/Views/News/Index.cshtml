@@ -1,0 +1,52 @@
+@model IReadOnlyList<NewsStory>
+@{
+    Layout = "_HeroLayout";
+    ViewData["NewsPage"] = true;
+    ViewData["Title"] = "News - CMM Cinema";
+    var first = Model[0];
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/news-discs.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/news-index.css" asp-append-version="true" />
+}
+
+
+
+<section class="disc-news" aria-labelledby="news-title" data-disc-gallery>
+    <div class="disc-news__canvas" data-disc-canvas></div>
+
+    <ol class="disc-news__list" aria-hidden="true">
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            var s = Model[i];
+            <li data-disc-item data-title="@s.Title" data-category="@s.Category" data-date="@s.Date" data-excerpt="@s.Excerpt" data-url="@s.Url" data-art="@NewsData.Art(i)"><img src="@NewsData.Art(i)" alt="" /></li>
+        }
+    </ol>
+
+    <header class="disc-news__info">
+        <h1 class="disc-news__kicker" id="news-title">News &amp; Updates</h1>
+        <h2 class="disc-news__title" data-disc-title>@first.Title</h2>
+        <dl class="disc-news__meta">
+            <div><dt>Category</dt><dd data-disc-category>@first.Category</dd></div>
+            <div><dt>Published</dt><dd data-disc-date>@first.Date</dd></div>
+            <div><dt>Story</dt><dd><span data-disc-index>01</span> / @Model.Count.ToString("00")</dd></div>
+        </dl>
+    </header>
+
+    <footer class="disc-news__footer">
+        <p class="disc-news__excerpt" data-disc-excerpt>@first.Excerpt</p>
+        <div class="disc-news__controls">
+            <a class="disc-news__read" href="@first.Url" data-disc-read>
+                <span>Read story</span>
+                <svg viewBox="0 0 120 10" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6.5 C28 3.5 58 7.5 86 4.8 S112 4.6 118 4" /></svg>
+            </a>
+            
+        </div>
+        
+    </footer>
+</section>
+
+@section Scripts {
+    <script src="~/js/news-disc-gallery.bundle.js" asp-append-version="true" defer></script>
+}

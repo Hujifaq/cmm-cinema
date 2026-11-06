@@ -1,0 +1,42 @@
+@model NewsStoryViewModel
+@{
+    Layout = "_HeroLayout";
+    ViewData["NewsPage"] = true;
+    var s = Model.Story;
+    var art = NewsData.Art(Model.Index);
+    ViewData["Title"] = $"{s.Title} - CMM Cinema";
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/news-story.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/news-index.css" asp-append-version="true" />
+}
+
+
+
+<article class="story" data-story data-story-index="@Model.Index" data-back-url="/News">
+    <header class="story__head">
+        <p class="story__kicker" data-reveal-lines><a href="/News">News &amp; Updates</a> · @((Model.Index + 1).ToString("00")) / @Model.Count.ToString("00")</p>
+        <h1 class="story__title" data-reveal-chars>@s.Title</h1>
+        <dl class="story__meta" data-reveal>
+            <div><dt>Category</dt><dd>@s.Category</dd></div>
+            <div><dt>Published</dt><dd>@s.Date</dd></div>
+        </dl>
+    </header>
+    <img class="story__disc" data-reveal src="@art" alt="" width="900" height="900" />
+    <div class="story__body">
+        <p class="story__lede" data-reveal>@s.Excerpt</p>
+        <p data-reveal>This is sample copy for the story page. Replace it with the full article: who, what, when and why it matters to people coming to the cinema.</p>
+        <p data-reveal>A second paragraph can carry the details: times, prices, which hall, and anything guests should know before they book.</p>
+        <p data-reveal>Close with a short line that points to the next step, such as booking a seat or joining the members list.</p>
+    </div>
+    <section class="story__drop" data-story-drop aria-label="Back to all news">
+        <div class="story__drop-stage">
+            <img class="story__drop-disc" src="@art" alt="" width="900" height="900" />
+        </div>
+    </section>
+</article>
+
+@section Scripts {
+    <script src="~/js/news-story.bundle.js" asp-append-version="true" defer></script>
+}

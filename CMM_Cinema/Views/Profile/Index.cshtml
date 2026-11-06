@@ -1,0 +1,62 @@
+@model ProfileViewModel
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = "Your profile - CMM Cinema";
+    var methods = new List<string>();
+    if (Model.User.HasPassword) methods.Add("Email and password");
+    if (Model.LoginProviders.Contains(CMM_Cinema.Services.AuthClaims.GoogleProvider)) methods.Add("Google");
+    var rowClass = "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-0 border-t border-solid border-cinema-ink/10 py-4";
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+<section class="flex min-h-[calc(100svh_-_36px)] items-center justify-center bg-cinema-paper px-5 pb-14 pt-28 font-sans text-cinema-ink scheme-light md:pb-20 md:pt-36" aria-labelledby="profile-title" data-forgot-password-page>
+    @await Html.PartialAsync("_GooFilter")
+    <div class="w-full max-w-[480px] rounded-[28px] bg-cinema-paper p-6 shadow-clay ring-1 ring-cinema-ink/10 sm:p-10" data-reset-card>
+        <header class="mb-6 text-center">
+            <span class="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-cinema-ink text-2xl font-extrabold text-cinema-cream" aria-hidden="true" data-reveal-up>@Model.Initial</span>
+            <h1 class="m-0 break-words text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="profile-title" data-reveal-chars>@Model.User.Name</h1>
+            <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Your CMM Cinema account</p>
+        </header>
+
+        <dl class="m-0 text-sm" data-reveal-up>
+            <div class="@rowClass">
+                <dt class="font-bold">Email</dt>
+                <dd class="m-0 break-all text-cinema-ink/70">@Model.User.Email</dd>
+            </div>
+            <div class="@rowClass">
+                <dt class="font-bold">Email status</dt>
+                <dd class="m-0">
+                    @if (Model.User.EmailVerified)
+                    {
+                        <span class="inline-flex items-center rounded-full bg-cinema-cyan/15 px-3 py-1 text-xs font-bold text-cinema-ink">Confirmed</span>
+                    }
+                    else
+                    {
+                        <span class="inline-flex items-center rounded-full bg-cinema-ink/[0.06] px-3 py-1 text-xs font-bold text-cinema-ink/70">Not confirmed</span>
+                    }
+                </dd>
+            </div>
+            <div class="@rowClass border-b">
+                <dt class="font-bold">Sign-in methods</dt>
+                <dd class="m-0 text-cinema-ink/70">@string.Join(" · ", methods)</dd>
+            </div>
+        </dl>
+
+        <div class="mt-8 grid gap-3" data-reveal-up>
+            <a class="inline-flex min-h-[44px] w-full items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 text-sm font-bold text-cinema-ink no-underline shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" href="/MyTickets">My tickets</a>
+            <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-3 font-sans text-sm font-bold text-cinema-cream shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" form="cinema-logout-form" data-goo-button>
+                <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                    <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
+                    <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-brick" data-goo-fill></span></span>
+                    <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-brick" data-goo-blob></span>
+                </span>
+                <span class="relative" data-goo-label>Sign out</span>
+            </button>
+        </div>
+    </div>
+</section>
+
+@await Html.PartialAsync("_AccountFooter")

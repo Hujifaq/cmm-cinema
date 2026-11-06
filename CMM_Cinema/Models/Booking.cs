@@ -21,6 +21,7 @@ public record Seat(string Id, char Row, int Number, SeatState State);
 // A seat hold lives in memory only: it is demo data, not a real ticket or payment.
 public record BookingHold(
     Guid Id,
+    int OwnerId,
     int ShowtimeId,
     IReadOnlyList<string> Seats,
     decimal PricePerSeat,
