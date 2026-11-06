@@ -1,7 +1,20 @@
 
 .cinema-hero {
   container-type: size;
-  background: linear-gradient(128deg, #020c0d 2%, #124d4e 38%, #218e91 70%, #29d9dd 100%);
+  background: var(--cinema-hero-gradient);
+}
+
+/* A static film texture sits above the sky and tubes, below lettering and props. */
+.cinema-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='1.9 0 0 0 -0.45 1.9 0 0 0 -0.45 1.9 0 0 0 -0.45 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: soft-light;
+  opacity: 0.24;
 }
 
 .hero-line--large {
@@ -144,6 +157,7 @@
 }
 /* On dense screens, shrink the tile so each grain lands near one device pixel. */
 @media (min-resolution: 2dppx) {
+  .cinema-hero::after,
   .auth-poster-grain { background-size: 120px 120px; }
 }
 .auth-soda-bubbles {

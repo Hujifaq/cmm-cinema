@@ -4,9 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CMM_Cinema.Controllers
 {
-    // Showtimes -> SeatSelection -> Reserve -> Summary -> Payment -> Pay -> Confirmation
+    // Showtimes -> SeatSelection -> Reserve -> Summary -> Confirm -> Confirmation
     public class BookingController(IMovieRepository movies, IBookingService booking) : Controller
     {
+        [HttpGet]
+        public IActionResult Index(string? movie) => RedirectToAction(nameof(Showtimes), new { movie });
+
         [HttpGet]
         public async Task<IActionResult> Showtimes(string? movie, DateOnly? date, int? cinemaId, string? format, string? language,
             CancellationToken cancellationToken)
@@ -46,7 +49,7 @@ namespace CMM_Cinema.Controllers
             if (movie is null) return NotFound();
 
             return View(new SeatSelectionViewModel(movie, booking.GetCinema(showtime.CinemaId)!, showtime,
-                booking.GetSeats(showtimeId), booking.GetSeatPrice(showtime), TempData["SeatError"] as string));
+                booking.GetSeats(showtimeId), TempData["SeatError"] as string));
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -66,28 +69,25 @@ namespace CMM_Cinema.Controllers
             var details = await FindDetailsAsync(bookingId, cancellationToken);
             if (details is null) return RedirectToAction(nameof(Showtimes));
             if (details.Booking.Status != BookingStatus.Held) return RedirectToAction(nameof(Confirmation), new { bookingId });
+            ViewData["BookingError"] = TempData["BookingError"];
             return View(details);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Payment(Guid bookingId, CancellationToken cancellationToken)
-        {
-            var details = await FindDetailsAsync(bookingId, cancellationToken);
-            if (details is null) return RedirectToAction(nameof(Showtimes));
-            if (details.Booking.Status != BookingStatus.Held) return RedirectToAction(nameof(Confirmation), new { bookingId });
-            ViewData["PaymentError"] = TempData["PaymentError"];
-            return View(details);
-        }
+        public IActionResult Payment(Guid bookingId) => RedirectToAction(nameof(Summary), new { bookingId });
 
         [HttpPost, ValidateAntiForgeryToken]
-        public IActionResult Pay(Guid bookingId, string paymentMethod)
+        public IActionResult Pay(Guid bookingId) => RedirectToAction(nameof(Summary), new { bookingId });
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public IActionResult Confirm(Guid bookingId)
         {
-            if (booking.TryConfirmPayment(bookingId, paymentMethod, out var error))
+            if (booking.TryConfirmBooking(bookingId, out var error))
                 return RedirectToAction(nameof(Confirmation), new { bookingId });
 
             if (booking.GetBooking(bookingId) is null) return RedirectToAction(nameof(Showtimes));
-            TempData["PaymentError"] = error;
-            return RedirectToAction(nameof(Payment), new { bookingId });
+            TempData["BookingError"] = error;
+            return RedirectToAction(nameof(Summary), new { bookingId });
         }
 
         [HttpGet]

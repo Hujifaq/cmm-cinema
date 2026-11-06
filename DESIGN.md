@@ -75,6 +75,8 @@ tokens, not hex values, in markup.
 | `cinema-cream` | `#fffde6` | Text on dark, active nav pill, primary light buttons, ticket stub on detail page |
 | `cinema-paper` | `#fffdf5` | Background of all content pages/sections (movies, tickets, news) |
 | `cinema-linen` | `#fbf6e8` | Warm end of the ticket-stub gradient |
+| `cinema-seat-occupied` | `#68696d` | Neutral circular background for occupied-seat avatars |
+| `cinema-seat-person` | `#c6c8ca` | Light gray person silhouette on occupied seats |
 | `cinema-cyan` | `#29d9dd` | Bright accent: mobile menu sheet, active mobile link, hover on dark, goo fill for upcoming tickets |
 | `cinema-sky` | `#6fd8e4` | Soft accent: poster art, goo fill for past tickets |
 | `cinema-sun` | `#ecc861` | Warm accent: poster art |
@@ -98,7 +100,7 @@ and the promos use `--promo-overlap: clamp(24px, 3vw, 48px)`.
 
 ### 3.3 Gradients
 
-- **Hero sky:** `linear-gradient(128deg, #020c0d 2%, #124d4e 38%, #218e91 70%, #29d9dd 100%)` (near-black → deep teal → cyan).
+- **Hero sky:** `--cinema-hero-gradient` in `Styles/tailwind.css`: `linear-gradient(128deg, #020c0d 2%, #124d4e 38%, #218e91 70%, #29d9dd 100%)` (near-black → deep teal → cyan). Shared by the homepage hero and Showtime filter card.
 - **Ticket stub:** `bg-linear-to-br from-white to-cinema-linen`.
 - **Movie glass overlay:** `linear-gradient(145deg, rgba(255,255,255,.16), transparent 38%), rgba(4,6,8,.82)`.
 - **View-transition backdrop:** pure `#000`.
@@ -120,7 +122,8 @@ artwork are allowed. The artwork palette uses `cinema-clay-blush` (`#ffd1e3`),
 The account poster also permits `cinema-poster-red` (`#ff2638`) for its vivid
 red rays and accents. This does not change the shared `cinema-brick` token.
 The Register poster uses `cinema-poster-green` (`#63b879`) for its field and
-`cinema-poster-peach` (`#ffe4cc`) for its peach-cream waves. Its cup body uses
+`cinema-poster-peach` (`#ffe4cc`) for its peach-cream waves; the booking screen
+also uses this soft peach for its rim and projection glow. Its cup body uses
 `cinema-poster-red` with cream highlights and ink shading.
 The Google sign-in SVG uses Google's blue, green, yellow and red brand colors,
 reserved for the logo artwork.
@@ -369,6 +372,10 @@ still. Pages arriving this way get `html[data-page-arrived]`.
 
 Composition is art-directed in `hero.css` with breakpoints for phone portrait,
 tablet (≤4:3), ultra-wide (≥2:1) and landscape phones. The hero fills `h-dvh`.
+Its sky and background tubes have subtle static monochrome film grain at 24%
+soft-light opacity. A pointer-transparent pseudo-element sits below the title,
+foreground props and controls; 180px tiles shrink to 120px on dense displays.
+It adds no animation and preserves the existing colors and interactions.
 
 ### 8.8 Hero prop physics — `hero-physics.js`
 
@@ -461,6 +468,10 @@ elastically. Missing field → trigger shakes (`x: -8, 7, -5, 3, 0`).
 Poster **unmasks upward** (`clip-path` 1.1s expo-out) while its image settles
 from `scale 1.25`; eyebrow line and title letters rise through masks; meta
 items fade up; goo buttons pop in with `back.out(1.6)`; cast avatars scale in.
+From 768px, the poster and its Book Now/Showtimes actions form one sticky column
+128px below the viewport top, stopping at the end of the movie-details grid.
+The column aligns to the start so it can move within the taller content row;
+phones retain normal document flow. Existing poster and button entrances remain.
 
 ### 8.17 Section titles — `Client/now-showing-title.tsx`
 
@@ -654,6 +665,224 @@ a full-width Reset password button, and Back to login underneath. Password field
 are masked. Both buttons are presentation-only `type="button"` controls: there
 is no form submission, password update, token handling, storage or navigation
 from this preview. No recovery flow links to this page yet.
+
+### 8.22 Booking progress and Showtime heading
+
+Every Booking page uses the shared `_BookingSteps` partial: Showtimes (1),
+Seats (2), Summary (3), and Confirmation (4, all complete).
+`/Booking` redirects to Showtimes and preserves an optional movie slug.
+The warm paper page and pale ink-wash progress strip match the booking reference.
+The three columns have full pill corners from 640px and 24px corners on phones,
+where labels sit underneath their numbers. The current step uses an ink circle,
+cream number, clay-pill shadow, and bold ink label. Completed steps use a
+logo-navy circle and checkmark; upcoming steps use muted ink. Server-rendered
+state follows the actual booking page, including back navigation; it requires
+no JavaScript or stored progress. `aria-current="step"` identifies the current
+step, with screen-reader descriptions for completed/upcoming steps and the
+current step count. Confirmation marks all three stages complete.
+The current step sits on a small cream capsule within the original progress strip.
+Current and completed steps use the site's shared liquid button hover: a pale
+cream/cyan fill floods from the pointer, a goo blob follows the edge, and the
+number/label drift together before springing back on exit. Badge colors and
+step text remain unchanged; upcoming steps stay muted and static. The earlier
+orbit ring, underline and arrival animations are omitted. Steps remain informational,
+without button semantics, tab stops or a pointer cursor. Phones retain the same
+three columns with labels below their numbers. Reduced motion, touch pointers or
+missing JavaScript retain the static server-rendered state. `goo-button.js` drives
+this optional hover; `_BookingLayout` supplies one shared `_GooFilter` for all
+booking pages, including the seat-selection Continue action.
+Confirmation uses a separate vertical admission-ticket layout, with a 480px
+maximum width on the paper page. The current movie's full 2:3 poster fills its
+rounded top, with a cream Demo confirmed badge. The title sits below the poster,
+followed by paper-colored circular perforations and half-round side notches.
+The dark spotlight-colored body shows the actual cinema, format, language,
+rating, total runtime in minutes, screening date/time, admissions, selected
+seat IDs (including VIP pairs), total, reference and category price breakdown.
+Sun-yellow highlights emphasize the price, seats and reference; cream text
+and muted labels retain the site palette. A compact Booking confirmed heading
+and the existing demo notice replace the oversized success heading, check stamp
+and separate reference pill. No watched status, buyer, purchase date, theatre
+number, QR code or ticket validity is invented. The CMM Cinema eyebrow and star
+remain omitted. Long seat lists and references wrap on phones.
+Its Book another screening and Return to homepage links use an equal-width,
+640px-wide two-column action row, stacking to full width below 640px. Both have
+56px minimum height, matching typography, padding and shallow inset/cast shadows.
+The booking action retains cyan and ink; the homepage action uses deep teal and
+cream. The earlier hard offset shadow is omitted. Fine-pointer hover lifts each
+action 2px with signature easing; reduced motion stays static and keyboard focus
+uses a visible ink outline. Destinations remain unchanged.
+Summary posts directly to Confirm, with anti-forgery validation and an idempotent
+in-memory confirmation that marks the held seats sold. There is no payment stage
+or payment-method requirement. Old Payment and Pay routes redirect to Summary
+without confirming anything. Expired or missing holds return to Showtimes.
+Summary starts directly with its main heading, without the Step 03 / One last look eyebrow.
+Its detail panel starts with Booking summary, without the Your booking eyebrow.
+The panel follows a compact order-list layout: the live hold countdown sits beside
+the heading, followed by concise movie/session details, admission quantity, and
+rows grouped by seat category and price. Each row shows the matching chair/sofa
+icon and seat IDs, with its subtotal aligned right; the quantity/unit-price
+caption beneath the IDs is omitted. A cyan
+Net total band closes the list before the existing booking actions. It retains
+the teal panel, cream text and rounded surfaces; the movie poster remains in the
+shared order card rather than repeating above a grid of detail tiles. Narrow
+screens wrap the heading/timer and seat IDs without hiding prices.
+The summary panel shares the seat panels' static soft-light grain, clipped to its
+rounded edges and placed behind content so text and controls remain crisp. The
+texture does not receive pointer events or change the teal gradient.
+The shared order card starts with the movie poster, without the Your movie night eyebrow.
+It has a receipt-paper silhouette with small 8px top corners, straight sides and
+a repeating 16px-wide, 8px-deep torn bottom edge made with CSS masks. A wrapper
+casts the shadow around the paper outline. Its existing cream gradient, poster,
+receipt details and total remain; bottom padding keeps the footer above the teeth.
+This receipt is used by Summary; Confirmation uses its own poster-led admission
+ticket so changing it does not alter the Summary receipt.
+
+The Showtime heading starts directly with a system-sans, fluid 2.75–6.5rem
+black-weight uppercase "IT'S SHOWTIME." title.
+"IT'S" uses ink and "SHOWTIME." uses logo navy. Supporting copy is muted ink
+and caps at 600px. The existing purple clay star sits to the right from 768px,
+rotated −12°, at 112–160px wide. The title wraps on narrow screens.
+The movie information in the showtime filter panel starts directly with the movie
+title, without the Now showing eyebrow.
+The showtime overview uses two separate columns: a raised 2:3 poster stands on
+the paper page to the left, outside the teal rounded form card. The card contains
+only movie information and cinema/date/language controls, with no poster inside.
+Poster images cover their frame edge to edge without letterboxing. The poster has a gently tilted paper silhouette with a cream folded
+bottom-right corner inspired by the supplied Watch & Listen reference; the
+decorative cloud is omitted. Fine-pointer hover straightens and lifts the poster
+and expands the fold from 32px to 52px. Keyboard focus also opens the fold.
+Phones use a smaller static fold; reduced motion retains the static composition.
+CSS provides the effect without a new script; the original poster image and movie link remain.
+The form card uses an editorial film-poster composition inspired by the supplied
+Siena reference, retaining the teal/cream palette without a background photograph
+or a poster inside the card. Large, tightly tracked movie type and the synopsis
+sit on the left above a three-row Rating/Runtime/Genre list with fine horizontal
+rules and right-aligned values, replacing metadata pills.
+Movie duration throughout Booking uses total minutes, such as 13m or 90m,
+without an hours prefix. Cinema and language
+stack in a narrower right-hand column, separated by a fine vertical rule.
+A cream date stub with clipped corners displays the selected weekday/day/month
+above the controls, with a decorative barcode stripe; it updates from the same
+server response as the screenings. The surface shares the homepage's dark-to-cyan
+gradient, with a soft sky/navy light wash at the upper right echoing its blue artwork,
+and has visible, static monochrome grain (180px tile, 0.82 base frequency,
+2.2 contrast slope, 28% soft-light). Texture stays behind the content and ignores
+pointer events, leaving typography and controls crisp. The earlier orbit ring, side notches and dashed
+calendar divider are omitted. Below 1024px the movie information spans the card,
+the decorative date stub is hidden, and the selects share a row before stacking
+on phones. The full-width calendar puts the month and 44px scroll controls
+above the date strip. Date controls use softly rounded clay tiles with a muted
+weekday, a large tabular day number and a separate, lightly shaded month footer.
+The footer's fine rule stays clear of its text. The selected tile lifts without
+rotation, keeps the cyan clay fill and shows a small cream circular check badge.
+Fine-pointer hover lifts the other tiles with a sky-colored edge; focus outlines
+and reduced-motion guards remain intact.
+The hidden format value retains per-cinema desktop pickers; native selects, focus
+outlines, filtering hooks and reduced-motion behavior remain.
+The visible numbered Select cinema and Pick a date headings are omitted;
+the cinema control and date fieldset retain accessible names.
+From 768px the separate poster and card stay side by side, aligned at their
+vertical centers. Tablets use a 200px poster column; from 1024px the poster
+grows to about 29% of the available row with a 48px gap, balancing its height
+against the form card. Phones center a
+200px-wide poster above the full-width form card and locally scrolling dates. Cream-to-cyan
+selected dates retain the existing clay highlights and focus/reduced-motion behavior.
+Cinema session cards start with the cinema name, without a "Now booking" badge.
+The screenings section starts with Pick your time, without the Choose a session eyebrow.
+The Tap a showtime to choose seats hint and its arrow are omitted.
+Each cinema card has a full-width header with a bold name and the existing desktop
+format picker, without a cinema icon. Its background shares the filter card's
+homepage gradient, sky/navy wash and static grain through the same CSS rules.
+Session cards enlarge the grain tile to 220px at 40% soft-light so the texture
+reads clearly on their wider surfaces. Texture stays behind the content and ignores pointer events. Format/language
+groups sit in lightly outlined, 45% ink glass panels to keep labels readable over
+the brighter background, in a two-column grid stacking on phones. Format labels
+(2D, 3D, IMAX) use compact 6px-rounded rectangular plaques with a fine cream
+outline, subtle ink fill and cream lettering beside the softer language label,
+replacing the cyan-filled pills. These are informational labels, not buttons. Cream pill-shaped
+time links use restrained clay highlights and centered tabular times, without arrow icons;
+fine-pointer hover lifts them 2px with a subtle cyan wash. Sold-out sessions stay
+disabled with a dark translucent fill, dashed border and Full label. Shadows are
+soft and shallow. Phones retain 50px touch targets, and below 360px time buttons
+use two columns to preserve readable labels. Existing reduced-motion rules apply.
+
+The seat-selection heading displays the current booking's movie title below
+the progress strip, without a step eyebrow, retaining the bold display styling
+and wrapping long titles. The cinema, date and time sit directly beneath this title.
+This screening line uses semibold `text-lg sm:text-xl` typography.
+On desktop, the movie-details card is vertically centered beside the seat-map panel
+and sticks 128px below the viewport top while scrolling, bounded by the seat-layout
+grid so it clears the floating navigation and stops at the panel's end.
+Tablets and phones retain the stacked layout with movie details below the seat map.
+Both seat-page panels retain their teal gradients with static monochrome film
+grain (220px tile, 0.82 base frequency, 2.2 contrast slope, 32% soft-light).
+An isolated, non-interactive pseudo-layer sits behind all chairs, poster artwork,
+labels and controls; the sidebar keeps its sticky positioning.
+The seat-map panel omits the Your screening eyebrow and repeated movie title,
+starting with the format tag aligned to the right instead.
+The screen marker uses a thin, bowed soft-peach rim with a softly fading peach projection
+surface that widens toward the seats. A centered Screen label sits inside the
+glow; responsive inline SVG preserves the curved silhouette without animation.
+Seat selection uses compact CSS chair silhouettes with broad, rounded backrests,
+pill-shaped armrests and separate soft cushions with a shaded front edge.
+Chairs have no visible numbers. Selected chairs show a `cinema-sun` circular
+badge at 76% of the chair width with an ink checkmark centered over the chair, matching the selection
+reference. Deselection hides the badge.
+Selected VIP sofas instead use a wide sun-colored pill spanning 76% of the
+sofa width, with one centered ink checkmark; single chairs retain circular badges.
+Seat-type prices use three compact rounded cards in a centered grid (maximum
+420px wide): Normal, Premium and VIP, with a matching chair or pair icon and
+price, using the existing cream, sky and sun palette on ink surfaces.
+The card prices display ฿300, ฿330 and ฿900 without trailing per-seat or per-pair text.
+The movie-details card omits the duplicate seat-price list.
+The availability legend and visible admission-limit instructions are omitted;
+selection feedback remains a screen-reader-only live status.
+The selected-seats summary shows bold, comma-separated seat IDs (for example,
+"VP5, VP6, A6") without pill borders, category labels or prices. Selecting or
+deselecting a chair updates this list without a floating label above the chair; the
+live status announces selected rows and seat numbers. Accessible checkbox names
+always identify category, row, seat/pair number, price and availability.
+Selected seats and Total use larger `text-sm sm:text-base` labels, with seat IDs
+and the total set in `text-2xl sm:text-3xl` for clearer reading.
+Selected seats, Total and Continue to summary sit at the bottom of the movie-details
+card, rather than below the seat map. They update immediately when seats change.
+Continue to summary occupies a separate row below Selected seats and Total,
+spanning the full details-card width at every screen size. Its native `form`
+attribute submits the seat-map form with its existing anti-forgery token and seat
+inputs. On tablets and phones this block spans both columns of the details card.
+It uses the same goo fill, pointer-following bulge, label movement and elastic press
+as Login through `goo-button.js`, retaining its cyan gradient and ink text.
+Disabled buttons ignore hover and focus effects; fine-pointer and reduced-motion
+guards leave touch and motion-reduced use static. Keyboard focus floods from the center.
+The plan follows the zone reference: F–D are Normal (cream, ฿300 per seat), C–A
+are Premium (sky, ฿330 per seat), and VP has eight VIP pairs (sun, ฿900 per pair).
+Row C uses the same cream chair fabric, shading and edges as row D while retaining
+its Premium category and price; rows B and A remain sky.
+Zone names and prices appear in the price cards below the map, without headings above the seat rows.
+Each single-seat row contains sixteen seats; Premium is slightly inset, and broad
+cross-aisles separate the three zones. A VIP pair is one selectable two-person sofa,
+with two distinct backrests and cushions separated by a narrow center gap, and armrests
+only at the outer edges, overlapping the cushion edges above a connected lower base
+so the arms do not float apart. Its softly rounded rectangular pads retain the existing
+fabric gradients and highlights. The price card repeats this sofa artwork. Selected units
+turn cyan. Sold VIP pairs retain two occupied avatars. Sold seats use `_OccupiedSeat`: a light-gray person
+silhouette in a neutral gray circle. They retain
+the disabled checkbox and accessible row/seat/availability label. The checkbox remains the full
+click target, with a visible keyboard outline and the existing selection/price
+behavior. Fine-pointer hover lifts only enabled seats; reduced motion removes
+transitions. Coarse pointers use a wider, locally scrolling map with at least
+44px seat targets. Chair artwork and states live in `css/booking/checkout.css`.
+
+The seat-selection total sums each selected unit's server-supplied price. The
+limit is eight admissions, so a VIP pair uses two places; when one admission
+remains, pairs are disabled while single seats remain available. The server
+validates IDs against its seat catalog and independently derives category, price
+and capacity. It stores an immutable line-item snapshot in the hold; totals,
+category price breakdowns and admission counts carry through Summary
+and Confirmation. VIP pairs are held, released and marked sold atomically.
+Demo inventory contains 96 single seats and eight VIP pairs (112 admissions).
+Backend regression checks run with `tests/BookingPricing`; frontend selection
+checks live in `CMM_Cinema/tests/seat-selection.test.cjs`.
 
 ---
 

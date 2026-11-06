@@ -2,12 +2,13 @@ using CMM_Cinema.Models;
 
 namespace CMM_Cinema.Services;
 
-// Demo only: showtimes are generated, and holds and payments live in memory, so a restart clears every booking.
+// Demo only: showtimes are generated, and bookings live in memory, so a restart clears every booking.
 // Nothing here charges money or issues a real ticket. Registered as a singleton, so all state sits behind one lock.
 public sealed class DemoBookingService : IBookingService
 {
-    private const string Rows = "ABCDEFGHIJ";
+    private const string Rows = "ABCDEF";
     private const int SeatsPerRow = 16;
+    private const int VipPairs = 8;
     private const int MaxSeatsPerBooking = 8;
     private const int DaysAhead = 7;
     private static readonly TimeSpan HoldLength = TimeSpan.FromMinutes(10);
@@ -18,7 +19,7 @@ public sealed class DemoBookingService : IBookingService
         [("2D", "English"), ("2D", "Thai (Sub)"), ("3D", "English"), ("IMAX", "English")];
     private static readonly int[] StartHours = [13, 16, 19];
     // A few seats start sold so the seat map does not look empty.
-    private static readonly HashSet<string> PresoldSeats = new(StringComparer.OrdinalIgnoreCase) { "A3", "B5", "D11", "F14", "H7", "J2" };
+    private static readonly HashSet<string> PresoldSeats = new(StringComparer.OrdinalIgnoreCase) { "A3", "B5", "D11", "F14", "VP3" };
 
     private readonly Lock gate = new();
     private readonly Dictionary<int, Showtime> showtimesById = [];
@@ -55,11 +56,11 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
-    public decimal GetSeatPrice(Showtime showtime) => showtime.Format switch
+    public decimal GetSeatPrice(Showtime showtime, SeatCategory category = SeatCategory.Normal) => category switch
     {
-        "IMAX" => 400m,
-        "3D" => 300m,
-        _ => 250m,
+        SeatCategory.Premium => 330m,
+        SeatCategory.Vip => 900m,
+        _ => 300m,
     };
 
     public IReadOnlyList<Seat> GetSeats(int showtimeId)
@@ -67,14 +68,23 @@ public sealed class DemoBookingService : IBookingService
         lock (gate)
         {
             RemoveExpiredHolds();
-            if (!showtimesById.ContainsKey(showtimeId)) return [];
-
-            return (from row in Rows
-                    from number in Enumerable.Range(1, SeatsPerRow)
-                    let id = $"{row}{number}"
-                    select new Seat(id, row, number, IsTaken(showtimeId, id) ? SeatState.Sold : SeatState.Available))
-                .ToArray();
+            return showtimesById.TryGetValue(showtimeId, out var showtime) ? CreateSeatMap(showtime) : [];
         }
+    }
+
+    private Seat[] CreateSeatMap(Showtime showtime)
+    {
+        var singles = from row in Rows
+                      from number in Enumerable.Range(1, SeatsPerRow)
+                      let id = $"{row}{number}"
+                      let category = row <= 'C' ? SeatCategory.Premium : SeatCategory.Normal
+                      select new Seat(id, row.ToString(), number, IsTaken(showtime.Id, id) ? SeatState.Sold : SeatState.Available,
+                          category, GetSeatPrice(showtime, category));
+        var pairs = from number in Enumerable.Range(1, VipPairs)
+                    let id = $"VP{number}"
+                    select new Seat(id, "VP", number, IsTaken(showtime.Id, id) ? SeatState.Sold : SeatState.Available,
+                        SeatCategory.Vip, GetSeatPrice(showtime, SeatCategory.Vip), 2);
+        return singles.Concat(pairs).ToArray();
     }
 
     public bool TryHoldSeats(int showtimeId, IEnumerable<string> seatIds, out BookingHold? booking, out string error)
@@ -96,19 +106,28 @@ public sealed class DemoBookingService : IBookingService
                 error = $"Please select between 1 and {MaxSeatsPerBooking} seats.";
                 return false;
             }
-            if (!seats.All(IsValidSeatId))
+            var seatMap = CreateSeatMap(showtime).ToDictionary(seat => seat.Id, StringComparer.OrdinalIgnoreCase);
+            if (!seats.All(seatMap.ContainsKey))
             {
                 error = "The selected seat list is invalid.";
                 return false;
             }
-            if (seats.Any(id => IsTaken(showtimeId, id)))
+            var selected = seats.Select(id => seatMap[id]).ToArray();
+            if (selected.Sum(seat => seat.Capacity) > MaxSeatsPerBooking)
+            {
+                error = "Please select up to 8 admissions. Each VIP pair counts as 2 seats.";
+                return false;
+            }
+            if (selected.Any(seat => seat.State == SeatState.Sold))
             {
                 error = "One or more seats are no longer available. Please choose again.";
                 return false;
             }
 
-            var ordered = seats.OrderBy(id => id[0]).ThenBy(id => int.Parse(id[1..])).ToArray();
-            booking = new BookingHold(Guid.NewGuid(), showtimeId, ordered, GetSeatPrice(showtime),
+            var ordered = selected.OrderBy(seat => seat.Category).ThenByDescending(seat => seat.Row, StringComparer.Ordinal)
+                .ThenBy(seat => seat.Number)
+                .Select(seat => new BookedSeat(seat.Id, seat.Category, seat.Price, seat.Capacity)).ToArray();
+            booking = new BookingHold(Guid.NewGuid(), showtimeId, Array.AsReadOnly(ordered),
                 DateTimeOffset.UtcNow + HoldLength, BookingStatus.Held);
             bookings.Add(booking.Id, booking);
             error = "";
@@ -125,22 +144,22 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
-    public bool TryConfirmPayment(Guid bookingId, string paymentMethod, out string error)
+    public bool TryConfirmBooking(Guid bookingId, out string error)
     {
-        if (paymentMethod is not ("card" or "promptpay"))
-        {
-            error = "Choose a payment method.";
-            return false;
-        }
-
         lock (gate)
         {
             RemoveExpiredHolds();
 
-            if (!bookings.TryGetValue(bookingId, out var booking) || booking.Status != BookingStatus.Held)
+            if (!bookings.TryGetValue(bookingId, out var booking))
             {
-                error = "Booking has expired or is already complete.";
+                error = "Booking has expired or is unavailable.";
                 return false;
+            }
+            // Repeated confirmation of the same booking is safe and has no extra effect.
+            if (booking.Status == BookingStatus.Confirmed)
+            {
+                error = "";
+                return true;
             }
 
             if (!soldSeats.TryGetValue(booking.ShowtimeId, out var sold))
@@ -155,7 +174,7 @@ public sealed class DemoBookingService : IBookingService
             }
 
             sold.UnionWith(booking.Seats);
-            bookings[bookingId] = booking with { Status = BookingStatus.Confirmed, PaymentMethod = paymentMethod };
+            bookings[bookingId] = booking with { Status = BookingStatus.Confirmed };
             error = "";
             return true;
         }
@@ -204,13 +223,7 @@ public sealed class DemoBookingService : IBookingService
         || soldSeats.GetValueOrDefault(showtimeId)?.Contains(seatId) == true
         || bookings.Values.Any(booking => booking.ShowtimeId == showtimeId
             && booking.Status == BookingStatus.Held
-            && booking.Seats.Contains(seatId, StringComparer.OrdinalIgnoreCase));
-
-    private static bool IsValidSeatId(string seatId) =>
-        seatId.Length is 2 or 3
-        && Rows.Contains(seatId[0])
-        && int.TryParse(seatId[1..], out var number)
-        && number is >= 1 and <= SeatsPerRow;
+            && booking.SeatItems.Any(seat => string.Equals(seat.Id, seatId, StringComparison.OrdinalIgnoreCase)));
 
     private void RemoveExpiredHolds()
     {

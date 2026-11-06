@@ -56,6 +56,9 @@
       const page = new DOMParser().parseFromString(await response.text(), 'text/html');
       screenings().replaceWith(page.querySelector('[data-screenings]'));
       month.textContent = page.querySelector('[data-date-month]').textContent;
+      const stamp = root.querySelector('[data-date-stamp]');
+      const nextStamp = page.querySelector('[data-date-stamp]');
+      if (stamp && nextStamp) stamp.replaceChildren(...nextStamp.childNodes);
       bindFormatMirrors();
 
       history.replaceState(null, '', url);
@@ -77,7 +80,8 @@
   bindFormatMirrors();
 
   scrollButtons.forEach(button => button.addEventListener('click', () => {
-    dates.scrollBy({ left: Number(button.dataset.dateScroll) * 180, behavior: 'smooth' });
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    dates.scrollBy({ left: Number(button.dataset.dateScroll) * 180, behavior: reduced ? 'auto' : 'smooth' });
   }));
   dates.addEventListener('scroll', updateScrollButtons, { passive: true });
   new ResizeObserver(updateScrollButtons).observe(dates);

@@ -86,8 +86,7 @@
   margin-bottom: 30px;
 }
 
-.bk-heading h1,
-.bk-success-card h1 {
+.bk-heading h1 {
   max-width: 1030px;
   margin: 0 0 19px;
   color: var(--color-cinema-ink);
@@ -98,8 +97,7 @@
   text-transform: uppercase;
 }
 
-.bk-heading h1 em,
-.bk-success-card h1 em {
+.bk-heading h1 em {
   color: var(--color-cinema-cyan);
   font-style: normal;
 }
@@ -107,9 +105,9 @@
 .bk-heading p:not(.bk-kicker) {
   margin: 0;
   color: #35595d;
-  font-size: 16px;
   line-height: 1.5;
 }
+.bk-heading p:not(.bk-kicker, .bk-screening-meta) { font-size: 16px; }
 
 .bk-heading-art {
   position: absolute;
@@ -157,6 +155,20 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 25px;
+}
+
+/* Film grain stays beneath panel content and interactive controls. */
+.bk-seat-layout > .bk-panel::after,
+.bk-summary-panel::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncG type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncB type='linear' slope='2.2' intercept='-.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: soft-light;
+  opacity: 0.32;
 }
 
 .bk-panel-title h2 {
@@ -209,7 +221,8 @@
 }
 
 .bk-primary {
-  background: linear-gradient(140deg, #e8ffff 0%, #61eced 35%, var(--color-cinema-cyan) 100%);
+  --booking-primary-fill: linear-gradient(140deg, #e8ffff 0%, #61eced 35%, var(--color-cinema-cyan) 100%);
+  background: var(--booking-primary-fill);
   color: #062627;
   box-shadow:
     7px 8px 0 #03282b69,
@@ -232,11 +245,15 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .bk-primary:not(:disabled, [aria-disabled="true"]):hover,
+  .bk-primary:not(:disabled, [aria-disabled="true"], [data-goo-button]):hover,
   .bk-secondary:hover {
     filter: brightness(1.07);
     transform: translateY(-3px);
   }
+}
+
+.bk-seat-continue :is([data-goo-base], [data-goo-fill], [data-goo-blob]) {
+  background: var(--booking-primary-fill);
 }
 
 .bk-text-link {
@@ -284,17 +301,27 @@
 
 /* ---------- Order ticket (cream card on the right) ---------- */
 
+.bk-receipt-shell {
+  filter: drop-shadow(0 14px 18px rgb(7 28 30 / 0.24));
+}
+
 .bk-ticket {
   position: relative;
   overflow: hidden;
-  padding: 30px 28px;
+  padding: 30px 28px 38px;
   border: 1px solid rgb(255 253 230 / 0.14);
-  border-radius: 34px;
+  border-radius: 8px 8px 0 0;
   background: linear-gradient(153deg, #f9f6dd, #e9ebd9 70%, #c8e8d8);
   color: #123d3e;
-  box-shadow:
-    12px 18px 34px #0005,
-    inset 1px 1px 2px #fff;
+  box-shadow: inset 1px 1px 2px #fff;
+  /* A solid paper body meets repeating triangular teeth at the torn edge.
+     The wrapper casts the shadow around this silhouette rather than a rectangle. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, transparent 0) bottom / 16px 8px repeat-x;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, transparent 0) bottom / 16px 8px repeat-x;
 }
 
 .bk-ticket .bk-kicker {
@@ -411,29 +438,33 @@
 .bk-screen {
   position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  width: 85%;
+  width: 90%;
   max-width: 680px;
-  height: 48px;
-  margin: 10px auto 33px;
-  border-top: 11px solid #64e0e2;
-  border-radius: 50% 50% 0 0;
-  box-shadow: 0 -16px 26px -21px #b3fbfa;
+  height: clamp(80px, 12vw, 120px);
+  margin: 10px auto 24px;
 }
 
+.bk-screen-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bk-screen-rim {
+  stroke: var(--color-cinema-poster-peach);
+  stroke-opacity: 0.75;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+}
 .bk-screen span {
-  margin-top: 12px;
-  color: #9ecbc7;
+  position: relative;
+  color: color-mix(in srgb, var(--color-cinema-cream) 75%, transparent);
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.31em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .bk-seat-scroller {
   max-width: 100%;
-  padding: 9px 0 18px;
+  padding: 32px 0 18px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-color: #67b6b5 #164346;
@@ -443,22 +474,33 @@
 .bk-seat-map {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: 580px;
   max-width: 680px;
   margin: auto;
 }
 
-/* Row label, 8 seats, aisle, 8 seats, row label */
+/* Continuous rows of sixteen chairs, with horizontal cross-aisles between blocks. */
 .bk-seat-row {
   display: grid;
-  grid-template-columns: 22px repeat(8, minmax(22px, 1fr)) 16px repeat(8, minmax(22px, 1fr)) 22px;
+  grid-template-columns: 22px repeat(16, minmax(22px, 1fr)) 22px;
   align-items: center;
   gap: 5px;
 }
 
-.bk-seat-row .bk-seat:nth-of-type(9) {
-  grid-column: 11;
+.bk-seat-zone { display: flex; flex-direction: column; gap: 6px; }
+.bk-seat-zone + .bk-seat-zone { margin-top: clamp(22px, 3vw, 36px); }
+.bk-seat-zone--premium .bk-seat-row { margin-left: 20px; }
+.bk-seat-zone--vip .bk-seat-row { grid-template-columns: 22px repeat(8, minmax(44px, 1fr)) 22px; gap: 12px; }
+.bk-seat.bk-seat--vip { aspect-ratio: 2.1; }
+.bk-seat-chair.bk-seat-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }
+.bk-seat-chair.bk-seat-pair::before, .bk-seat-chair.bk-seat-pair::after { content: none; }
+.bk-seat-pair > .bk-seat-chair { min-width: 0; }
+.bk-seat-pair > .bk-seat-selected-mark {
+  width: 76%;
+  height: 76%;
+  aspect-ratio: auto;
+  border-radius: 999px;
 }
 
 .bk-row-label {
@@ -468,11 +510,22 @@
   text-align: center;
 }
 
+/* Compact cinema chairs: rounded backrest, soft armrests and a padded cushion.
+   The native checkbox still covers the whole chair and supplies its state. */
+:where(.bk-seat, .bk-legend > span, .bk-seat-prices > span, .bk-summary-seat-icon) {
+  --seat-fabric: var(--color-cinema-cream);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-cream) 72%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-cream) 52%, var(--color-cinema-deep));
+  --seat-highlight: rgb(255 255 255 / 0.8);
+  --seat-text: var(--color-cinema-deep);
+}
+
 .bk-seat {
   position: relative;
   display: block;
   min-width: 0;
-  aspect-ratio: 1.2;
+  min-height: 34px;
+  aspect-ratio: 1.05;
   cursor: pointer;
 }
 
@@ -486,95 +539,215 @@
   cursor: inherit;
 }
 
-.bk-seat span {
+.bk-seat-chair {
   position: relative;
-  display: grid;
-  place-items: center;
+  display: block;
   width: 100%;
   height: 100%;
-  border: 1px solid #def7e87d;
-  border-bottom: 4px solid #87adaa;
-  border-radius: 9px 9px 7px 7px;
-  background: linear-gradient(155deg, #fffde6, #bacdc3);
-  color: #1d4648;
-  font-size: 10px;
-  font-weight: 900;
+  color: var(--seat-text);
+  font-style: normal;
   pointer-events: none;
-  box-shadow:
-    2px 3px 4px #0005,
-    inset 1px 1px 2px #fff;
+  filter: drop-shadow(0 1px 1px rgb(7 28 30 / 0.35));
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms;
 }
 
-.bk-seat input:checked + span {
-  border-color: #deffff;
-  border-bottom-color: #0aa3a7;
-  background: linear-gradient(145deg, #8dffff, var(--color-cinema-cyan));
-  color: #052b2b;
-  box-shadow:
-    0 4px 11px #29d9dd55,
-    inset 1px 1px 1px #fff;
+/* The backrest is inset so both armrests have a distinct silhouette. */
+.bk-seat-chair::before,
+.bk-seat-sofa-half::before {
+  content: "";
+  position: absolute;
+  top: 7%;
+  left: 12%;
+  width: 76%;
+  height: 66%;
+  border: 1px solid var(--seat-edge);
+  border-radius: 32% 32% 18% 18%;
+  background: linear-gradient(160deg, var(--seat-fabric) 70%, var(--seat-shade));
+  box-shadow: inset 0 1px 0 var(--seat-highlight);
 }
 
-.bk-seat input:focus-visible + span {
-  outline: 3px solid var(--color-cinema-cream);
+/* A horizontal seam separates the rounded backrest from the soft seat cushion. */
+.bk-seat-chair::after,
+.bk-seat-sofa-half::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 10%;
+  bottom: 6%;
+  width: 80%;
+  height: 23%;
+  border: 1px solid var(--seat-edge);
+  border-bottom: 3px solid var(--seat-edge);
+  border-radius: 35% 35% 40% 40%;
+  background: linear-gradient(var(--seat-fabric), var(--seat-shade));
+  box-shadow: inset 0 1px 0 var(--seat-highlight);
+}
+
+.bk-seat-armrests::before,
+.bk-seat-armrests::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 48%;
+  width: 10%;
+  height: 46%;
+  border: 1px solid var(--seat-edge);
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--seat-fabric), var(--seat-shade));
+  box-shadow: inset 0 1px 0 var(--seat-highlight);
+}
+.bk-seat-armrests::before { left: 0; }
+.bk-seat-armrests::after { right: 0; }
+
+/* VIP loveseat: two padded sections with a clear center gap and outer arms. */
+.bk-seat-chair.bk-seat-sofa {
+  display: block;
+  padding: 0;
+  box-sizing: border-box;
+}
+.bk-seat-chair.bk-seat-sofa::after {
+  content: "";
+  z-index: 1;
+  left: 7%;
+  width: 86%;
+  height: 17%;
+  box-sizing: border-box;
+  border-radius: 6% 6% 10% 10% / 20% 20% 35% 35%;
+}
+.bk-seat-sofa-half {
+  position: absolute;
+  top: 0;
+  width: calc(41% - 1px);
+  height: 100%;
+}
+.bk-seat-sofa-half:first-child { left: 9%; }
+.bk-seat-sofa-half:nth-child(2) { right: 9%; }
+.bk-seat-sofa-half::before {
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 18% 18% 7% 7%;
+}
+.bk-seat-sofa-half::after {
+  left: 0;
+  width: 100%;
+  height: 27%;
+  box-sizing: border-box;
+  border-radius: 8% 8% 12% 12% / 20% 20% 30% 30%;
+}
+.bk-seat-sofa > .bk-seat-armrests { position: absolute; inset: 0; }
+.bk-seat-sofa > .bk-seat-armrests::before,
+.bk-seat-sofa > .bk-seat-armrests::after {
+  top: 42%;
+  width: 8%;
+  height: 52%;
+  box-sizing: border-box;
+  border-radius: 35% 35% 20% 20% / 15% 15% 10% 10%;
+}
+.bk-seat-sofa > .bk-seat-armrests::before { left: 3%; }
+.bk-seat-sofa > .bk-seat-armrests::after { right: 3%; }
+/* A sun-yellow circle and ink tick identify every selected chair. */
+.bk-seat-selected-mark {
+  position: absolute;
+  z-index: 4;
+  top: 47%;
+  left: 50%;
+  width: 76%;
+  height: 76%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-cinema-sun);
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -50%);
+  transition: opacity 160ms ease;
+}
+.bk-seat-selected-mark::before {
+  content: "";
+  position: absolute;
+  top: 22%;
+  left: 35%;
+  width: 25%;
+  height: 43%;
+  border-right: 3px solid var(--color-cinema-ink);
+  border-bottom: 3px solid var(--color-cinema-ink);
+  transform: rotate(45deg);
+}
+.bk-seat-pair > .bk-seat-selected-mark::before {
+  left: 43%;
+  width: 12%;
+}
+.bk-seat input:checked + .bk-seat-chair .bk-seat-selected-mark,
+.bk-legend--selected .bk-seat-selected-mark {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bk-seat--premium {
+  --seat-fabric: var(--color-cinema-sky);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-sky) 72%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-sky) 52%, var(--color-cinema-deep));
+}
+.bk-seat-row--cream .bk-seat {
+  --seat-fabric: var(--color-cinema-cream);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-cream) 72%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-cream) 52%, var(--color-cinema-deep));
+}
+.bk-seat--vip {
+  --seat-fabric: var(--color-cinema-sun);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-sun) 72%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-sun) 52%, var(--color-cinema-deep));
+}
+
+.bk-seat input:checked + .bk-seat-chair,
+.bk-legend--selected {
+  --seat-fabric: var(--color-cinema-cyan);
+  --seat-shade: color-mix(in srgb, var(--color-cinema-cyan) 76%, var(--color-cinema-deep));
+  --seat-edge: color-mix(in srgb, var(--color-cinema-cyan) 45%, var(--color-cinema-deep));
+  --seat-highlight: rgb(255 255 255 / 0.5);
+  --seat-text: var(--color-cinema-ink);
+}
+.bk-seat input:checked + .bk-seat-chair { transform: translateY(-2px); }
+
+.bk-seat input:focus-visible + .bk-seat-chair {
+  outline: 2px solid var(--color-cinema-cream);
   outline-offset: 3px;
+  border-radius: 8px;
 }
 
-.bk-seat--sold {
-  cursor: not-allowed;
+.bk-seat--sold,
+.bk-legend--sold {
+  --seat-fabric: color-mix(in srgb, var(--color-cinema-ink) 85%, var(--color-cinema-deep));
+  --seat-shade: var(--color-cinema-ink);
+  --seat-edge: color-mix(in srgb, var(--color-cinema-deep) 80%, var(--color-cinema-cream));
+  --seat-highlight: rgb(255 255 255 / 0.06);
+  --seat-text: color-mix(in srgb, var(--color-cinema-cream) 45%, var(--color-cinema-deep));
 }
-
-.bk-seat--sold span {
-  border: 1px solid #376569;
-  border-bottom: 4px solid #0a1f21;
-  background: #132d30;
-  color: #789ca1;
-  box-shadow: none;
-}
+.bk-seat--sold { cursor: not-allowed; }
+.bk-seat--sold .bk-seat-chair { filter: none; }
+.bk-seat-occupied::before,
+.bk-seat-occupied::after { content: none; }
+.bk-seat-occupant { display: block; width: 100%; height: 100%; }
+.bk-seat--available input:disabled + .bk-seat-chair { opacity: 0.5; }
 
 @media (hover: hover) and (pointer: fine) {
-  .bk-seat--available:hover span {
-    filter: brightness(1.06);
+  .bk-seat--available:has(input:not(:disabled)):hover .bk-seat-chair {
+    filter: brightness(1.06) drop-shadow(0 4px 3px rgb(7 28 30 / 0.4));
     transform: translateY(-2px);
   }
 }
 
-.bk-legend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px 23px;
-  margin: 28px 0 16px;
-  color: #d5e8e3;
-  font-size: 11px;
+@media (pointer: coarse) {
+  /* Keep touch targets at least 44px; the existing scroller contains the wider map. */
+  .bk-seat-map { min-width: 865px; }
+  .bk-seat { min-height: 44px; }
 }
 
-.bk-legend span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bk-legend i {
-  display: inline-block;
-  width: 19px;
-  height: 16px;
-  border-bottom: 3px solid #86a8a6;
-  border-radius: 5px 5px 4px 4px;
-  background: #fffde6;
-}
-
-.bk-legend .bk-legend--selected {
-  border-color: #0aa3a7;
-  background: var(--color-cinema-cyan);
-}
-
-.bk-legend .bk-legend--sold {
-  border: 1px solid #376569;
-  border-bottom: 3px solid #0a1f21;
-  background: #132d30;
-}
+.bk-seat-prices > span > .bk-seat-chair { width: clamp(24px, 4vw, 32px); height: clamp(24px, 4vw, 32px); flex: none; }
+.bk-seat-prices > span > .bk-seat-pair { width: clamp(48px, 8vw, 64px); }
+.bk-legend > span > .bk-seat-chair { width: 20px; height: 22px; flex: none; }
 
 .bk-seat-feedback {
   min-height: 22px;
@@ -594,6 +767,8 @@
   border-top: 1px dashed #fff5;
 }
 
+.bk-show-info .bk-seat-bottom { grid-column: 1 / -1; }
+.bk-seat-bottom > div:first-child { flex: 1 1 0; }
 .bk-seat-bottom > div {
   display: flex;
   flex-direction: column;
@@ -603,11 +778,9 @@
 
 .bk-seat-bottom small {
   color: #b2d0cb;
-  font-size: 11px;
 }
 
 .bk-seat-bottom strong {
-  font-size: 19px;
   letter-spacing: -0.03em;
 }
 
@@ -686,21 +859,6 @@
   font-size: 13px;
 }
 
-.bk-price-tag {
-  margin-top: 20px;
-  padding: 16px;
-  border-radius: 15px;
-  background: #062b2db3;
-  color: #cae3d9;
-  font-size: 13px;
-}
-
-.bk-price-tag strong {
-  margin: 0 4px;
-  color: #7bf3eb;
-  font-size: 21px;
-}
-
 .bk-muted {
   color: #bad6cf;
   font-size: 12px;
@@ -709,67 +867,13 @@
 
 /* ---------- Step 3: Summary ---------- */
 
-.bk-summary-feature {
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
-  align-items: center;
-  gap: 25px;
-  padding: 19px;
-  border: 1px solid #fffc;
-  border-radius: 25px;
-  background: #082b2d7a;
-}
 
-.bk-summary-feature h3 {
-  margin: 4px 0 18px;
-  font-size: clamp(24px, 3vw, 37px);
-  line-height: 1.05;
-  letter-spacing: -0.05em;
-}
 
-.bk-summary-feature p:not(.bk-kicker) {
-  margin: 5px 0;
-  color: #ccded8;
-  font-size: 13px;
-}
 
-.bk-details-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 24px;
-}
 
-.bk-details-grid > div {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 120px;
-  padding: 18px;
-  border: 1px solid #fff3;
-  border-radius: 21px;
-  background: linear-gradient(140deg, #2a6263, #194548);
-  box-shadow:
-    5px 6px 12px #0002,
-    inset 1px 1px 2px #fff2;
-}
 
-.bk-detail-icon {
-  margin-bottom: 10px;
-  color: #69f5f5;
-  font-size: 23px;
-}
 
-.bk-details-grid small {
-  color: #a6d1cc;
-  font-size: 11px;
-}
 
-.bk-details-grid strong {
-  margin-top: 5px;
-  font-size: 16px;
-  line-height: 1.35;
-}
 
 .bk-actions {
   display: flex;
@@ -938,69 +1042,46 @@
   max-width: 810px;
 }
 
-.bk-success-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 55px 20px 30px;
-  text-align: center;
+.bk-admission-ticket {
+  box-shadow: 0 24px 48px -16px rgb(7 28 30 / 0.3);
 }
 
-.bk-success-stamp {
-  display: grid;
-  place-items: center;
-  width: 105px;
-  height: 105px;
-  margin-bottom: 38px;
+/* Paper-colored holes form the tear line and half-round ticket notches. */
+.bk-admission-perforation {
+  position: relative;
+  height: 28px;
+}
+.bk-admission-perforation span {
+  display: block;
+  height: 100%;
+  margin: 0 30px;
+  background: radial-gradient(circle, var(--color-cinema-paper) 0 3px, transparent 3.5px) center / 24px 28px repeat-x;
+}
+.bk-admission-perforation::before,
+.bk-admission-perforation::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: linear-gradient(125deg, #e8ffff, #39e1e3);
-  color: #083638;
-  font-size: 54px;
-  font-weight: 900;
-  box-shadow:
-    12px 13px 30px #0006,
-    inset 2px 2px 2px #fff;
-  transform: rotate(-12deg);
+  background: var(--color-cinema-paper);
+}
+.bk-admission-perforation::before { left: -14px; }
+.bk-admission-perforation::after { right: -14px; }
+
+.bk-confirm-book { color: var(--color-cinema-ink); }
+.bk-confirm-home { color: var(--color-cinema-cream); }
+
+.bk-confirm-action {
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms;
 }
 
-.bk-success-card h1 {
-  font-size: clamp(48px, 8vw, 96px);
-}
-
-.bk-success-card > p:not(.bk-kicker) {
-  max-width: 520px;
-  color: #35595d;
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-.bk-confirm-id {
-  margin-top: 23px;
-  padding: 13px 25px;
-  border: 1px solid #fff5;
-  border-radius: 100px;
-  background: #062f3199;
-  color: #bddad3;
-  font-size: 12px;
-}
-
-.bk-confirm-id strong {
-  margin-left: 10px;
-  color: #88ffff;
-  font-size: 14px;
-}
-
-.bk-confirm-order {
-  max-width: 520px;
-  margin: 10px auto 25px;
-}
-
-.bk-success-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 18px;
-  margin: 25px 0 50px;
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .bk-confirm-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgb(7 28 30 / 0.18), inset 0 1px 1px rgb(255 255 255 / 0.3);
+  }
 }
 
 /* ---------- Tablet ---------- */
@@ -1019,8 +1100,7 @@
     grid-template-columns: 1fr;
   }
 
-  .bk-panel,
-  .bk-ticket {
+  .bk-panel {
     border-radius: 27px;
   }
 
@@ -1041,10 +1121,6 @@
 
   .bk-show-facts {
     margin: 14px 0;
-  }
-
-  .bk-price-tag {
-    margin: 10px 0;
   }
 
   .bk-show-info > .bk-muted {
@@ -1090,7 +1166,7 @@
     font-size: clamp(39px, 8.8vw, 66px);
   }
 
-  .bk-heading p:not(.bk-kicker) {
+  .bk-heading p:not(.bk-kicker, .bk-screening-meta) {
     max-width: 340px;
     font-size: 13px;
   }
@@ -1149,11 +1225,6 @@
     margin-bottom: 22px;
   }
 
-  .bk-legend {
-    gap: 10px 15px;
-    margin: 20px 0 13px;
-  }
-
   .bk-seat-bottom {
     gap: 10px;
     padding: 18px 8px 6px;
@@ -1171,7 +1242,7 @@
   }
 
   .bk-show-info .bk-poster-small {
-    grid-row: 1 / 3;
+    grid-row: auto;
     min-height: 170px;
     padding: 10px;
   }
@@ -1193,47 +1264,19 @@
     font-size: 11px;
   }
 
-  .bk-show-info .bk-price-tag {
-    padding: 10px;
-    font-size: 11px;
-  }
-
   .bk-show-info .bk-muted,
   .bk-show-info .bk-text-link {
     grid-column: 1 / -1;
   }
 
-  .bk-summary-feature {
-    grid-template-columns: 95px minmax(0, 1fr);
-    gap: 14px;
-    padding: 12px;
-    border-radius: 17px;
-  }
 
-  .bk-summary-feature h3 {
-    font-size: 25px;
-  }
 
-  .bk-summary-feature p:not(.bk-kicker) {
-    font-size: 12px;
-  }
 
-  .bk-details-grid {
-    gap: 10px;
-  }
 
-  .bk-details-grid > div {
-    min-height: 114px;
-    padding: 14px;
-    border-radius: 16px;
-  }
 
-  .bk-details-grid strong {
-    font-size: 14px;
-  }
 
   .bk-ticket {
-    padding: 25px 24px;
+    padding: 25px 24px 33px;
   }
 
   .bk-dotted {
@@ -1273,23 +1316,6 @@
     font-size: 29px;
   }
 
-  .bk-success-card {
-    padding: 30px 7px;
-  }
-
-  .bk-success-stamp {
-    width: 84px;
-    height: 84px;
-    font-size: 43px;
-  }
-
-  .bk-success-card h1 {
-    font-size: 52px;
-  }
-
-  .bk-success-actions > a {
-    width: 100%;
-  }
 }
 
 @media (max-width: 360px) {
@@ -1305,9 +1331,6 @@
     width: 70px;
   }
 
-  .bk-summary-feature h3 {
-    font-size: 21px;
-  }
 
   .bk-ticket-top {
     gap: 11px;

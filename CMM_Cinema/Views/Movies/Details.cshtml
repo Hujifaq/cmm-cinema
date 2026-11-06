@@ -20,7 +20,7 @@
         @await Html.PartialAsync("_Breadcrumb", new (string, string?)[] { ("Home", "/"), ("Movies", "/Movies"), (Model.Title, null) })
     </div>
     <div class="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:gap-12 md:px-12 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:gap-20">
-        <div class="w-full max-w-xs md:max-w-none">
+        <div class="w-full max-w-xs md:sticky md:top-32 md:max-w-none md:self-start">
             <div class="relative aspect-[2/3] overflow-hidden rounded-2xl" data-detail-poster>
                 @await Html.PartialAsync("_MoviePoster", Model, new ViewDataDictionary(ViewData) { ["PosterClass"] = "origin-bottom" })
             </div>

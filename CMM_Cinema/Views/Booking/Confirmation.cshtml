@@ -1,23 +1,87 @@
 @model BookingDetailsViewModel
+@using System.Globalization
 @{
     ViewData["Title"] = "Booking Confirmed";
+    var culture = CultureInfo.InvariantCulture;
+    var booking = Model.Booking;
+    var seats = string.Join(", ", booking.SeatItems.Select(seat => seat.Capacity == 2 ? $"{seat.Id} (pair)" : seat.Id));
+    var actionClass = "bk-confirm-action inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full px-5 py-3 text-center text-sm font-bold leading-snug no-underline shadow-[0_5px_12px_rgb(7_28_30/0.14),inset_0_1px_1px_rgb(255_255_255/0.3)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink";
+    var detailLabelClass = "mb-2 text-xs font-medium text-cinema-cream/55";
 }
 
 <div class="bk-flow bk-success">
-    <div class="bk-success-card">
-        <span class="bk-success-stamp" aria-hidden="true">✓</span>
-        <p class="bk-kicker">✦ &nbsp; CMM Cinema</p>
-        <h1>You're <em>all set!</em></h1>
-        <p>Demo booking confirmed. This is a sample confirmation only: it is not a valid cinema ticket and no money was charged.</p>
-        <div class="bk-confirm-id">Demo reference <strong>@Model.Booking.Reference</strong></div>
-    </div>
+    @await Html.PartialAsync("_BookingSteps", 4)
 
-    <div class="bk-confirm-order">
-        @await Html.PartialAsync("_OrderCard", Model)
-    </div>
+    <header class="mx-auto mb-8 max-w-[480px] text-center">
+        <h1 class="m-0 text-3xl font-black leading-tight tracking-tight text-cinema-ink sm:text-4xl">Booking confirmed.</h1>
+        <p class="mb-0 mt-3 text-sm leading-relaxed text-cinema-ink/65">Demo booking confirmed. This is a sample confirmation only: it is not a valid cinema ticket and no money was charged.</p>
+    </header>
 
-    <div class="bk-success-actions">
-        <a class="bk-primary" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">Book another screening <span aria-hidden="true">→</span></a>
-        <a class="bk-secondary" href="/">Return to homepage</a>
+    <article class="bk-admission-ticket mx-auto w-full max-w-[480px] overflow-hidden rounded-[28px] bg-cinema-spotlight text-cinema-cream" aria-labelledby="confirmed-movie-title">
+        <div class="relative aspect-[2/3] overflow-hidden" aria-hidden="true">
+            @await Html.PartialAsync("_MoviePoster", Model.Movie)
+            <span class="absolute bottom-5 left-5 inline-flex items-center gap-2 rounded-full bg-cinema-cream px-4 py-2 text-xs font-bold text-cinema-ink shadow-sm sm:bottom-6 sm:left-6">
+                <svg class="size-4 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 4 4 8-8" /></svg>
+                Demo confirmed
+            </span>
+        </div>
+        <div class="px-6 pb-5 pt-6 sm:px-8 sm:pt-7">
+            <h2 id="confirmed-movie-title" class="m-0 break-words text-2xl font-black uppercase leading-tight tracking-tight sm:text-3xl">@Model.Movie.Title</h2>
+        </div>
+
+        <div class="bk-admission-perforation" aria-hidden="true"><span></span></div>
+
+        <div class="px-6 pb-7 pt-5 sm:px-8 sm:pb-8">
+            <p class="m-0 text-xl font-bold leading-snug">@Model.Cinema.Name</p>
+            <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-cinema-cream/80">
+                <span class="rounded-md border border-solid border-cinema-cream/25 px-2 py-1 font-bold">@Model.Showtime.Format</span>
+                <span class="px-1">@Model.Showtime.Language</span>
+                <span class="rounded-md border border-solid border-cinema-cream/25 px-2 py-1 font-bold">@Model.Movie.Rating</span>
+                <span class="px-1">@(Model.Movie.DurationMinutes)m</span>
+            </div>
+
+            <dl class="mb-0 mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                <div class="flex items-center gap-2">
+                    <dt><span class="sr-only">Screening date</span><svg class="size-5" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h1m6 0h1m-8 3h1"/></svg></dt>
+                    <dd class="m-0">@Model.Showtime.Date.ToString("ddd, dd MMM yyyy", culture)</dd>
+                </div>
+                <div class="flex items-center gap-2">
+                    <dt><span class="sr-only">Showtime</span><svg class="size-5" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></dt>
+                    <dd class="m-0">@Model.Showtime.Time.ToString("HH:mm", culture)</dd>
+                </div>
+            </dl>
+
+            <dl class="mb-0 mt-8 grid min-w-0 grid-cols-2 gap-x-5 gap-y-6">
+                <div>
+                    <dt class="@detailLabelClass">Total</dt>
+                    <dd class="m-0 text-3xl font-black tracking-tight text-cinema-sun">฿@booking.Total.ToString("N0", culture)</dd>
+                </div>
+                <div>
+                    <dt class="@detailLabelClass">Admissions</dt>
+                    <dd class="m-0 text-3xl font-black tracking-tight text-cinema-cream">@booking.TicketCount</dd>
+                </div>
+                <div class="col-span-2 min-w-0">
+                    <dt class="@detailLabelClass">Seats</dt>
+                    <dd class="m-0 break-words text-2xl font-bold text-cinema-sun">@seats</dd>
+                </div>
+                <div class="col-span-2 min-w-0">
+                    <dt class="@detailLabelClass">Demo reference</dt>
+                    <dd class="m-0 break-all font-mono text-lg font-bold tracking-wider text-cinema-sun">@booking.Reference</dd>
+                </div>
+            </dl>
+
+            <div class="mt-7 border-x-0 border-b-0 border-t border-solid border-cinema-cream/15 pt-4 text-xs text-cinema-cream/60">
+                @foreach (var tier in booking.SeatItems.GroupBy(seat => (seat.Category, seat.Price, seat.Capacity)))
+                {
+                    <p class="mb-0 mt-2 flex flex-wrap justify-between gap-2"><span>@tier.Key.Category.DisplayName() (@(tier.Key.Capacity == 2 ? "pairs" : "seats"))</span><span>@tier.Count() × ฿@tier.Key.Price.ToString("N0", culture)</span></p>
+                }
+                <p class="mb-0 mt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-cinema-cream/40">CMM Cinema · Demo booking</p>
+            </div>
+        </div>
+    </article>
+
+    <div class="mx-auto mb-12 mt-7 grid w-full max-w-[640px] grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+        <a class="@actionClass bk-confirm-book bg-linear-to-br from-cinema-sky to-cinema-cyan" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">Book another screening <span class="shrink-0" aria-hidden="true">→</span></a>
+        <a class="@actionClass bk-confirm-home bg-cinema-deep" href="/">Return to homepage</a>
     </div>
 </div>

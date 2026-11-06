@@ -5,9 +5,9 @@
     var booking = Model.Booking;
 }
 
+<div class="bk-receipt-shell">
 <aside class="bk-ticket" aria-label="Order information">
     <div class="bk-ticket-top">
-        <p class="bk-kicker">✦ &nbsp; Your movie night</p>
         <div class="bk-mini-poster" aria-hidden="true">
             @await Html.PartialAsync("_MoviePoster", Model.Movie)
         </div>
@@ -23,10 +23,15 @@
     <dl class="bk-receipt-lines">
         <div><dt>Date</dt><dd>@Model.Showtime.Date.ToString("ddd, dd MMM yyyy", culture)</dd></div>
         <div><dt>Showtime</dt><dd>@Model.Showtime.Time.ToString("HH:mm", culture)</dd></div>
-        <div><dt>Seats</dt><dd>@string.Join(", ", booking.Seats)</dd></div>
-        <div><dt>Tickets</dt><dd>@booking.Seats.Count × ฿@booking.PricePerSeat.ToString("N0", culture)</dd></div>
+        <div><dt>Seats</dt><dd>@string.Join(", ", booking.SeatItems.Select(seat => seat.Capacity == 2 ? $"{seat.Id} (pair)" : seat.Id))</dd></div>
+        <div><dt>Admissions</dt><dd>@booking.TicketCount</dd></div>
+        @foreach (var tier in booking.SeatItems.GroupBy(seat => (seat.Category, seat.Price, seat.Capacity)))
+        {
+            <div><dt>@tier.Key.Category.DisplayName() (@(tier.Key.Capacity == 2 ? "pairs" : "seats"))</dt><dd>@tier.Count() × ฿@tier.Key.Price.ToString("N0", culture)</dd></div>
+        }
         <div class="bk-total"><dt>Total</dt><dd>฿@booking.Total.ToString("N0", culture)</dd></div>
     </dl>
 
     <p class="bk-ticket-note">CMM Cinema · Demo booking</p>
 </aside>
+</div>
