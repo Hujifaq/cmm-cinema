@@ -13,7 +13,8 @@
     "search:build": "esbuild Client/cinema-search.tsx --bundle --minify --format=iife --target=es2020 --outfile=wwwroot/js/cinema-search.bundle.js",
     "typecheck": "tsc --noEmit",
     "now-showing:build": "esbuild Client/now-showing-title.tsx --bundle --minify --format=iife --target=es2020 --define:window.gsap=undefined --outfile=wwwroot/js/now-showing-title.bundle.js",
-    "build": "npm run typecheck && npm run search:build && npm run now-showing:build && npm run css:build",
+    "news:build": "esbuild news-disc-gallery.bundle=Client/news/news-disc-gallery.js news-story.bundle=Client/news/news-story.js --bundle --minify --format=iife --target=es2020 --outdir=wwwroot/js",
+    "build": "npm run typecheck && npm run search:build && npm run now-showing:build && npm run news:build && npm run css:build",
     "pretest": "npm run search:build"
   },
   "keywords": [],
@@ -41,6 +42,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "swiper": "^14.3.0",
-    "tailwind-merge": "^3.7.0"
+    "tailwind-merge": "^3.7.0",
+    "three": "^0.180.0"
   }
 }

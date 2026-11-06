@@ -35,6 +35,7 @@ public record BookedSeat(string Id, SeatCategory Category, decimal Price, int Ca
 // A seat hold lives in memory only: it is demo data, not a real ticket or payment.
 public record BookingHold(
     Guid Id,
+    int OwnerId,
     int ShowtimeId,
     IReadOnlyList<BookedSeat> SeatItems,
     DateTimeOffset ExpiresAt,

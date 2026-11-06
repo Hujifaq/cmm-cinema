@@ -1,5 +1,12 @@
+@model AuthPageViewModel
+@inject Microsoft.Extensions.Options.IOptions<CMM_Cinema.Services.TurnstileOptions> Turnstile
 @{
     Layout = "_HeroLayout";
+    var formErrors = ViewData.ModelState.Values.SelectMany(entry => entry.Errors).Select(error => error.ErrorMessage).Distinct().ToList();
+    var registerErrors = Model.Mode == "register" ? formErrors : [];
+    var loginHasFormErrors = Model.Mode == "login" && formErrors.Count > 0;
+    var loginHasErrors = loginHasFormErrors || Model.NoticeIsError;
+    var loginMessage = loginHasFormErrors ? string.Join(" ", formErrors) : Model.Notice;
     ViewData["Title"] = "Login / Register - CMM Cinema";
     var inputClass = "block min-h-[44px] sm:min-h-12 w-full min-w-0 rounded-2xl border-0 bg-white py-3 pl-10 pr-5 font-sans text-base sm:text-sm text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:outline-none";
     var loginInputClass = "block min-h-[44px] sm:min-h-12 w-full min-w-0 rounded-2xl border-0 bg-white py-3 pl-10 pr-5 font-sans text-base sm:text-sm text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:outline-none";
@@ -15,7 +22,7 @@
     <h1 class="sr-only" id="account-title">Login or register for CMM Cinema</h1>
     @await Html.PartialAsync("_GooFilter")
     <div class="mx-auto w-full max-w-[980px] px-5 md:px-8">
-        <div class="auth-card relative mx-auto grid w-full max-w-[560px] items-stretch overflow-hidden rounded-[28px] bg-white shadow-clay ring-1 ring-cinema-ink/[0.05] lg:max-w-none lg:grid-cols-2" data-signup-card data-auth-mode="login">
+        <div class="auth-card relative mx-auto grid w-full max-w-[560px] items-stretch overflow-hidden rounded-[28px] bg-white shadow-clay ring-1 ring-cinema-ink/[0.05] lg:max-w-none lg:grid-cols-2" data-signup-card data-auth-mode="@Model.Mode">
             <div class="bg-cinema-paper px-5 pt-5 sm:px-7 sm:pt-7 lg:hidden" data-auth-mode-toggle hidden>
                 <div class="auth-mode-toggle relative isolate grid grid-cols-2 rounded-full bg-cinema-ink/[0.06] p-1" role="group" aria-label="Account form">
                     <button class="@modeButtonClass" type="button" aria-controls="auth-login-panel" aria-pressed="true" data-auth-mode-button="login">Login</button>
@@ -55,39 +62,44 @@
                         <h2 class="m-0 text-3xl font-bold leading-tight tracking-tighter sm:text-4xl" id="login-title" data-reveal-chars>Welcome back.</h2>
                         <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Sign into your account below.</p>
                     </div>
-                    <form class="relative z-10 grid gap-3" aria-labelledby="login-title" data-login-form>
+                    <form class="relative z-10 grid gap-3" method="post" asp-action="Login" aria-labelledby="login-title" data-login-form data-ajax-form>
+                        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
                         <div class="relative" data-reveal-up>
                             <label class="sr-only" for="login-email">Email address</label>
                             <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2" stroke-linecap="round" /></svg>
-                            <input class="@loginInputClass" id="login-email" name="email" type="email" autocomplete="username" placeholder="Enter your email" maxlength="254" required />
+                            <input class="@loginInputClass" id="login-email" name="email" type="email" autocomplete="username" placeholder="Enter your email" maxlength="254" value="@Model.Login.Email" required />
                         </div>
                         <div class="relative" data-reveal-up>
                             <label class="sr-only" for="login-password">Password</label>
                             <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" stroke-linecap="round" /></svg>
-                            <input class="@loginInputClass pr-16" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
+                            <input class="@loginInputClass pr-16" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" maxlength="128" required />
                             <button class="absolute right-2 top-1/2 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="login-password" aria-label="Show password" aria-pressed="false" data-password-toggle hidden>Show</button>
                         </div>
-                        <div class="mt-2 flex flex-col items-stretch gap-1" data-reveal-up>
-                            <a class="inline-flex min-h-[44px] cursor-pointer items-center self-end border-0 bg-transparent p-0 text-left font-sans text-xs font-bold text-cinema-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink sm:text-sm" asp-controller="Forgotpassword" asp-action="Index" data-forgot-password>Forgot password?</a>
-                            <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-2.5 font-sans text-sm font-bold text-cinema-cream shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-login-submit data-goo-button disabled>
-                                <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
-                                    <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
-                                    <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
-                                    <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
-                                </span>
-                                <span class="relative" data-goo-label>Sign In</span>
-                            </button>
+                        <div>
+                            <div class="cf-turnstile" data-sitekey="@Turnstile.Value.SiteKey" data-action="login" data-theme="light" data-size="flexible" data-appearance="interaction-only"></div>
+                            <div class="mt-2 flex flex-col items-stretch gap-1" data-reveal-up>
+                                <a class="inline-flex min-h-[44px] cursor-pointer items-center self-end border-0 bg-transparent p-0 text-left font-sans text-xs font-bold text-cinema-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink sm:text-sm" asp-controller="Forgotpassword" asp-action="Index" data-forgot-password>Forgot password?</a>
+                                <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-2.5 font-sans text-sm font-bold text-cinema-cream shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-login-submit data-goo-button disabled>
+                                    <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                                        <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
+                                        <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
+                                        <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
+                                    </span>
+                                    <span class="relative" data-goo-label>Sign In</span>
+                                </button>
+                            </div>
                         </div>
-                        <p class="m-0 text-sm leading-relaxed text-cinema-ink/70" role="status" data-login-status hidden></p>
-                        <noscript><p class="m-0 text-sm text-cinema-ink/60">Please enable JavaScript to preview the login form. Login is not available yet.</p></noscript>
+                        <p class="m-0 text-sm leading-relaxed text-cinema-ink/70 data-[tone=error]:font-medium data-[tone=error]:text-cinema-brick" role="status" data-login-status data-form-status data-tone="@(loginHasErrors ? "error" : null)" hidden="@(loginMessage is null)">@loginMessage</p>
+                        <noscript><p class="m-0 text-sm text-cinema-ink/60">Please enable JavaScript to sign in.</p></noscript>
                     </form>
                     <div class="my-4 flex items-center gap-3" data-reveal-up>
                         <span class="h-px flex-1 bg-cinema-ink/10" aria-hidden="true"></span>
                         <span class="text-xs font-medium uppercase tracking-widest text-cinema-ink/40">OR</span>
                         <span class="h-px flex-1 bg-cinema-ink/10" aria-hidden="true"></span>
                     </div>
-                    <div class="relative z-10" data-reveal-up>
-                        <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 font-sans text-sm font-bold text-cinema-ink shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button" aria-describedby="google-login-status" data-google-login data-goo-button disabled>
+                    <form class="relative z-10" method="post" asp-action="GoogleLogin" data-reveal-up>
+                        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                        <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 font-sans text-sm font-bold text-cinema-ink shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" aria-describedby="google-login-status" data-google-login data-goo-button>
                             <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
                                 <span class="absolute inset-0 rounded-2xl bg-white"></span>
                                 <span class="absolute inset-0 overflow-hidden rounded-2xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-white" data-goo-fill></span></span>
@@ -104,7 +116,7 @@
                             </span>
                         </button>
                         <p class="mb-0 mt-3 text-center text-sm leading-relaxed text-cinema-ink/70" id="google-login-status" role="status" data-google-login-status hidden></p>
-                    </div>
+                    </form>
                 </section>
 
                 <section class="auth-view min-w-0 bg-cinema-paper p-5 sm:p-7 lg:p-7" id="auth-register-panel" aria-labelledby="signup-title" data-auth-view="register" data-signup-panel>
@@ -113,22 +125,22 @@
                         <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Create your account details below.</p>
                     </div>
 
-                    <form class="relative z-10 grid gap-3" aria-labelledby="signup-title" data-signup-form>
+                    <form class="relative z-10 grid gap-3" method="post" asp-action="Register" aria-labelledby="signup-title" data-signup-form data-ajax-form>
                         <div class="relative" data-reveal-up>
                             <label class="@labelClass" for="signup-name">Full name</label>
                             <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2" stroke-linecap="round" /></svg>
-                            <input class="@inputClass" id="signup-name" name="name" type="text" autocomplete="name" placeholder="Enter your name" maxlength="100" required />
+                            <input class="@inputClass" id="signup-name" name="name" type="text" autocomplete="name" placeholder="Enter your name" maxlength="100" value="@Model.Register.Name" required />
                         </div>
                         <div class="relative" data-reveal-up>
                             <label class="@labelClass" for="signup-email">Email address</label>
                             <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 6 9 7 9-7" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                            <input class="@inputClass" id="signup-email" name="email" type="email" autocomplete="email" placeholder="Enter your email" maxlength="254" required />
+                            <input class="@inputClass" id="signup-email" name="email" type="email" autocomplete="email" placeholder="Enter your email" maxlength="254" value="@Model.Register.Email" required />
                         </div>
                         <div data-reveal-up>
                             <label class="@labelClass" for="signup-password">Password</label>
                             <div class="relative">
                                 <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" stroke-linecap="round" /></svg>
-                                <input class="@inputClass pr-16" id="signup-password" name="password" type="password" autocomplete="new-password" placeholder="Enter your password" minlength="8" aria-describedby="signup-password-hint" required />
+                                <input class="@inputClass pr-16" id="signup-password" name="password" type="password" autocomplete="new-password" placeholder="Enter your password" minlength="8" maxlength="128" aria-describedby="signup-password-hint" required />
                                 <button class="absolute right-2 top-1/2 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="signup-password" aria-label="Show password" aria-pressed="false" data-password-toggle hidden>Show</button>
                             </div>
                             <p class="mb-0 mt-2 px-2 text-xs text-cinema-ink/50" id="signup-password-hint">At least 8 characters. Make it a good one.</p>
@@ -136,35 +148,39 @@
                         <div class="relative" data-reveal-up>
                             <label class="@labelClass" for="signup-confirm">Confirm password</label>
                             <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-cinema-ink/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" stroke-linecap="round" /></svg>
-                            <input class="@inputClass pr-16" id="signup-confirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Confirm your password" minlength="8" required />
+                            <input class="@inputClass pr-16" id="signup-confirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Confirm your password" minlength="8" maxlength="128" required />
                             <button class="absolute right-2 top-1/2 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-2 text-xs font-bold text-cinema-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" aria-controls="signup-confirm" aria-label="Show confirm password" aria-pressed="false" data-password-toggle hidden>Show</button>
                         </div>
                         <div class="mt-2 grid gap-1">
                             <div class="flex min-h-[44px] items-center gap-3 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>
-                                <input class="m-0 size-4 shrink-0 accent-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" id="signup-privacy" name="privacyAcknowledged" type="checkbox" required />
+                                <input class="m-0 size-4 shrink-0 accent-cinema-cyan focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" id="signup-privacy" name="privacyAcknowledged" type="checkbox" value="true" checked="@Model.Register.PrivacyAcknowledged" required />
                                 <label class="m-0" for="signup-privacy">I agree to the <a class="font-bold text-cinema-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" asp-controller="Home" asp-action="Privacy" target="_blank" rel="noopener">Privacy Policy</a>.</label>
                             </div>
-                            <div class="flex flex-wrap items-center gap-3" data-reveal-up>
-                                <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-2.5 font-sans text-sm font-bold text-cinema-cream shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-signup-submit data-goo-button disabled>
-                                    <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
-                                        <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
-                                        <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
-                                        <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
-                                    </span>
-                                    <span class="relative" data-goo-label>Sign up</span>
-                                </button>
+                            <div>
+                                <div class="cf-turnstile" data-sitekey="@Turnstile.Value.SiteKey" data-action="register" data-theme="light" data-size="flexible" data-appearance="interaction-only"></div>
+                                <div class="flex flex-wrap items-center gap-3" data-reveal-up>
+                                    <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-2.5 font-sans text-sm font-bold text-cinema-cream shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" data-signup-submit data-goo-button disabled>
+                                        <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                                            <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
+                                            <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-ink" data-goo-fill></span></span>
+                                            <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-ink" data-goo-blob></span>
+                                        </span>
+                                        <span class="relative" data-goo-label>Sign up</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <p class="m-0 text-sm leading-relaxed text-cinema-ink/70" role="status" data-signup-status hidden></p>
-                        <noscript><p class="m-0 text-sm text-cinema-ink/60">Please enable JavaScript to preview the signup form. Account registration is not available yet.</p></noscript>
+                        <p class="m-0 text-sm leading-relaxed text-cinema-ink/70 data-[tone=error]:font-medium data-[tone=error]:text-cinema-brick" role="status" data-signup-status data-form-status data-tone="@(registerErrors.Count > 0 ? "error" : null)" hidden="@(registerErrors.Count == 0)">@string.Join(" ", registerErrors)</p>
+                        <noscript><p class="m-0 text-sm text-cinema-ink/60">Please enable JavaScript to create an account.</p></noscript>
                     </form>
                     <div class="my-4 flex items-center gap-3" data-reveal-up>
                         <span class="h-px flex-1 bg-cinema-ink/10" aria-hidden="true"></span>
                         <span class="text-xs font-medium uppercase tracking-widest text-cinema-ink/40">OR</span>
                         <span class="h-px flex-1 bg-cinema-ink/10" aria-hidden="true"></span>
                     </div>
-                    <div class="relative z-10" data-reveal-up>
-                        <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 font-sans text-sm font-bold text-cinema-ink shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="button" aria-describedby="google-register-status" data-google-login data-goo-button disabled>
+                    <form class="relative z-10" method="post" asp-action="GoogleLogin" data-reveal-up>
+                        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                        <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 font-sans text-sm font-bold text-cinema-ink shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" aria-describedby="google-register-status" data-google-login data-goo-button>
                             <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
                                 <span class="absolute inset-0 rounded-2xl bg-white"></span>
                                 <span class="absolute inset-0 overflow-hidden rounded-2xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-white" data-goo-fill></span></span>
@@ -181,7 +197,7 @@
                             </span>
                         </button>
                         <p class="mb-0 mt-3 text-center text-sm leading-relaxed text-cinema-ink/70" id="google-register-status" role="status" data-google-login-status hidden></p>
-                    </div>
+                    </form>
                 </section>
             </div>
             <p class="sr-only" role="status" data-auth-announcement></p>
@@ -190,3 +206,4 @@
 </section>
 
 @await Html.PartialAsync("_AccountFooter")
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

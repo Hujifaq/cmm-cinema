@@ -1,8 +1,10 @@
 using CMM_Cinema.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CMM_Cinema.Controllers
 {
+    [Authorize]
     public class TicketsController : Controller
     {
 

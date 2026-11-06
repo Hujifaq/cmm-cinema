@@ -7,7 +7,7 @@ namespace CMM_Cinema.Services;
 
 public sealed class D1Client(HttpClient http, IOptions<CloudflareD1Options> options)
 {
-    public async Task<IReadOnlyList<JsonElement>> QueryAsync(string sql, object[]? parameters = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<JsonElement>> QueryAsync(string sql, object?[]? parameters = null, CancellationToken cancellationToken = default)
     {
         var settings = options.Value;
         using var request = new HttpRequestMessage(HttpMethod.Post, $"accounts/{settings.AccountId}/d1/database/{settings.DatabaseId}/query");

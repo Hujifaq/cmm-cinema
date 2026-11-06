@@ -171,7 +171,7 @@
     </div>
 </section>
 
-<script>
+<script nonce="@Context.GetNonce()">
     document.addEventListener('DOMContentLoaded', function () {
         var print = document.querySelector('[data-ticket-print]');
         if (print) print.addEventListener('click', function () { window.print(); });

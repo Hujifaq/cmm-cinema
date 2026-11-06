@@ -87,7 +87,7 @@ public sealed class DemoBookingService : IBookingService
         return singles.Concat(pairs).ToArray();
     }
 
-    public bool TryHoldSeats(int showtimeId, IEnumerable<string> seatIds, out BookingHold? booking, out string error)
+    public bool TryHoldSeats(int ownerId, int showtimeId, IEnumerable<string> seatIds, out BookingHold? booking, out string error)
     {
         booking = null;
         var seats = seatIds.Select(id => (id ?? "").Trim().ToUpperInvariant()).Distinct().ToArray();
@@ -127,7 +127,7 @@ public sealed class DemoBookingService : IBookingService
             var ordered = selected.OrderBy(seat => seat.Category).ThenByDescending(seat => seat.Row, StringComparer.Ordinal)
                 .ThenBy(seat => seat.Number)
                 .Select(seat => new BookedSeat(seat.Id, seat.Category, seat.Price, seat.Capacity)).ToArray();
-            booking = new BookingHold(Guid.NewGuid(), showtimeId, Array.AsReadOnly(ordered),
+            booking = new BookingHold(Guid.NewGuid(), ownerId, showtimeId, Array.AsReadOnly(ordered),
                 DateTimeOffset.UtcNow + HoldLength, BookingStatus.Held);
             bookings.Add(booking.Id, booking);
             error = "";
@@ -135,22 +135,22 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
-    public BookingHold? GetBooking(Guid bookingId)
+    public BookingHold? GetBooking(int ownerId, Guid bookingId)
     {
         lock (gate)
         {
             RemoveExpiredHolds();
-            return bookings.GetValueOrDefault(bookingId);
+            return FindOwned(ownerId, bookingId);
         }
     }
 
-    public bool TryConfirmBooking(Guid bookingId, out string error)
+    public bool TryConfirmBooking(int ownerId, Guid bookingId, out string error)
     {
         lock (gate)
         {
             RemoveExpiredHolds();
 
-            if (!bookings.TryGetValue(bookingId, out var booking))
+            if (FindOwned(ownerId, bookingId) is not { } booking)
             {
                 error = "Booking has expired or is unavailable.";
                 return false;
@@ -180,14 +180,17 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
-    public void CancelHold(Guid bookingId)
+    public void CancelHold(int ownerId, Guid bookingId)
     {
         lock (gate)
         {
-            if (bookings.TryGetValue(bookingId, out var booking) && booking.Status == BookingStatus.Held)
+            if (FindOwned(ownerId, bookingId) is { Status: BookingStatus.Held })
                 bookings.Remove(bookingId);
         }
     }
+
+    private BookingHold? FindOwned(int ownerId, Guid bookingId) =>
+        bookings.TryGetValue(bookingId, out var booking) && booking.OwnerId == ownerId ? booking : null;
 
     // Showtimes are created the first time a movie and day are asked for, then kept so their ids stay stable.
     private Showtime[] GetOrCreateDay(string movieSlug, DateOnly date)

@@ -21,32 +21,19 @@
     validate();
     status.hidden = true;
   });
+
   form.addEventListener('submit', event => {
-    event.preventDefault();
     validate();
-    if (!form.reportValidity()) return;
-    status.textContent = 'Account registration is not available yet. Please check back soon.';
-    status.hidden = false;
+    if (!form.reportValidity()) event.preventDefault();
   });
   if (loginForm) {
     const loginStatus = loginForm.querySelector('[data-login-status]');
     loginForm.addEventListener('input', () => { loginStatus.hidden = true; });
     loginForm.addEventListener('submit', event => {
-      event.preventDefault();
-      if (!loginForm.reportValidity()) return;
-      loginStatus.textContent = 'Login is not available yet. Please check back soon.';
-      loginStatus.hidden = false;
+      if (!loginForm.reportValidity()) event.preventDefault();
     });
     loginForm.querySelector('[data-login-submit]').disabled = false;
   }
-  root.querySelectorAll('[data-google-login]').forEach(googleLogin => {
-    const googleStatus = googleLogin.closest('[data-auth-view]').querySelector('[data-google-login-status]');
-    googleLogin.disabled = false;
-    googleLogin.addEventListener('click', () => {
-      googleStatus.textContent = 'Google sign-in is not available yet. Please check back soon.';
-      googleStatus.hidden = false;
-    });
-  });
   root.querySelectorAll('[data-password-toggle]').forEach(button => {
     const input = document.getElementById(button.getAttribute('aria-controls'));
     const label = input === confirmation ? 'confirm password' : 'password';
@@ -240,7 +227,7 @@
     });
     if (compactToggle) compactToggle.hidden = false;
     switchButton.hidden = false;
-    switchMode('login', false);
+    switchMode(card.dataset.authMode === 'register' ? 'register' : 'login', false);
     card.setAttribute('data-auth-ready', '');
   }
 

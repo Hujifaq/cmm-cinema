@@ -305,4 +305,5 @@ function CinemaSearch() {
   </div> : null;
 }
 
-if (nav && trigger && mount) createRoot(mount).render(<MotionConfig reducedMotion="user"><CinemaSearch /></MotionConfig>);
+// framer-motion injects <style> tags for popLayout; the page's CSP only allows them with this request's nonce.
+if (nav && trigger && mount) createRoot(mount).render(<MotionConfig reducedMotion="user" nonce={mount.nonce || undefined}><CinemaSearch /></MotionConfig>);
