@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  // Seat hold countdown on the summary and payment pages. When it reaches zero the
+  // Seat hold countdown on the summary page. When it reaches zero the
   // continue buttons are disabled; the server rejects the expired hold either way.
   const hold = document.querySelector('[data-hold-expiry]');
   if (!hold) return;

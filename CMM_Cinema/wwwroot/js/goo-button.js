@@ -19,7 +19,8 @@
     let rect = null;
 
     gsap.set([fill, blob], { xPercent: -50, yPercent: -50, scale: 0 });
-    const enabled = event => fine.matches && !reduced.matches && event.pointerType === 'mouse';
+    const available = () => !button.disabled && button.getAttribute('aria-disabled') !== 'true';
+    const enabled = event => available() && fine.matches && !reduced.matches && event.pointerType === 'mouse';
     const local = event => {
       rect = button.getBoundingClientRect();
       const x = event.clientX - rect.left, y = event.clientY - rect.top;
@@ -77,7 +78,7 @@
 
     // Keyboard focus gets the same flood, from the centre.
     button.addEventListener('focus', () => {
-      if (button.matches(':focus-visible')) flood(button.offsetWidth / 2, button.offsetHeight / 2);
+      if (available() && !reduced.matches && button.matches(':focus-visible')) flood(button.offsetWidth / 2, button.offsetHeight / 2);
     });
     button.addEventListener('blur', () => {
       if (!rect) drain(button.offsetWidth / 2, button.offsetHeight / 2);

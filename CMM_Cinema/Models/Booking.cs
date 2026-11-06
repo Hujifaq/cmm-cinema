@@ -16,20 +16,34 @@ public record Showtime(
     string Language,
     bool IsAvailable);
 
-public record Seat(string Id, char Row, int Number, SeatState State);
+public enum SeatCategory { Normal, Premium, Vip }
+
+public static class SeatCategoryLabels
+{
+    public static string DisplayName(this SeatCategory category) => category switch
+    {
+        SeatCategory.Premium => "Premium",
+        SeatCategory.Vip => "VIP",
+        _ => "Normal"
+    };
+}
+
+// A VIP selection is one indivisible pair: one ID, two admissions and one pair price.
+public record Seat(string Id, string Row, int Number, SeatState State, SeatCategory Category, decimal Price, int Capacity = 1);
+public record BookedSeat(string Id, SeatCategory Category, decimal Price, int Capacity);
 
 // A seat hold lives in memory only: it is demo data, not a real ticket or payment.
 public record BookingHold(
     Guid Id,
     int OwnerId,
     int ShowtimeId,
-    IReadOnlyList<string> Seats,
-    decimal PricePerSeat,
+    IReadOnlyList<BookedSeat> SeatItems,
     DateTimeOffset ExpiresAt,
-    BookingStatus Status,
-    string? PaymentMethod = null)
+    BookingStatus Status)
 {
-    public decimal Total => Seats.Count * PricePerSeat;
+    public IReadOnlyList<string> Seats => SeatItems.Select(seat => seat.Id).ToArray();
+    public int TicketCount => SeatItems.Sum(seat => seat.Capacity);
+    public decimal Total => SeatItems.Sum(seat => seat.Price);
     public string Reference => Id.ToString("N")[..12].ToUpperInvariant();
 }
 
@@ -48,7 +62,6 @@ public record SeatSelectionViewModel(
     Cinema Cinema,
     Showtime Showtime,
     IReadOnlyList<Seat> Seats,
-    decimal PricePerSeat,
     string? Error);
 
 public record BookingDetailsViewModel(BookingHold Booking, Movie Movie, Cinema Cinema, Showtime Showtime);

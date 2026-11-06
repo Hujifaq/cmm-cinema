@@ -5,11 +5,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CMM_Cinema.Controllers
 {
-    // Showtimes -> SeatSelection -> Reserve -> Summary -> Payment -> Pay -> Confirmation
+    // Showtimes -> SeatSelection -> Reserve -> Summary -> Confirm -> Confirmation
     // Browsing showtimes is public; choosing seats onwards needs an account, and every booking belongs to its owner.
     [Authorize]
     public class BookingController(IMovieRepository movies, IBookingService booking) : Controller
     {
+        private int UserId => AuthClaims.UserId(User) ?? throw new InvalidOperationException("Booking actions require a signed-in user.");
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Index(string? movie) => RedirectToAction(nameof(Showtimes), new { movie });
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Showtimes(string? movie, DateOnly? date, int? cinemaId, string? format, string? language,
@@ -50,7 +56,7 @@ namespace CMM_Cinema.Controllers
             if (movie is null) return NotFound();
 
             return View(new SeatSelectionViewModel(movie, booking.GetCinema(showtime.CinemaId)!, showtime,
-                booking.GetSeats(showtimeId), booking.GetSeatPrice(showtime), TempData["SeatError"] as string));
+                booking.GetSeats(showtimeId), TempData["SeatError"] as string));
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -70,28 +76,25 @@ namespace CMM_Cinema.Controllers
             var details = await FindDetailsAsync(bookingId, cancellationToken);
             if (details is null) return RedirectToAction(nameof(Showtimes));
             if (details.Booking.Status != BookingStatus.Held) return RedirectToAction(nameof(Confirmation), new { bookingId });
+            ViewData["BookingError"] = TempData["BookingError"];
             return View(details);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Payment(Guid bookingId, CancellationToken cancellationToken)
-        {
-            var details = await FindDetailsAsync(bookingId, cancellationToken);
-            if (details is null) return RedirectToAction(nameof(Showtimes));
-            if (details.Booking.Status != BookingStatus.Held) return RedirectToAction(nameof(Confirmation), new { bookingId });
-            ViewData["PaymentError"] = TempData["PaymentError"];
-            return View(details);
-        }
+        public IActionResult Payment(Guid bookingId) => RedirectToAction(nameof(Summary), new { bookingId });
 
         [HttpPost, ValidateAntiForgeryToken]
-        public IActionResult Pay(Guid bookingId, string paymentMethod)
+        public IActionResult Pay(Guid bookingId) => RedirectToAction(nameof(Summary), new { bookingId });
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public IActionResult Confirm(Guid bookingId)
         {
-            if (booking.TryConfirmPayment(UserId, bookingId, paymentMethod, out var error))
+            if (booking.TryConfirmBooking(UserId, bookingId, out var error))
                 return RedirectToAction(nameof(Confirmation), new { bookingId });
 
             if (booking.GetBooking(UserId, bookingId) is null) return RedirectToAction(nameof(Showtimes));
-            TempData["PaymentError"] = error;
-            return RedirectToAction(nameof(Payment), new { bookingId });
+            TempData["BookingError"] = error;
+            return RedirectToAction(nameof(Summary), new { bookingId });
         }
 
         [HttpGet]
@@ -108,8 +111,6 @@ namespace CMM_Cinema.Controllers
             booking.CancelHold(UserId, bookingId);
             return RedirectToAction(nameof(Showtimes), new { movie = showtime?.MovieSlug });
         }
-
-        private int UserId => AuthClaims.UserId(User) ?? throw new InvalidOperationException("Booking actions require a signed-in user.");
 
         private async Task<BookingDetailsViewModel?> FindDetailsAsync(Guid bookingId, CancellationToken cancellationToken)
         {

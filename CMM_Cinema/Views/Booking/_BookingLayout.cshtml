@@ -13,10 +13,10 @@
 <link rel="stylesheet" href="~/css/booking/checkout.css" asp-append-version="true" />
 
 <div class="booking-page">
+    @await Html.PartialAsync("_GooFilter")
     @RenderBody()
 </div>
 
 <script src="~/js/booking/showtimes.js" asp-append-version="true" defer></script>
 <script src="~/js/booking/seat-selection.js" asp-append-version="true" defer></script>
 <script src="~/js/booking/hold-timer.js" asp-append-version="true" defer></script>
-<script src="~/js/booking/payment.js" asp-append-version="true" defer></script>
