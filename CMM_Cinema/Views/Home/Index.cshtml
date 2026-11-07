@@ -90,9 +90,9 @@
 @{
     var upcoming = new MovieSectionViewModel("upcoming", "UPCOMING", true, Model.Upcoming);
     var nowShowing = new MovieSectionViewModel("now-showing", "NOW SHOWING", false, Model.NowShowing);
-    // The same stories as the News page: the home section shows them with their movie covers.
+    // The same stories as the News page. The main page uses a story's wide landscape image when it has one.
     var news = new NewsSectionViewModel("news", "NEWS & UPDATES",
-        (Model.News ?? []).Select(story => new NewsItem(story.Title, story.Category, story.Date, story.PosterUrl, story.Excerpt, story.Url)).ToArray());
+        (Model.News ?? []).Select(story => new NewsItem(story.Title, story.Category, story.Date, story.LandscapeUrl ?? story.PosterUrl, story.Excerpt, story.Url)).ToArray());
 }
 
 @await Html.PartialAsync("_MovieSection", upcoming)

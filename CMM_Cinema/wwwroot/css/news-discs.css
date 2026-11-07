@@ -324,3 +324,10 @@
 }
 
 @keyframes news-story-lift { to { translate: 0 -100%; } }
+
+/* The story's own disc carries on falling over the gallery while the gallery disc drops in from the top. */
+:root[data-news-drop]::view-transition-group(news-disc) { z-index: 3; animation: none; }
+:root[data-news-drop]::view-transition-old(news-disc) {
+  animation: news-disc-fall 0.8s cubic-bezier(0.4, 0.15, 0.85, 0.5) both;
+}
+@keyframes news-disc-fall { to { translate: 0 110vh; rotate: 28deg; } }

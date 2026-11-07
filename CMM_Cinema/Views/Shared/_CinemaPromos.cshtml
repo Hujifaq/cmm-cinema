@@ -7,28 +7,30 @@
     var arrowClass = "promo-arrow relative inline-flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cream disabled:cursor-default disabled:opacity-30 md:size-14";
 }
 
-<section class="cinema-promos relative z-10 overflow-hidden bg-black py-16 font-sans text-cinema-cream md:py-24" aria-label="Cinema promotions" data-cinema-promos>
-    <div class="mx-auto max-w-[1440px] px-5 md:px-12">
-        <div class="swiper promo-swiper rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cyan md:rounded-[28px]" tabindex="0" aria-label="Cinema promotions" data-promo-swiper>
-            <div class="swiper-wrapper">
-                @for (var i = 0; i < offers.Length; i++)
-                {
-                    var offer = offers[i];
-                    <article class="swiper-slide promo-slide relative overflow-hidden rounded-2xl bg-cinema-deep md:rounded-[28px]" aria-labelledby="promo-title-@i">
-                        <img class="pointer-events-none block h-auto w-full" src="~/images/promos/@offer.Image" asp-append-version="true" width="1942" height="809" alt="@offer.Alt" loading="lazy" decoding="async" draggable="false" />
-                        <div class="sr-only">
-                            <span>@offer.Label</span>
-                            <h3 id="promo-title-@i">@offer.Title</h3>
-                            <p data-promo-offer>@offer.Offer</p>
-                            <p data-promo-description>@offer.Description</p>
-                            <p>CMM CINEMA / DEMO PROMOTION</p>
-                        </div>
-                    </article>
-                }
-            </div>
-        </div>
+<section class="cinema-promos relative z-10 overflow-hidden bg-black pb-14 pt-6 font-sans text-cinema-cream md:py-24" aria-label="Cinema promotions" data-promo-section>
+    <div class="promo-ribbon" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Cinema promotions. Swipe, drag or use the arrow keys to browse." data-promo-ribbon>
+        <ol class="carousel-track" data-track>
+            @for (var i = 0; i < offers.Length; i++)
+            {
+                var offer = offers[i];
+                <li class="card" data-card data-ratio="1942/809" data-seed="@i" role="group" aria-roledescription="promotion" aria-labelledby="promo-title-@i">
+                    <div class="card-media">
+                        <img src="~/images/promos/@offer.Image" asp-append-version="true" width="1942" height="809" alt="@offer.Alt" decoding="async" draggable="false" />
+                    </div>
+                    <div class="sr-only">
+                        <span>@offer.Label</span>
+                        <h3 id="promo-title-@i">@offer.Title</h3>
+                        <p>@offer.Offer</p>
+                        <p>@offer.Description</p>
+                        <p>CMM CINEMA / DEMO PROMOTION</p>
+                    </div>
+                </li>
+            }
+        </ol>
+    </div>
 
-        <div class="promo-controls mt-6 flex items-center justify-end gap-5 md:mt-8" data-promo-controls hidden>
+    <div class="mx-auto max-w-[1440px] px-5 md:px-12">
+        <div class="promo-controls mt-6 flex items-center justify-end gap-5 md:mt-8">
             <div class="flex shrink-0 gap-4 md:gap-6">
                 <button class="@arrowClass" type="button" aria-label="Previous promotion" data-promo-prev data-magnetic-arrow>@await Html.PartialAsync("_PromoArrowSurface", false)</button>
                 <button class="@arrowClass" type="button" aria-label="Next promotion" data-promo-next data-magnetic-arrow>@await Html.PartialAsync("_PromoArrowSurface", true)</button>

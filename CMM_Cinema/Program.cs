@@ -21,8 +21,12 @@ else
     builder.Services.AddSingleton<IMovieRepository, EmptyMovieRepository>();
 }
 
-// News is generated from the movies for now; swap MockNewsRepository for a D1-backed one later.
-builder.Services.AddScoped<INewsRepository, MockNewsRepository>();
+// News comes from the D1 `news` table, with generated placeholder stories filling any gap.
+builder.Services.AddScoped<MockNewsRepository>();
+if (builder.Configuration.GetSection("Cloudflare").Get<CloudflareD1Options>()?.IsConfigured == true)
+    builder.Services.AddScoped<INewsRepository, D1NewsRepository>();
+else
+    builder.Services.AddScoped<INewsRepository>(sp => sp.GetRequiredService<MockNewsRepository>());
 builder.Services.AddHttpClient("news-art", client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddSingleton<NewsArtService>();
 builder.Services.AddHostedService<NewsArtWarmup>();
