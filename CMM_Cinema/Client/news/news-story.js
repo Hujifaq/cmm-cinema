@@ -1,10 +1,9 @@
-// Single news story: reaching the very bottom of the page drops back to the disc gallery,
-// where this story's disc falls in with a little loop (news-disc-gallery.js reads ?story=&arrive=drop).
+
 import { initIndexMenu } from './index-menu.js';
 
 initIndexMenu();
 
-// Masked lines and letters rise into place, the same reveal the movie pages use for their titles.
+
 (() => {
   const story = document.querySelector('[data-story]');
   if (!story) return;
@@ -20,7 +19,7 @@ initIndexMenu();
       splits.push(result);
       return result[type];
     });
-    gsap.timeline({ delay: 0.1, defaults: { ease: 'power4.out' }, onComplete: () => splits.forEach(result => result.revert()) })
+    gsap.timeline({ delay: 0.1, defaults: { ease: 'power4.out' }, onComplete: () => splits.filter(result => !result.chars.length).forEach(result => result.revert()) })
       .from(split('[data-reveal-lines]', 'lines'), { yPercent: 105, duration: 0.8 }, 0.1)
       .from(split('[data-reveal-chars]', 'chars'), { yPercent: 110, duration: 1, stagger: 0.025 }, 0.15);
     show();

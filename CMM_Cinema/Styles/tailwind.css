@@ -179,6 +179,8 @@
 .promo-slide { height: auto; }
 .promo-swiper .swiper-wrapper { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
 .promo-controls[hidden] { display: none; }
+/* The grid utility would otherwise win over [hidden], leaving both movie lists on screen. */
+[data-movies-panel][hidden] { display: none; }
 .promo-swiper:not(.swiper-initialized) .swiper-wrapper { display: grid; gap: 24px; }
 
 /* Keep the hit target still while the cream surface follows the pointer (cinema-magnetic.js). */

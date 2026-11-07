@@ -9,19 +9,20 @@
 }
 
 @{
+    var showUpcoming = ViewData["Show"] as string == "upcoming";
     var tabClass = "shrink-0 cursor-pointer text-[1em] whitespace-nowrap border-0 bg-transparent p-0 font-['Arial_Black','Helvetica_Neue',Arial,sans-serif] font-black uppercase leading-[0.85] tracking-[-0.06em] text-cinema-ink transition-colors aria-[selected=false]:text-cinema-ink/35 aria-[selected=false]:hover:text-cinema-ink/60";
 }
 
 <section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" data-movies-page>
     <div class="mx-auto max-w-[1440px] px-5 md:px-12">
         <div class="flex flex-nowrap items-end justify-center gap-x-[0.18em] text-[min(8.55vw,7.65rem)]" role="tablist" aria-label="Movie status">
-            <button type="button" role="tab" id="tab-movies" aria-selected="true" aria-controls="panel-movies" data-movies-tab="movies" class="@tabClass">Movies</button>
-            <button type="button" role="tab" id="tab-upcoming" aria-selected="false" aria-controls="panel-upcoming" data-movies-tab="upcoming" class="@tabClass">Upcoming</button>
+            <button type="button" role="tab" id="tab-movies" aria-selected="@(showUpcoming ? "false" : "true")" aria-controls="panel-movies" data-movies-tab="movies" class="@tabClass">Movies</button>
+            <button type="button" role="tab" id="tab-upcoming" aria-selected="@(showUpcoming ? "true" : "false")" aria-controls="panel-upcoming" data-movies-tab="upcoming" class="@tabClass">Upcoming</button>
         </div>
 
         @foreach (var (key, list) in new[] { ("movies", Model.NowShowing), ("upcoming", Model.Upcoming) })
         {
-            <div role="tabpanel" id="panel-@key" aria-labelledby="tab-@key" data-movies-panel="@key" data-movie-grid class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:mt-14 md:grid-cols-3 md:gap-x-5 lg:grid-cols-4" hidden="@(key != "movies")">
+            <div role="tabpanel" id="panel-@key" aria-labelledby="tab-@key" data-movies-panel="@key" data-movie-grid class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:mt-14 md:grid-cols-3 md:gap-x-5 lg:grid-cols-4" hidden="@(showUpcoming ? key != "upcoming" : key != "movies")">
                 @foreach (var movie in list)
                 {
                     @await Html.PartialAsync("_MovieCard", movie)
@@ -44,6 +45,7 @@
         function select(tab) {
             if (tab.getAttribute('aria-selected') === 'true') return;
             tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t === tab)); });
+            history.replaceState(history.state, '', '?show=' + (tab.dataset.moviesTab === 'upcoming' ? 'upcoming' : 'now-showing'));
             panels.forEach(function (panel) {
                 panel.hidden = panel.dataset.moviesPanel !== tab.dataset.moviesTab;
                 if (!panel.hidden && gsap && !reduced.matches) {

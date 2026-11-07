@@ -6,12 +6,12 @@
 <section class="relative z-20 -mt-px overflow-hidden bg-cinema-paper pb-16 font-sans text-cinema-ink md:pb-24" aria-labelledby="@Model.Id-title" data-news>
     <div class="mx-auto max-w-[1440px] px-5 md:px-12">
         <h2 class="m-0 text-5xl font-black uppercase leading-none tracking-tighter sm:text-7xl md:text-8xl lg:text-[8rem]" id="@Model.Id-title">@Model.Title</h2>
-        <a class="mt-6 inline-flex rounded-full bg-cinema-ink px-5 py-2 text-xs font-bold uppercase tracking-widest text-cinema-cream no-underline" href="#">View all</a>
+        <a class="mt-6 inline-flex rounded-full bg-cinema-ink px-5 py-2 text-xs font-bold uppercase tracking-widest text-cinema-cream no-underline" href="/News">View all</a>
 
         <div class="mt-8 grid items-center gap-8 md:mt-10 md:grid-cols-2 md:gap-12 lg:gap-24" aria-live="polite">
             <div class="aspect-video overflow-hidden rounded-2xl bg-cinema-ink/10" data-news-frame
                  data-title="@first.Title" data-category="@first.Category" data-date="@first.Date" data-image="@first.Image" data-excerpt="@first.Excerpt" data-url="@first.Url">
-                <img class="size-full object-cover" src="@first.Image" alt="@first.Title" width="1200" height="675" data-news-image />
+                <img class="size-full object-cover object-[50%_20%]" src="@first.Image" alt="@first.Title" width="1200" height="675" data-news-image />
             </div>
             <div class="max-w-xl">
                 <p class="m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60" data-news-meta><span data-news-category>@first.Category</span> · <span data-news-date>@first.Date</span></p>
@@ -36,7 +36,7 @@
                         <button type="button" class="news-thumb block w-full cursor-pointer rounded-2xl border-0 bg-transparent p-0 text-left" aria-label="Show story: @item.Title"
                                 data-news-thumb data-title="@item.Title" data-category="@item.Category" data-date="@item.Date" data-image="@item.Image" data-excerpt="@item.Excerpt" data-url="@item.Url">
                             <span class="block aspect-video overflow-hidden rounded-2xl bg-cinema-ink/10">
-                                <img class="news-thumb__image size-full object-cover" src="@item.Image" alt="" width="1200" height="675" loading="lazy" />
+                                <img class="news-thumb__image size-full object-cover object-[50%_20%]" src="@item.Image" alt="" width="1200" height="675" loading="lazy" />
                             </span>
                         </button>
                     </div>

@@ -82,6 +82,7 @@
 }
 
 .story__body p { margin: 0 0 1.25em; }
+.story__body a { color: inherit; font-weight: 700; text-underline-offset: 0.2em; }
 .story__lede { font-size: 1.3em; font-weight: 600; line-height: 1.35; }
 
 /* ---------- The drop at the end ---------- */

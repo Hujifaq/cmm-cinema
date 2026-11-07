@@ -21,6 +21,12 @@ else
     builder.Services.AddSingleton<IMovieRepository, EmptyMovieRepository>();
 }
 
+// News is generated from the movies for now; swap MockNewsRepository for a D1-backed one later.
+builder.Services.AddScoped<INewsRepository, MockNewsRepository>();
+builder.Services.AddHttpClient("news-art", client => client.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddSingleton<NewsArtService>();
+builder.Services.AddHostedService<NewsArtWarmup>();
+
 // Demo booking flow: showtimes, seat holds and payments are kept in memory until bookings move to D1.
 builder.Services.AddSingleton<IBookingService, DemoBookingService>();
 

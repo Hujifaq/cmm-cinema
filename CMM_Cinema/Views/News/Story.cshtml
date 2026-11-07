@@ -3,7 +3,7 @@
     Layout = "_HeroLayout";
     ViewData["NewsPage"] = true;
     var s = Model.Story;
-    var art = NewsData.Art(Model.Index);
+    var art = s.ArtUrl;
     ViewData["Title"] = $"{s.Title} - CMM Cinema";
 }
 
@@ -26,9 +26,8 @@
     <img class="story__disc" data-reveal src="@art" alt="" width="900" height="900" />
     <div class="story__body">
         <p class="story__lede" data-reveal>@s.Excerpt</p>
-        <p data-reveal>This is sample copy for the story page. Replace it with the full article: who, what, when and why it matters to people coming to the cinema.</p>
-        <p data-reveal>A second paragraph can carry the details: times, prices, which hall, and anything guests should know before they book.</p>
-        <p data-reveal>Close with a short line that points to the next step, such as booking a seat or joining the members list.</p>
+        <p data-reveal>The full story will appear here once it is published.</p>
+        <p data-reveal><a href="@s.MovieUrl">About @s.MovieTitle</a> &middot; <a href="/Booking/Showtimes?movie=@Uri.EscapeDataString(s.MovieSlug)">Book a seat</a></p>
     </div>
     <section class="story__drop" data-story-drop aria-label="Back to all news">
         <div class="story__drop-stage">

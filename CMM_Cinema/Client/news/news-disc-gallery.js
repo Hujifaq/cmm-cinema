@@ -625,7 +625,10 @@ async function createGallery(root) {
       .from(full ? rows : [ui.category, ui.date].filter(Boolean), { y: 14, autoAlpha: 0, duration: 0.7, ease: 'power3.out', stagger: 0.06, clearProps: 'transform,opacity,visibility' }, full ? 0.3 : 0.12)
       .from(split(ui.excerpt, 'lines'), { yPercent: 105, duration: 1, stagger: 0.08 }, full ? 0.5 : 0.18);
     textFxCleanup = () => { tl.kill(); splits.forEach(result => result.revert()); textFxCleanup = () => {}; };
-    tl.eventCallback('onComplete', () => textFxCleanup());
+    // Once settled, un-split only the line-split copy (it re-wraps on resize). The headline keeps its letters
+    // split until the next story: un-splitting it lets the browser re-break the line (Thai words, balanced
+    // wrapping), which made the finished title jump.
+    tl.eventCallback('onComplete', () => splits.filter(result => !result.chars.length).forEach(result => result.revert()));
     textReady();
   }
 
@@ -1441,11 +1444,14 @@ async function createGallery(root) {
     // The disc falls in from the top, swings round one little loop (turning over once) and settles.
     const lead = discs[first];
     const d = S.loopDuration;
+    // When the story page is still lifting away above the gallery, wait for it to clear the top
+    // so the disc falls in through open space instead of from behind it.
+    const wait = document.documentElement.hasAttribute('data-news-drop') ? 0.5 : 0;
     lead.spinY = -Math.PI * 2;
-    tween(intro, { rise: 1 }, { duration: d, ease: EASE.out2 });
-    tween(lead, { spinY: 0 }, { duration: d, ease: EASE.out3 });
-    tween(intro, { active: 1 }, { duration: d * 0.8, ease: EASE.glide });
-    tween(intro, { others: 1 }, { duration: 0.9, ease: EASE.linear, delay: d * 0.55, onComplete: () => { intro.playing = false; intro.path = 'rise'; } });
+    tween(intro, { rise: 1 }, { duration: d, ease: EASE.out2, delay: wait });
+    tween(lead, { spinY: 0 }, { duration: d, ease: EASE.out3, delay: wait });
+    tween(intro, { active: 1 }, { duration: d * 0.8, ease: EASE.glide, delay: wait });
+    tween(intro, { others: 1 }, { duration: 0.9, ease: EASE.linear, delay: wait + d * 0.55, onComplete: () => { intro.playing = false; intro.path = 'rise'; } });
   } else if (!reduced) {
     // The front disc rises into place turning from edge-on, then the others fan out behind it.
     const lead = discs[first];
@@ -1463,7 +1469,7 @@ async function createGallery(root) {
     tween(intro, { others: 1 }, { duration: d * 0.85, ease: EASE.linear, delay: d * 0.1, onComplete: () => { intro.playing = false; } });
   }
   const arrival = document.documentElement;
-  revealText({ full: true, delay: dropped ? 0.85 : arrival.hasAttribute('data-page-arrived') ? 0.5 : 0.1 });
+  revealText({ full: true, delay: dropped ? 0.6 : arrival.hasAttribute('data-page-arrived') ? 0.5 : 0.1 });
   wake(3);
   start();
 }

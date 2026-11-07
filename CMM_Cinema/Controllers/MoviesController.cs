@@ -9,8 +9,10 @@ namespace CMM_Cinema.Controllers
 {
     public class MoviesController(IMovieRepository movies, ICompositeViewEngine viewEngine) : Controller
     {
-        public async Task<IActionResult> Index(CancellationToken cancellationToken)
+        public async Task<IActionResult> Index(string? show, CancellationToken cancellationToken)
         {
+            // ?show=upcoming opens the Upcoming list; anything else shows what is playing now.
+            ViewData["Show"] = string.Equals(show, "upcoming", StringComparison.OrdinalIgnoreCase) ? "upcoming" : "now-showing";
             return View(new MovieListingsViewModel(
                 await movies.GetByStatusAsync(MovieStatus.NowShowing, cancellationToken),
                 await movies.GetByStatusAsync(MovieStatus.Upcoming, cancellationToken)));

@@ -3,7 +3,7 @@
     Layout = "_HeroLayout";
     ViewData["NewsPage"] = true;
     ViewData["Title"] = "News - CMM Cinema";
-    var first = Model[0];
+    var first = Model.Count > 0 ? Model[0] : null;
 }
 
 @section Head {
@@ -13,6 +13,12 @@
 
 
 
+@if (first is null)
+{
+    <section class="disc-news" aria-labelledby="news-title"><header class="disc-news__info"><h1 class="disc-news__kicker" id="news-title">News &amp; Updates</h1><h2 class="disc-news__title">No news yet</h2></header></section>
+}
+else
+{
 <section class="disc-news" aria-labelledby="news-title" data-disc-gallery>
     <div class="disc-news__canvas" data-disc-canvas></div>
 
@@ -20,7 +26,7 @@
         @for (var i = 0; i < Model.Count; i++)
         {
             var s = Model[i];
-            <li data-disc-item data-title="@s.Title" data-category="@s.Category" data-date="@s.Date" data-excerpt="@s.Excerpt" data-url="@s.Url" data-art="@NewsData.Art(i)"><img src="@NewsData.Art(i)" alt="" /></li>
+            <li data-disc-item data-title="@s.Title" data-category="@s.Category" data-date="@s.Date" data-excerpt="@s.Excerpt" data-url="@s.Url" data-art="@s.ArtUrl"><img src="@s.ArtUrl" alt="" /></li>
         }
     </ol>
 
@@ -47,6 +53,11 @@
     </footer>
 </section>
 
-@section Scripts {
-    <script src="~/js/news-disc-gallery.bundle.js" asp-append-version="true" defer></script>
+}
+
+@if (first is not null)
+{
+    @section Scripts {
+        <script src="~/js/news-disc-gallery.bundle.js" asp-append-version="true" defer></script>
+    }
 }

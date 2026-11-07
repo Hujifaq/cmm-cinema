@@ -306,21 +306,21 @@
 
 /* ---------- Arriving from the bottom of a story ----------
    The gallery is already "below" the story: the story page lifts away to the top while the gallery
-   waits underneath, so the two read as one long page. The navbar keeps its own layer and stays put. */
+   stays still underneath, so the two read as one long page. The gallery never moves, so the disc's
+   drop-in loop is never clipped by the edge of the page. The navbar keeps its own layer and stays put. */
 
 :root[data-news-drop]::view-transition { background: transparent; }
 
-:root[data-news-drop]::view-transition-group(root) { animation-duration: 1s; }
+:root[data-news-drop]::view-transition-group(root) { animation-duration: 0.85s; }
 
 :root[data-news-drop]::view-transition-new(root) {
   z-index: 1;
-  animation: news-gallery-settle 1s cubic-bezier(0.65, 0, 0.15, 1) both;
+  animation: none;
 }
 
 :root[data-news-drop]::view-transition-old(root) {
   z-index: 2;
-  animation: news-story-lift 1s cubic-bezier(0.65, 0, 0.15, 1) both;
+  animation: news-story-lift 0.85s cubic-bezier(0.7, 0, 0.2, 1) both;
 }
 
 @keyframes news-story-lift { to { translate: 0 -100%; } }
-@keyframes news-gallery-settle { from { translate: 0 22%; } to { translate: 0 0; } }
