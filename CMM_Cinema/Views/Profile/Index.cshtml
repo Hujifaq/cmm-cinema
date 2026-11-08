@@ -2,9 +2,6 @@
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "Your profile - CMM Cinema";
-    var methods = new List<string>();
-    if (Model.User.HasPassword) methods.Add("Email and password");
-    if (Model.LoginProviders.Contains(CMM_Cinema.Services.AuthClaims.GoogleProvider)) methods.Add("Google");
     var rowClass = "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-0 border-t border-solid border-cinema-ink/10 py-4";
 }
 
@@ -17,31 +14,34 @@
     <div class="w-full max-w-[480px] rounded-[28px] bg-cinema-paper p-6 shadow-clay ring-1 ring-cinema-ink/10 sm:p-10" data-reset-card>
         <header class="mb-6 text-center">
             <span class="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-cinema-ink text-2xl font-extrabold text-cinema-cream" aria-hidden="true" data-reveal-up>@Model.Initial</span>
-            <h1 class="m-0 break-words text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="profile-title" data-reveal-chars>@Model.User.Name</h1>
-            <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>Your CMM Cinema account</p>
+            <h1 class="m-0 break-words text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="profile-title" data-reveal-chars>@Model.Name</h1>
+            <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>@Model.Subtitle</p>
         </header>
 
         <dl class="m-0 text-sm" data-reveal-up>
             <div class="@rowClass">
-                <dt class="font-bold">Email</dt>
-                <dd class="m-0 break-all text-cinema-ink/70">@Model.User.Email</dd>
+                <dt class="font-bold">@Model.IdentifierLabel</dt>
+                <dd class="m-0 break-all text-cinema-ink/70">@Model.Identifier</dd>
             </div>
-            <div class="@rowClass">
-                <dt class="font-bold">Email status</dt>
-                <dd class="m-0">
-                    @if (Model.User.EmailVerified)
-                    {
-                        <span class="inline-flex items-center rounded-full bg-cinema-cyan/15 px-3 py-1 text-xs font-bold text-cinema-ink">Confirmed</span>
-                    }
-                    else
-                    {
-                        <span class="inline-flex items-center rounded-full bg-cinema-ink/[0.06] px-3 py-1 text-xs font-bold text-cinema-ink/70">Not confirmed</span>
-                    }
-                </dd>
-            </div>
+            @if (Model.EmailVerified is { } emailVerified)
+            {
+                <div class="@rowClass">
+                    <dt class="font-bold">Email status</dt>
+                    <dd class="m-0">
+                        @if (emailVerified)
+                        {
+                            <span class="inline-flex items-center rounded-full bg-cinema-cyan/15 px-3 py-1 text-xs font-bold text-cinema-ink">Confirmed</span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center rounded-full bg-cinema-ink/[0.06] px-3 py-1 text-xs font-bold text-cinema-ink/70">Not confirmed</span>
+                        }
+                    </dd>
+                </div>
+            }
             <div class="@rowClass border-b">
                 <dt class="font-bold">Sign-in methods</dt>
-                <dd class="m-0 text-cinema-ink/70">@string.Join(" · ", methods)</dd>
+                <dd class="m-0 text-cinema-ink/70">@string.Join(" · ", Model.Methods)</dd>
             </div>
         </dl>
 

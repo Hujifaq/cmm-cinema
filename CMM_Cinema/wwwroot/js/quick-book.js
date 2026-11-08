@@ -15,6 +15,62 @@
     if (openField && !openField.root.contains(event.target)) openField.close(false);
   });
 
+  const dock = form.closest('[data-qb-dock]');
+  if (dock) setupDock();
+
+  function setupDock() {
+    const toggle = dock.querySelector('[data-qb-toggle]');
+    const hover = window.matchMedia('(hover: hover) and (pointer: fine)');
+    let pinned = false;
+    let openedAt = 0;
+    let leaveTimer = 0;
+    const isOpen = () => dock.hasAttribute('data-open');
+
+    const setOpen = (open, focusField) => {
+      clearTimeout(leaveTimer);
+      if (open === isOpen()) return;
+      dock.toggleAttribute('data-open', open);
+      form.inert = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close quick book' : 'Open quick book');
+      if (open) {
+        openedAt = performance.now();
+        if (focusField) fields[0]?.trigger.focus({ preventScroll: true });
+      } else {
+        pinned = false;
+        openField?.close(false);
+      }
+    };
+
+    toggle.addEventListener('click', event => {
+      const keyboard = event.detail === 0;
+      if (!isOpen()) { pinned = true; setOpen(true, keyboard); return; }
+      if (!pinned && performance.now() - openedAt < 600) { pinned = true; return; }
+      setOpen(false);
+    });
+    toggle.addEventListener('pointerenter', event => {
+      if (event.pointerType === 'mouse' && hover.matches) setOpen(true);
+    });
+    dock.addEventListener('pointerenter', () => clearTimeout(leaveTimer));
+    dock.addEventListener('pointerleave', event => {
+      if (event.pointerType !== 'mouse' || pinned || openField || form.contains(document.activeElement)) return;
+      leaveTimer = setTimeout(() => setOpen(false), 350);
+    });
+    form.addEventListener('pointerdown', () => { pinned = true; });
+    form.addEventListener('focusin', () => { pinned = true; });
+    dock.addEventListener('focusout', event => {
+      if (event.relatedTarget && !dock.contains(event.relatedTarget)) setOpen(false);
+    });
+    dock.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || event.defaultPrevented || !isOpen()) return;
+      setOpen(false);
+      toggle.focus({ preventScroll: true });
+    });
+    document.addEventListener('pointerdown', event => {
+      if (isOpen() && !dock.contains(event.target)) setOpen(false);
+    });
+  }
+
   function createField(root) {
     const trigger = root.querySelector('[data-qb-trigger]');
     const label = root.querySelector('[data-qb-label]');

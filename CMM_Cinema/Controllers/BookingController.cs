@@ -7,7 +7,7 @@ namespace CMM_Cinema.Controllers
 {
     // Showtimes -> SeatSelection -> Reserve -> Summary -> Confirm -> Confirmation
     // Browsing showtimes is public; choosing seats onwards needs an account, and every booking belongs to its owner.
-    [Authorize]
+    [Authorize(Policy = AuthSetup.CustomerPolicy)]
     public class BookingController(IMovieRepository movies, IBookingService booking) : Controller
     {
         private int UserId => AuthClaims.UserId(User) ?? throw new InvalidOperationException("Booking actions require a signed-in user.");

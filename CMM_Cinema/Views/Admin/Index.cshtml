@@ -1,5 +1,7 @@
+@model AdminLoginViewModel
 @{
     Layout = "_HeroLayout";
+    var errors = ViewData.ModelState.Values.SelectMany(entry => entry.Errors).Select(error => error.ErrorMessage).Distinct().ToList();
     ViewData["Title"] = "CMM Cinema";
     var inputClass = "block min-h-11 w-full min-w-0 rounded-full border border-solid border-cinema-ink/15 bg-cinema-paper px-5 py-2.5 font-sans text-base text-cinema-ink placeholder:text-cinema-ink/40 focus:outline-none focus-visible:border-cinema-ink";
     var labelClass = "mb-2 block text-[11px] font-bold uppercase tracking-widest text-cinema-ink/70";
@@ -10,15 +12,19 @@
         <p class="m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">Admin</p>
         <h1 class="m-0 mt-2 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl" id="admin-login-title">Log in</h1>
 
-        <form class="mt-8 grid gap-4" method="post" action="#" aria-labelledby="admin-login-title">
+        <form class="mt-8 grid gap-4" method="post" asp-action="Index" aria-labelledby="admin-login-title">
             <div>
-                <label class="@labelClass" for="admin-email">Email address</label>
-                <input class="@inputClass" id="admin-email" name="email" type="email" autocomplete="username" maxlength="254" required />
+                <label class="@labelClass" for="admin-email">Username</label>
+                <input class="@inputClass" id="admin-email" name="username" type="text" value="@Model.Username" autocomplete="username" maxlength="254" required />
             </div>
             <div>
                 <label class="@labelClass" for="admin-password">Password</label>
                 <input class="@inputClass" id="admin-password" name="password" type="password" autocomplete="current-password" required />
             </div>
+            @if (errors.Count > 0)
+            {
+                <p class="m-0 text-sm font-medium text-cinema-brick" role="alert">@string.Join(" ", errors)</p>
+            }
             <button class="mt-2 inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-6 text-sm font-bold text-cinema-cream transition-colors duration-300 hover:bg-cinema-logo focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" type="submit">Log in</button>
         </form>
     </div>

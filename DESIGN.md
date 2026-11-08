@@ -441,6 +441,17 @@ Use `GooLightLabel` for dark accents (label stays cream), omit it for light ones
 
 ### 8.14 Quick Book — `_QuickBook` + `quick-book.js`
 
+Quick Book docks fixed to the bottom-right corner (16px from the edges on phones,
+24px from 768px) as a 72px dark-glass circle holding a 48px cream ticket button.
+Hovering it with a mouse, or clicking/tapping it, stretches the glass shell from
+the corner into the full form (width 720ms, height 560ms, signature-out) while
+the fields fade and slide in 24px after a short delay; the ticket icon spins into
+a close ×. On phones the form stacks with Find showtimes beside the close button.
+A hover-opened dock collapses 350ms after the pointer leaves unless the visitor
+has interacted with it; once used, it stays open until the × button, Escape, an
+outside click, or focus leaving it. The collapsed form is `inert`. Reduced motion
+switches instantly.
+
 A dark-glass pill form. Custom listbox dropdowns **ooze out of the trigger**:
 a black blob scales in with `elastic.out(1, 0.55)` while two goo droplets drip
 away (SVG filter `qb-goo`), options blur-rise in with stagger 0.035s. The active
@@ -450,6 +461,23 @@ Chosen label rolls (old up, new in with `back.out(2.2)`). Submit button: an ink
 circle **floods the whole button** on hover (label turns cream, arrow rotates
 -45°), the button leans toward the cursor, presses to 0.95 and releases
 elastically. Missing field → trigger shakes (`x: -8, 7, -5, 3, 0`).
+
+Admin login (`/Admin`) signs in with the same cookie as customers, so the navbar
+shows Profile instead of Login / Register and the visitor lands on the home page.
+The profile page shows the admin username and sign-in method, with no email rows.
+
+### 8.14b Admin movie management
+
+Signed-in admins see a "Logged in as ADMIN" ink pill above the Movies, movie
+detail and movie form pages. Movies also gets an ink "Add movie" pill on the right.
+Each movie card shows a cream pencil and a brick-red trash circle (40px) in its top
+right corner; the detail page puts Edit movie and Delete buttons under the poster.
+Delete always opens a modal dialog on a paper card ("Delete this movie?", Cancel
+focused first, brick "Yes, delete"); clicking outside or pressing Escape cancels.
+Deleting archives the movie, so existing bookings stay valid. `/Movies/New` and
+`/Movies/{slug}/Edit` share one paper-colored form with Basics, Story, Poster and
+Cast sections, white 16px-radius fields and add/remove cast rows (`admin-movies.js`).
+Visitors and customers never see these controls, and the actions refuse them.
 
 ### 8.15 My Tickets — `my-tickets.js`
 

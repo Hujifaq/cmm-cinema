@@ -113,10 +113,10 @@
       ray.setAttribute('d', ray.dataset[cup ? 'shapeRegister' : 'shapeLogin']);
       cupDetails.forEach(part => {
         part.style.opacity = cup ? '1' : '0';
-        part.style.visibility = cup ? 'visible' : 'hidden';
+        part.style.visibility = cup ? 'inherit' : 'hidden';
       });
       popcornDetails.style.opacity = cup ? '0' : '1';
-      popcornDetails.style.visibility = cup ? 'hidden' : 'visible';
+      popcornDetails.style.visibility = cup ? 'hidden' : 'inherit';
       paints.forEach(paint => { paint.style.opacity = paint.dataset.posterPaint === mode ? '1' : '0'; });
       art.style.removeProperty('border-radius');
       if (gsap) {
@@ -522,7 +522,7 @@
           onComplete: () => { revertText(); unmaskClay(); }
         });
         intro
-          .from('[data-signup-card]', { y: 30, borderRadius: '64px', duration: 0.9, clearProps: 'transform,borderRadius' }, 0.08)
+          .from('[data-signup-card]', { y: 30, autoAlpha: 0, borderRadius: '64px', duration: 0.9, clearProps: 'transform,borderRadius,opacity,visibility' }, 0.08)
           .from(chars, { yPercent: 110, duration: 0.75, stagger: 0.012 }, 0.17)
           .from('[data-reveal-up]', { y: 14, autoAlpha: 0, duration: 0.65, stagger: 0.055, clearProps: 'transform,opacity,visibility' }, 0.28)
           .from('[data-mascot-entrance]', { y: 24, scale: 0.85, duration: 0.9, ease: 'back.out(1.8)', clearProps: 'transform' }, 0.3);

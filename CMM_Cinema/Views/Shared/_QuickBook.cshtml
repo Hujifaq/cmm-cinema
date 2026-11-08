@@ -18,7 +18,7 @@
     const string check = "M4.5 10.5 8 14l7.5-8";
 }
 
-<div class="relative z-40 mx-auto mt-[2.5rem] w-full max-w-5xl md:mt-20 lg:mt-14" data-quick-book>
+<div class="qb-dock pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 w-[calc(100vw-2rem)] md:bottom-6 md:right-6 md:w-[min(calc(100vw-3rem),64rem)]" data-quick-book data-qb-dock>
     <svg class="absolute size-0" aria-hidden="true" focusable="false">
         <defs>
             <filter id="qb-goo" x="-50%" y="-50%" width="200%" height="200%">
@@ -32,7 +32,9 @@
         </defs>
     </svg>
 
-    <form class="flex flex-col gap-3 rounded-[32px] bg-black/55 p-3 font-sans shadow-[0_8px_32px_#0003,inset_0_1px_0_#ffffff14] ring-1 ring-inset ring-white/15 backdrop-blur-xl backdrop-saturate-150 md:flex-row md:items-center md:gap-4 md:rounded-full md:py-3 md:pl-8 md:pr-3" aria-label="Quick book" data-qb-form>
+    <div class="qb-dock__shell absolute bottom-0 right-0 rounded-[36px] bg-black/55 shadow-[0_8px_32px_#0003,inset_0_1px_0_#ffffff14] ring-1 ring-inset ring-white/15 backdrop-blur-xl backdrop-saturate-150 md:rounded-full" aria-hidden="true"></div>
+
+    <form class="qb-dock__form relative flex flex-col gap-3 p-3 font-sans md:flex-row md:items-center md:gap-4 md:py-3 md:pl-8 md:pr-19" id="quick-book-form" aria-label="Quick book" data-qb-form inert>
         <h2 class="m-0 shrink-0 px-2 text-xl font-black uppercase leading-none tracking-tight text-white md:px-0">Quick Book</h2>
 
         @foreach (var f in fields)
@@ -79,7 +81,7 @@
             </div>
         }
 
-        <button type="submit" class="relative isolate flex h-12 shrink-0 cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-full border-0 bg-cinema-cream py-0 pl-6 pr-1.5 text-sm font-extrabold text-cinema-ink shadow-[inset_0_-2px_0_#0000001a] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream" data-qb-submit>
+        <button type="submit" class="relative isolate mr-15 flex h-12 shrink-0 md:mr-0 cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-full border-0 bg-cinema-cream py-0 pl-6 pr-1.5 text-sm font-extrabold text-cinema-ink shadow-[inset_0_-2px_0_#0000001a] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream" data-qb-submit>
             <span class="pointer-events-none absolute inset-0 -z-1" aria-hidden="true">
                 <span class="absolute right-1.5 top-1.5 size-9 rounded-full bg-cinema-ink" data-qb-ink></span>
             </span>
@@ -90,4 +92,9 @@
         </button>
         <p class="sr-only" role="status" aria-live="polite" data-qb-status></p>
     </form>
+
+    <button type="button" class="qb-dock__toggle pointer-events-auto absolute bottom-3 right-3 grid size-12 cursor-pointer place-items-center rounded-full border-0 bg-cinema-cream p-0 text-cinema-ink shadow-[inset_0_-2px_0_#0000001a] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream" aria-controls="quick-book-form" aria-expanded="false" aria-label="Open quick book" data-qb-toggle>
+        <svg class="qb-dock__icon qb-dock__icon--open col-start-1 row-start-1 size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9V6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5V9a3 3 0 0 0 0 6v2.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5V15a3 3 0 0 0 0-6Z" /><path d="M14 5v2m0 4v2m0 4v2" /></svg>
+        <svg class="qb-dock__icon qb-dock__icon--close col-start-1 row-start-1 size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+    </button>
 </div>

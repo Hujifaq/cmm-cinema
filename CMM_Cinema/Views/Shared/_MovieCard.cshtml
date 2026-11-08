@@ -1,5 +1,5 @@
 @model Movie
-<article data-movie-card>
+<article class="relative" data-movie-card>
     <a class="block rounded-2xl text-inherit no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" href="@Model.Url">
         <div class="movie-poster relative aspect-[2/3] overflow-hidden rounded-2xl" data-movie-poster>
             <div class="movie-poster__inner relative size-full">
@@ -25,4 +25,15 @@
             <span class="rounded-full border border-cinema-ink px-3 py-1.5">@Model.Rating</span>
         </div>
     </a>
+    @if (User.IsInRole(CMM_Cinema.Services.AuthClaims.AdminRole))
+    {
+        <div class="absolute right-2 top-2 z-20 flex gap-2">
+            <a class="grid size-10 place-items-center rounded-full bg-cinema-cream text-cinema-ink shadow-md no-underline transition-transform duration-300 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream motion-reduce:transition-none" href="@Model.Url/Edit" aria-label="Edit @Model.Title" title="Edit">
+                <svg class="size-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 3.5 3 3L7 16H4v-3l9.5-9.5Z" /></svg>
+            </a>
+            <button class="grid size-10 cursor-pointer place-items-center rounded-full border-0 bg-cinema-brick p-0 text-cinema-cream shadow-md transition-transform duration-300 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-brick motion-reduce:transition-none" type="button" aria-label="Delete @Model.Title" title="Delete" data-movie-delete data-movie-id="@Model.Id" data-movie-title="@Model.Title">
+                <svg class="size-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2m-6 0 .7 10h6.6L14 6" /></svg>
+            </button>
+        </div>
+    }
 </article>

@@ -8,6 +8,7 @@ namespace CMM_Cinema.Services;
 public static class AuthSetup
 {
     public const string ExternalScheme = "External";
+    public const string CustomerPolicy = "Customer";
 
     public static IServiceCollection AddCinemaAuth(this IServiceCollection services, IConfiguration configuration)
     {
@@ -17,6 +18,7 @@ public static class AuthSetup
 
         services.AddSingleton<PasswordHasher>();
         services.AddScoped<UserRepository>();
+        services.AddScoped<AdminRepository>();
         services.AddScoped<EmailTokenService>();
         services.AddSingleton<EmailThrottle>();
         services.AddScoped<AuthCookieEvents>();
@@ -25,15 +27,18 @@ public static class AuthSetup
         services.AddHttpClient<TurnstileValidator>();
         services.AddAuthRateLimits();
 
-        // Keys encrypt the auth cookie. Without a fixed folder in production, a restart or redeploy signs everyone out.
+       
         var dataProtection = services.AddDataProtection().SetApplicationName("CMM_Cinema");
         if (configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
             dataProtection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 
+        services.AddAuthorizationBuilder().AddPolicy(CustomerPolicy, policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context => !AuthClaims.IsAdmin(context.User)));
+
         var auth = services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
-                // __Host- makes the browser refuse the cookie unless it is Secure, host-only and Path=/.
                 options.Cookie.Name = "__Host-cmm-auth";
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -44,7 +49,7 @@ public static class AuthSetup
                 options.LogoutPath = "/LoginRegister/Logout";
                 options.EventsType = typeof(AuthCookieEvents);
             })
-            // Holds Google's answer for a few minutes, until the callback decides which local account it belongs to.
+            
             .AddCookie(ExternalScheme, options =>
             {
                 options.Cookie.Name = "__Host-cmm-external";

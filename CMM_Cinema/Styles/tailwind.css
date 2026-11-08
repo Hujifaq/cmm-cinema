@@ -390,3 +390,42 @@
     animation: movie-detail-unhide 0s 3s forwards;
   }
 }
+.qb-dock { --qb-ease: cubic-bezier(0.22, 1, 0.36, 1); --qb-spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
+.qb-dock__shell {
+  width: 72px;
+  height: 72px;
+  transition: width 520ms var(--qb-ease) 120ms, height 420ms var(--qb-ease) 60ms;
+}
+.qb-dock[data-open] .qb-dock__shell {
+  width: 100%;
+  height: 100%;
+  transition: width 720ms var(--qb-ease), height 560ms var(--qb-ease) 60ms;
+}
+.qb-dock__form {
+  opacity: 0;
+  visibility: hidden;
+  translate: 24px 0;
+  transition: opacity 160ms ease, translate 260ms var(--qb-ease), visibility 0s 160ms;
+}
+.qb-dock[data-open] .qb-dock__form {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  translate: 0 0;
+  transition: opacity 320ms ease 220ms, translate 620ms var(--qb-ease) 160ms, visibility 0s;
+}
+.qb-dock__toggle { transition: scale 450ms var(--qb-spring); }
+.qb-dock:not([data-open]) .qb-dock__toggle:hover { scale: 1.08; }
+.qb-dock__toggle:active { scale: 0.92; }
+.qb-dock__icon { transition: opacity 200ms ease, rotate 500ms var(--qb-spring), scale 500ms var(--qb-spring); }
+.qb-dock[data-open] .qb-dock__icon--open,
+.qb-dock:not([data-open]) .qb-dock__icon--close { opacity: 0; rotate: 90deg; scale: 0.4; }
+@media (prefers-reduced-motion: reduce) {
+  .qb-dock__shell, .qb-dock[data-open] .qb-dock__shell,
+  .qb-dock__form, .qb-dock[data-open] .qb-dock__form,
+  .qb-dock__toggle, .qb-dock__icon { transition: none; }
+  .qb-dock__form { translate: none; }
+}
+[data-movie-detail]:not([data-editing]) [data-edit-only] { display: none; }
+[data-movie-detail][data-editing] [data-view-only] { display: none; }
+[data-movie-detail][data-editing] { padding-bottom: 7rem; }
