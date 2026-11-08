@@ -1,0 +1,16 @@
+@if (User.IsInRole(CMM_Cinema.Services.AuthClaims.AdminRole))
+{
+    <dialog class="m-auto w-[min(92vw,26rem)] rounded-[28px] border-0 bg-cinema-paper p-0 font-sans text-cinema-ink shadow-clay backdrop:bg-black/50 backdrop:backdrop-blur-sm" aria-labelledby="delete-movie-title" data-delete-dialog>
+        <form class="grid gap-5 p-7" method="post" asp-controller="Movies" asp-action="Delete">
+            <input type="hidden" name="id" data-delete-id />
+            <div>
+                <h2 class="m-0 text-2xl font-black leading-tight tracking-tight" id="delete-movie-title">Delete this movie?</h2>
+                <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/70"><strong data-delete-name>This movie</strong> will disappear from the site, including search and its page. Existing bookings are kept.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button class="min-h-11 cursor-pointer rounded-full border border-solid border-cinema-ink/20 bg-white px-5 text-sm font-bold text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" data-delete-cancel autofocus>Cancel</button>
+                <button class="min-h-11 cursor-pointer rounded-full border-0 bg-cinema-brick px-5 text-sm font-bold text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-brick" type="submit">Yes, delete</button>
+            </div>
+        </form>
+    </dialog>
+}

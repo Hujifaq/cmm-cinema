@@ -42,4 +42,4 @@ public record MovieSearchResult(string Title, string Url, string Description, st
         posterHtml);
 }
 
-public record MovieListingsViewModel(IReadOnlyList<Movie> NowShowing, IReadOnlyList<Movie> Upcoming);
+public record MovieListingsViewModel(IReadOnlyList<Movie> NowShowing, IReadOnlyList<Movie> Upcoming, IReadOnlyList<NewsStory>? News = null);

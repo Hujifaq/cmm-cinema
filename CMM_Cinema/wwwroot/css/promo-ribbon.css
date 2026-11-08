@@ -1,0 +1,81 @@
+.promo-ribbon {
+  --stage-h: clamp(240px, 46vw, 660px);
+  --card-h: min(calc(var(--stage-h) * 0.6), calc((100vw - 2.5rem) / 2.4 * 0.92));
+  --card-gap: clamp(12px, 1.4vw, 22px);
+  --card-radius: 16px;
+  position: relative;
+  height: var(--stage-h);
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (max-width: 767px) { .promo-ribbon { --stage-h: max(220px, 66vw); } }
+@media (min-width: 768px) { .promo-ribbon { --card-radius: 28px; } }
+
+.promo-ribbon.grabbable { cursor: grab; }
+.promo-ribbon.grabbing, .promo-ribbon.grabbing * { cursor: grabbing !important; }
+.promo-ribbon:focus-visible { outline: 2px solid var(--color-cinema-cyan, #29d9dd); outline-offset: -4px; }
+
+.promo-ribbon .carousel-track {
+  position: absolute;
+  left: 0;
+  top: 46%;
+  display: flex;
+  column-gap: var(--card-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transform: translateY(-50%);
+  transform-style: preserve-3d;
+}
+
+.promo-ribbon .card {
+  position: relative;
+  flex: none;
+  height: var(--card-h);
+  border-radius: var(--card-radius);
+  opacity: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.promo-ribbon .card-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--color-cinema-deep, #103d3e);
+}
+.promo-ribbon .card-media img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.promo-ribbon:not(.is-gl) .card-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--hover, 0);
+  background:
+    radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 35%),
+    radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.3) 90%);
+  mix-blend-mode: soft-light;
+}
+
+.promo-ribbon.is-gl .card { opacity: 0 !important; }
+
+.promo-ribbon .gl { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.promo-ribbon .gl canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-ribbon .card { opacity: 1; }
+}

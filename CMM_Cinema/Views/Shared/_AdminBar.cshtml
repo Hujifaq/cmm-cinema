@@ -1,0 +1,31 @@
+@{
+    var addHref = ViewData["AddHref"] as string;
+    var notice = TempData["AdminNotice"] as string;
+}
+@if (User.IsInRole(CMM_Cinema.Services.AuthClaims.AdminRole))
+{
+    <div class="mx-auto mb-8 flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-5 md:px-12" data-admin-bar>
+        <p class="m-0 inline-flex items-center rounded-full bg-cinema-ink px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-cinema-cream">
+            Logged in as ADMIN
+        </p>
+        @if (ViewData["EditToggle"] is true)
+        {
+            @Html.AntiForgeryToken()
+            <button class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-0 bg-cinema-ink px-5 text-sm font-bold text-cinema-cream transition-colors duration-300 hover:bg-cinema-logo focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" type="button" aria-pressed="false" data-edit-toggle>
+                <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 3.5 3 3L7 16H4v-3l9.5-9.5Z" /></svg>
+                <span data-edit-toggle-label>Edit this page</span>
+            </button>
+        }
+        @if (addHref is not null)
+        {
+            <a class="inline-flex min-h-11 items-center gap-2 rounded-full bg-cinema-ink px-5 text-sm font-bold text-cinema-cream no-underline transition-colors duration-300 hover:bg-cinema-logo focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" href="@addHref">
+                <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>
+                Add movie
+            </a>
+        }
+        @if (notice is not null)
+        {
+            <p class="m-0 basis-full text-sm font-semibold text-cinema-ink" role="status">@notice</p>
+        }
+    </div>
+}

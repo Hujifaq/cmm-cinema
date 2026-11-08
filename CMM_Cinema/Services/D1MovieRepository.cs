@@ -30,6 +30,63 @@ public sealed class D1MovieRepository(D1Client d1, IMemoryCache cache) : IMovieR
             .ToArray();
     }
 
+    public async Task<MovieSaveResult> CreateAsync(MovieForm form, CancellationToken cancellationToken = default)
+    {
+        var slug = form.FinalSlug;
+        var now = D1Time.Now();
+        var rows = await d1.QueryAsync(
+            "INSERT INTO movies (slug, title, genre, duration_minutes, rating, language, synopsis, overview, status, release_date, poster_url, poster_theme, poster_title, trailer_url, is_archived, created_at, updated_at) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?) ON CONFLICT (slug) DO NOTHING RETURNING id",
+            [slug, form.Title, form.Genre, form.DurationMinutes, form.Rating, form.Language, form.Synopsis, form.Overview, form.Status.ToString(),
+                ReleaseDate(form), form.PosterUrl, form.PosterTheme, form.PosterTitle, form.TrailerUrl, now, now],
+            cancellationToken);
+        if (rows.Count == 0) return new MovieSaveResult(MovieSaveStatus.SlugTaken);
+
+        await ReplaceCastAsync(rows[0].GetProperty("id").GetInt32(), form, cancellationToken);
+        cache.Remove(CacheKey);
+        return new MovieSaveResult(MovieSaveStatus.Saved, slug);
+    }
+
+    public async Task<MovieSaveResult> UpdateAsync(int id, MovieForm form, CancellationToken cancellationToken = default)
+    {
+        var slug = form.FinalSlug;
+        if ((await d1.QueryAsync("SELECT id FROM movies WHERE slug = ? AND id <> ?", [slug, id], cancellationToken)).Count > 0)
+            return new MovieSaveResult(MovieSaveStatus.SlugTaken);
+
+        var rows = await d1.QueryAsync(
+            "UPDATE movies SET slug = ?, title = ?, genre = ?, duration_minutes = ?, rating = ?, language = ?, synopsis = ?, overview = ?, status = ?, " +
+            "release_date = ?, poster_url = ?, poster_theme = ?, poster_title = ?, trailer_url = ?, updated_at = ? WHERE id = ? RETURNING id",
+            [slug, form.Title, form.Genre, form.DurationMinutes, form.Rating, form.Language, form.Synopsis, form.Overview, form.Status.ToString(),
+                ReleaseDate(form), form.PosterUrl, form.PosterTheme, form.PosterTitle, form.TrailerUrl, D1Time.Now(), id],
+            cancellationToken);
+        if (rows.Count == 0) return new MovieSaveResult(MovieSaveStatus.NotFound);
+
+        await ReplaceCastAsync(id, form, cancellationToken);
+        cache.Remove(CacheKey);
+        return new MovieSaveResult(MovieSaveStatus.Saved, slug);
+    }
+
+    public async Task<bool> ArchiveAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var rows = await d1.QueryAsync("UPDATE movies SET is_archived = 1, updated_at = ? WHERE id = ? AND is_archived = 0 RETURNING id", [D1Time.Now(), id], cancellationToken);
+        cache.Remove(CacheKey);
+        return rows.Count > 0;
+    }
+
+    private async Task ReplaceCastAsync(int movieId, MovieForm form, CancellationToken cancellationToken)
+    {
+        await d1.QueryAsync("DELETE FROM cast_members WHERE movie_id = ?", [movieId], cancellationToken);
+        for (var order = 0; order < form.Cast.Count; order++)
+        {
+            var member = form.Cast[order];
+            await d1.QueryAsync(
+                "INSERT INTO cast_members (movie_id, name, role, photo_url, sort_order) VALUES (?, ?, ?, ?, ?)",
+                [movieId, member.Name, member.Role, member.PhotoUrl, order], cancellationToken);
+        }
+    }
+
+    private static string? ReleaseDate(MovieForm form) => form.ReleaseDate?.ToString("yyyy-MM-dd");
+
     private async Task<IReadOnlyList<Movie>> LoadAsync(CancellationToken cancellationToken) =>
         (await cache.GetOrCreateAsync(CacheKey, entry =>
         {

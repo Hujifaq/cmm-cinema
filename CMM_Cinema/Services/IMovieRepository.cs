@@ -8,4 +8,8 @@ public interface IMovieRepository
     Task<IReadOnlyList<Movie>> GetByStatusAsync(MovieStatus status, CancellationToken cancellationToken = default);
     Task<Movie?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Movie>> SearchAsync(string query, int limit, CancellationToken cancellationToken = default);
+    Task<MovieSaveResult> CreateAsync(MovieForm form, CancellationToken cancellationToken = default);
+    Task<MovieSaveResult> UpdateAsync(int id, MovieForm form, CancellationToken cancellationToken = default);
+    // Archived movies are hidden everywhere but keep their rows, so existing bookings stay valid.
+    Task<bool> ArchiveAsync(int id, CancellationToken cancellationToken = default);
 }

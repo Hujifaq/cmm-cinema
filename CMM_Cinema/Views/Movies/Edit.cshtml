@@ -1,0 +1,177 @@
+@model MovieForm
+@{
+    Layout = "_HeroLayout";
+    var isNew = Context.Request.Path.Value?.EndsWith("/New", StringComparison.OrdinalIgnoreCase) == true;
+    ViewData["Title"] = (isNew ? "Add movie" : $"Edit {Model.Title}") + " - CMM Cinema";
+    var inputClass = "block min-h-11 w-full min-w-0 rounded-2xl border border-solid border-cinema-ink/15 bg-white px-4 py-2.5 font-sans text-base text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:outline-none focus-visible:border-cinema-ink";
+    var labelClass = "mb-2 block text-[11px] font-bold uppercase tracking-widest text-cinema-ink/70";
+    var hintClass = "m-0 mt-1.5 text-xs text-cinema-ink/60";
+    var errorClass = "m-0 mt-1.5 text-xs font-semibold text-cinema-brick";
+    var cancelHref = isNew ? "/Movies" : $"/Movies/{Uri.EscapeDataString(ViewData["OriginalSlug"] as string ?? Model.Slug ?? "")}";
+    var castRows = Model.Cast.Count > 0 ? Model.Cast : [new CastForm()];
+    var summary = ViewData.ModelState.Where(entry => entry.Value!.Errors.Count > 0).SelectMany(entry => entry.Value!.Errors).Select(error => error.ErrorMessage).Distinct().ToList();
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+<section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="movie-form-title" data-movie-form-page>
+    @await Html.PartialAsync("_AdminBar")
+    <div class="mx-auto max-w-3xl px-5 md:px-8">
+        <h1 class="m-0 text-4xl font-black uppercase leading-[0.9] tracking-tighter sm:text-5xl" id="movie-form-title">@(isNew ? "Add movie" : "Edit movie")</h1>
+
+        <form class="mt-8 grid gap-8" method="post" novalidate>
+            @if (summary.Count > 0)
+            {
+                <div class="rounded-2xl bg-cinema-brick/10 p-4 text-sm font-semibold text-cinema-brick" role="alert">
+                    <p class="m-0">Please fix the following before saving:</p>
+                    <ul class="m-0 mt-1 list-disc pl-5">
+                        @foreach (var message in summary) { <li>@message</li> }
+                    </ul>
+                </div>
+            }
+
+            <fieldset class="m-0 grid gap-5 border-0 p-0">
+                <legend class="mb-1 p-0 text-2xl font-black uppercase tracking-tighter">Basics</legend>
+                <div>
+                    <label class="@labelClass" for="Title">Title</label>
+                    <input class="@inputClass" id="Title" name="Title" value="@Model.Title" maxlength="120" required />
+                    <span class="@errorClass" asp-validation-for="Title"></span>
+                </div>
+                <div>
+                    <label class="@labelClass" for="Slug">Web address</label>
+                    <input class="@inputClass" id="Slug" name="Slug" value="@Model.Slug" maxlength="120" placeholder="Leave empty to build it from the title" />
+                    <p class="@hintClass">Shown as /Movies/<span class="font-semibold">address</span>. Changing it breaks old links to this movie.</p>
+                    <span class="@errorClass" asp-validation-for="Slug"></span>
+                </div>
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <label class="@labelClass" for="Genre">Genre</label>
+                        <input class="@inputClass" id="Genre" name="Genre" value="@Model.Genre" maxlength="80" required />
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="DurationMinutes">Length (minutes)</label>
+                        <input class="@inputClass" id="DurationMinutes" name="DurationMinutes" type="number" min="1" max="600" value="@Model.DurationMinutes" required />
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="Rating">Rating</label>
+                        <input class="@inputClass" id="Rating" name="Rating" value="@Model.Rating" maxlength="10" list="rating-options" required />
+                        <datalist id="rating-options"><option value="G"></option><option value="PG"></option><option value="PG-13"></option><option value="R"></option><option value="13+"></option><option value="15+"></option><option value="18+"></option></datalist>
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="Language">Language</label>
+                        <input class="@inputClass" id="Language" name="Language" value="@Model.Language" maxlength="20" list="language-options" required />
+                        <datalist id="language-options"><option value="TH"></option><option value="ENG"></option></datalist>
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="Status">Status</label>
+                        <select class="@inputClass" id="Status" name="Status">
+                            <option value="NowShowing" selected="@(Model.Status == MovieStatus.NowShowing)">Now showing</option>
+                            <option value="Upcoming" selected="@(Model.Status == MovieStatus.Upcoming)">Upcoming</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="ReleaseDate">Release date</label>
+                        <input class="@inputClass" id="ReleaseDate" name="ReleaseDate" type="date" value="@(Model.ReleaseDate?.ToString("yyyy-MM-dd"))" />
+                        <p class="@hintClass">Required for upcoming movies.</p>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="m-0 grid gap-5 border-0 p-0">
+                <legend class="mb-1 p-0 text-2xl font-black uppercase tracking-tighter">Story</legend>
+                <div>
+                    <label class="@labelClass" for="Synopsis">Short synopsis</label>
+                    <input class="@inputClass" id="Synopsis" name="Synopsis" value="@Model.Synopsis" maxlength="240" required />
+                    <p class="@hintClass">One line, shown on movie cards.</p>
+                </div>
+                <div>
+                    <label class="@labelClass" for="Overview">Overview</label>
+                    <textarea class="@inputClass min-h-40 rounded-3xl" id="Overview" name="Overview" maxlength="3000" required>@Model.Overview</textarea>
+                    <p class="@hintClass">The full description on the movie page.</p>
+                </div>
+                <div>
+                    <label class="@labelClass" for="TrailerUrl">Trailer link</label>
+                    <input class="@inputClass" id="TrailerUrl" name="TrailerUrl" type="url" value="@Model.TrailerUrl" maxlength="500" placeholder="https://www.youtube.com/watch?v=..." />
+                    <p class="@hintClass">YouTube or Vimeo. Leave empty for no trailer.</p>
+                    <span class="@errorClass" asp-validation-for="TrailerUrl"></span>
+                </div>
+            </fieldset>
+
+            <fieldset class="m-0 grid gap-5 border-0 p-0">
+                <legend class="mb-1 p-0 text-2xl font-black uppercase tracking-tighter">Poster</legend>
+                <div>
+                    <label class="@labelClass" for="PosterUrl">Poster image link</label>
+                    <input class="@inputClass" id="PosterUrl" name="PosterUrl" type="url" value="@Model.PosterUrl" maxlength="500" placeholder="https://..." />
+                    <p class="@hintClass">A full https:// link. Leave empty to use a drawn poster instead.</p>
+                    <span class="@errorClass" asp-validation-for="PosterUrl"></span>
+                </div>
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <label class="@labelClass" for="PosterTheme">Drawn poster style</label>
+                        <select class="@inputClass" id="PosterTheme" name="PosterTheme">
+                            @foreach (var theme in MovieForm.PosterThemes)
+                            {
+                                <option value="@theme" selected="@(Model.PosterTheme == theme)">@theme</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="PosterTitle">Drawn poster title</label>
+                        <input class="@inputClass" id="PosterTitle" name="PosterTitle" value="@Model.PosterTitle" maxlength="120" placeholder="Defaults to the title" />
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="m-0 grid gap-4 border-0 p-0" data-cast-list>
+                <legend class="mb-1 p-0 text-2xl font-black uppercase tracking-tighter">Cast</legend>
+                <div class="grid gap-4" data-cast-rows>
+                    @for (var i = 0; i < castRows.Count; i++)
+                    {
+                        <div class="grid gap-3 rounded-3xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_1fr_auto] sm:items-end" data-cast-row>
+                            <div>
+                                <label class="@labelClass">Name</label>
+                                <input class="@inputClass" name="Cast[@i].Name" value="@castRows[i].Name" maxlength="100" />
+                            </div>
+                            <div>
+                                <label class="@labelClass">Role</label>
+                                <input class="@inputClass" name="Cast[@i].Role" value="@castRows[i].Role" maxlength="100" />
+                            </div>
+                            <button class="min-h-11 cursor-pointer rounded-full border border-solid border-cinema-ink/20 bg-transparent px-4 text-sm font-bold text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" data-cast-remove>Remove</button>
+                            <div class="sm:col-span-3">
+                                <label class="@labelClass">Photo link (optional)</label>
+                                <input class="@inputClass" name="Cast[@i].PhotoUrl" type="url" value="@castRows[i].PhotoUrl" maxlength="500" placeholder="https://..." />
+                            </div>
+                        </div>
+                    }
+                </div>
+                <template data-cast-template>
+                    <div class="grid gap-3 rounded-3xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_1fr_auto] sm:items-end" data-cast-row>
+                        <div>
+                            <label class="@labelClass">Name</label>
+                            <input class="@inputClass" name="Cast[__i__].Name" maxlength="100" />
+                        </div>
+                        <div>
+                            <label class="@labelClass">Role</label>
+                            <input class="@inputClass" name="Cast[__i__].Role" maxlength="100" />
+                        </div>
+                        <button class="min-h-11 cursor-pointer rounded-full border border-solid border-cinema-ink/20 bg-transparent px-4 text-sm font-bold text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" data-cast-remove>Remove</button>
+                        <div class="sm:col-span-3">
+                            <label class="@labelClass">Photo link (optional)</label>
+                            <input class="@inputClass" name="Cast[__i__].PhotoUrl" type="url" maxlength="500" placeholder="https://..." />
+                        </div>
+                    </div>
+                </template>
+                <div>
+                    <button class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-solid border-cinema-ink/20 bg-white px-5 text-sm font-bold text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" data-cast-add>+ Add cast member</button>
+                </div>
+            </fieldset>
+
+            <div class="flex flex-wrap gap-3">
+                <button class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-8 text-sm font-bold text-cinema-cream transition-colors duration-300 hover:bg-cinema-logo focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" type="submit">@(isNew ? "Add movie" : "Save changes")</button>
+                <a class="inline-flex min-h-12 items-center justify-center rounded-full border border-solid border-cinema-ink/20 px-8 text-sm font-bold text-cinema-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" href="@cancelHref">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>

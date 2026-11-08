@@ -90,16 +90,14 @@
 @{
     var upcoming = new MovieSectionViewModel("upcoming", "UPCOMING", true, Model.Upcoming);
     var nowShowing = new MovieSectionViewModel("now-showing", "NOW SHOWING", false, Model.NowShowing);
-    var news = new NewsSectionViewModel("news", "NEWS & UPDATES", new[] {
-        new NewsItem("Behind the scenes of The Last Horizon", "Feature", "Oct 12, 2026", "https://picsum.photos/seed/cmm-news-1/1200/675", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.", "#"),
-        new NewsItem("Paper Moons wins the festival audience award", "Awards", "Oct 08, 2026", "https://picsum.photos/seed/cmm-news-2/1200/675", "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters.", "#"),
-        new NewsItem("Midnight horror marathon returns this Halloween", "Events", "Oct 03, 2026", "https://picsum.photos/seed/cmm-news-3/1200/675", "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old, discovered by a Latin professor in Virginia.", "#"),
-        new NewsItem("New recliner seats arrive in Hall 3", "Cinema", "Sep 27, 2026", "https://picsum.photos/seed/cmm-news-4/1200/675", "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.", "#"),
-        new NewsItem("Director Q&A night with the Neon Harbor crew", "Events", "Sep 20, 2026", "https://picsum.photos/seed/cmm-news-5/1200/675", "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.", "#"),
-        new NewsItem("Members now earn double points on weekdays", "Membership", "Sep 14, 2026", "https://picsum.photos/seed/cmm-news-6/1200/675", "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.", "#")
-    });
+    // The same stories as the News page. The main page uses a story's wide landscape image when it has one.
+    var news = new NewsSectionViewModel("news", "NEWS & UPDATES",
+        (Model.News ?? []).Select(story => new NewsItem(story.Title, story.Category, story.Date, story.LandscapeUrl ?? story.PosterUrl, story.Excerpt, story.Url)).ToArray());
 }
 
 @await Html.PartialAsync("_MovieSection", upcoming)
 @await Html.PartialAsync("_MovieSection", nowShowing)
-@await Html.PartialAsync("_NewsSection", news)
+@if (news.Items.Count > 0)
+{
+    @await Html.PartialAsync("_NewsSection", news)
+}

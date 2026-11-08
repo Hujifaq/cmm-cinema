@@ -3,8 +3,25 @@
     Layout = "_HeroLayout";
     ViewData["NewsPage"] = true;
     var s = Model.Story;
-    var art = NewsData.Art(Model.Index);
     ViewData["Title"] = $"{s.Title} - CMM Cinema";
+
+    var paragraphs = string.IsNullOrWhiteSpace(s.Body)
+        ? new[] { "The full story will appear here once it is published." }
+        : s.Body.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var chapters = new List<(string? Heading, string Text)>();
+    string? pendingHeading = null;
+    foreach (var paragraph in paragraphs)
+    {
+        if (paragraph.EndsWith(':') && paragraph.Length <= 80) { pendingHeading = paragraph.TrimEnd(':'); continue; }
+        chapters.Add((pendingHeading, paragraph));
+        pendingHeading = null;
+    }
+    var words = (s.Excerpt + " " + string.Join(' ', paragraphs)).Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+    var minutes = Math.Max(1, (int)Math.Round(words / 200.0));
+    var cover = s.LandscapeUrl ?? s.PosterUrl;
+    var wide = s.LandscapeUrl is not null;
+    var tones = new[] { "cream", "sun", "white", "brick", "navy" };
+    var marquee = $"{(s.MovieTitle ?? "CMM Cinema")} ✦ Now at CMM Cinema ✦ ";
 }
 
 @section Head {
@@ -12,31 +29,103 @@
     <link rel="stylesheet" href="~/css/news-index.css" asp-append-version="true" />
 }
 
-
-
 <article class="story" data-story data-story-index="@Model.Index" data-back-url="/News">
-    <header class="story__head">
-        <p class="story__kicker" data-reveal-lines><a href="/News">News &amp; Updates</a> · @((Model.Index + 1).ToString("00")) / @Model.Count.ToString("00")</p>
-        <h1 class="story__title" data-reveal-chars>@s.Title</h1>
-        <dl class="story__meta" data-reveal>
-            <div><dt>Category</dt><dd>@s.Category</dd></div>
-            <div><dt>Published</dt><dd>@s.Date</dd></div>
-        </dl>
-    </header>
-    <img class="story__disc" data-reveal src="@art" alt="" width="900" height="900" />
-    <div class="story__body">
-        <p class="story__lede" data-reveal>@s.Excerpt</p>
-        <p data-reveal>This is sample copy for the story page. Replace it with the full article: who, what, when and why it matters to people coming to the cinema.</p>
-        <p data-reveal>A second paragraph can carry the details: times, prices, which hall, and anything guests should know before they book.</p>
-        <p data-reveal>Close with a short line that points to the next step, such as booking a seat or joining the members list.</p>
-    </div>
-    <section class="story__drop" data-story-drop aria-label="Back to all news">
+    <section class="story-hero" data-story-hero>
+        <svg class="story-hero__waves" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+            <path class="story-hero__wave story-hero__wave--a" d="M-60 610C120 520 260 700 470 640S760 420 980 470S1290 650 1500 560V980H-60Z" />
+            <path class="story-hero__wave story-hero__wave--b" d="M-60 760C160 690 330 840 560 790S900 610 1120 660S1380 800 1500 740V980H-60Z" />
+            <path class="story-hero__wave story-hero__wave--c" d="M1040 -40C1000 90 1120 160 1240 170S1460 120 1500 40V-40Z" />
+        </svg>
+
+        <div class="story-hero__inner" data-story-hero-inner>
+            <div class="story-hero__copy">
+                <p class="story-hero__kicker" data-reveal-lines><a href="/News">News &amp; Updates</a> · @((Model.Index + 1).ToString("00")) / @Model.Count.ToString("00")</p>
+                <h1 class="story-hero__title" data-reveal-chars>@s.Title</h1>
+                <ul class="story-chips" aria-label="Story details">
+                    <li class="story-chip story-chip--ink" data-reveal>@s.Category</li>
+                    <li class="story-chip" data-reveal>@s.Date</li>
+                    <li class="story-chip" data-reveal>@minutes min read</li>
+                </ul>
+                <a class="story-button story-button--ink story-hero__cta" href="#story-read" data-reveal>Start reading</a>
+            </div>
+
+            <div class="story-hero__art" aria-hidden="true">
+                <div class="story-hero__float" data-story-float>
+                    <div class="story-poster @(wide ? "story-poster--wide" : "")" data-reveal>
+                        <img src="@cover" alt="" loading="eager" decoding="async" />
+                    </div>
+                    <img class="story-hero__disc" data-reveal src="@s.ArtUrl" alt="" width="900" height="900" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="story-panel story-panel--paper story-statement" id="story-read" data-story-statement>
+        <p class="story-eyebrow">The story so far</p>
+        <p class="story-statement__text" data-story-statement-text>@s.Excerpt</p>
+    </section>
+
+    <section class="story-panel story-panel--sky story-chapters" data-story-chapters aria-label="The full story">
+        <div class="story-chapters__head">
+            <p class="story-eyebrow">In @chapters.Count chapters</p>
+            <h2 class="story-chapters__title">Read on</h2>
+        </div>
+        <div class="story-chapters__viewport">
+            <ol class="story-chapters__track" data-story-track>
+                @for (var c = 0; c < chapters.Count; c++)
+                {
+                    var (heading, text) = chapters[c];
+                    <li class="story-card story-card--@tones[c % tones.Length]" data-story-card>
+                        <span class="story-card__no">@((c + 1).ToString("00"))</span>
+                        @if (heading is not null)
+                        {
+                            <h3 class="story-card__title">@heading</h3>
+                        }
+                        <p class="story-card__text">@text</p>
+                    </li>
+                }
+            </ol>
+        </div>
+    </section>
+
+    <section class="story-panel story-panel--night story-spotlight" data-story-spotlight>
+        <div class="story-spotlight__marquee" aria-hidden="true">
+            <p data-story-marquee="-1">@marquee@marquee@marquee</p>
+            <p data-story-marquee="1">@marquee@marquee@marquee</p>
+        </div>
+
+        <div class="story-spotlight__stage" aria-hidden="true">
+            <div class="story-disc" data-story-spin>
+                <span class="story-disc__rim" style="--z: -2px"></span>
+                <span class="story-disc__rim" style="--z: -4px"></span>
+                <span class="story-disc__rim" style="--z: -6px"></span>
+                <span class="story-disc__back"></span>
+                <img class="story-disc__face" src="@s.ArtUrl" alt="" width="900" height="900" />
+                <span class="story-disc__shine"></span>
+            </div>
+            <span class="story-spotlight__shadow" data-story-spot-shadow></span>
+        </div>
+
+        @if (s.MovieSlug is not null)
+        {
+            <div class="story-spotlight__cta" data-story-cta>
+                <h2 class="story-spotlight__title">See @s.MovieTitle on the big screen</h2>
+                <div class="story-actions">
+                    <a class="story-button story-button--cream" href="/Booking/Showtimes?movie=@Uri.EscapeDataString(s.MovieSlug)">Book a seat</a>
+                    <a class="story-button story-button--glass" href="@s.MovieUrl">About the movie</a>
+                </div>
+            </div>
+        }
+    </section>
+
+    <section class="story-panel story-panel--paper story__drop" data-story-drop aria-label="Back to all news">
         <div class="story__drop-stage">
-            <img class="story__drop-disc" src="@art" alt="" width="900" height="900" />
+            <img class="story__drop-disc" data-story-drop-disc src="@s.ArtUrl" alt="" width="900" height="900" />
         </div>
     </section>
 </article>
 
 @section Scripts {
+    <script src="~/lib/gsap/ScrollTrigger.min.js" asp-append-version="true" defer></script>
     <script src="~/js/news-story.bundle.js" asp-append-version="true" defer></script>
 }

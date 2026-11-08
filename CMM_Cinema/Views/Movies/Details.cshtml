@@ -7,6 +7,9 @@
         : "Now Showing";
     
     var bookingHref = Model.Status == MovieStatus.NowShowing ? $"/Booking/Showtimes?movie={Uri.EscapeDataString(Model.Slug)}" : null;
+    var isAdmin = User.IsInRole(CMM_Cinema.Services.AuthClaims.AdminRole);
+    var editInput = "block min-h-11 w-full min-w-0 rounded-2xl border border-dashed border-cinema-ink/40 bg-white px-4 py-2.5 font-sans text-base text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:border-solid focus:border-cinema-ink focus:outline-none";
+    var editLabel = "mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-cinema-ink/70";
     var buttons = new[] { (Label: "Book Now!", Href: bookingHref ?? "#", Accent: "bg-cinema-brick"), (Label: "Showtimes", Href: bookingHref is null ? "#" : bookingHref + "#screenings-title", Accent: "bg-cinema-logo") };
 }
 
@@ -16,6 +19,7 @@
 
 <section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="movie-title" data-movie-detail>
     @await Html.PartialAsync("_GooFilter")
+    @await Html.PartialAsync("_AdminBar", new ViewDataDictionary(ViewData) { ["EditToggle"] = true })
     <div class="mx-auto max-w-[1440px] px-5 md:px-12">
         @await Html.PartialAsync("_Breadcrumb", new (string, string?)[] { ("Home", "/"), ("Movies", "/Movies"), (Model.Title, null) })
     </div>
@@ -24,24 +28,77 @@
             <div class="relative aspect-[2/3] overflow-hidden rounded-2xl" data-detail-poster>
                 @await Html.PartialAsync("_MoviePoster", Model, new ViewDataDictionary(ViewData) { ["PosterClass"] = "origin-bottom" })
             </div>
+            @if (isAdmin)
+            {
+                <div class="mt-4" data-edit-only>
+                    <label class="@editLabel" for="edit-posterUrl">Poster image link</label>
+                    <input class="@editInput" id="edit-posterUrl" type="url" maxlength="500" placeholder="https://..." value="@Model.PosterUrl" data-field="posterUrl" />
+                    <p class="m-0 mt-1.5 text-xs text-cinema-ink/60">Paste a full https:// link. The picture above updates as you type. Empty uses a drawn poster.</p>
+                </div>
+            }
             <div class="mt-6 grid grid-cols-2 gap-3">
                 @foreach (var button in buttons)
                 {
                     @await Html.PartialAsync("_GooButton", button, new ViewDataDictionary(ViewData) { ["GooLightLabel"] = true })
                 }
             </div>
+            @if (User.IsInRole(CMM_Cinema.Services.AuthClaims.AdminRole))
+            {
+                <div class="mt-3 grid grid-cols-2 gap-3">
+                    <a class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cinema-cream px-4 text-sm font-bold text-cinema-ink no-underline ring-1 ring-inset ring-cinema-ink/20 transition-colors duration-300 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink motion-reduce:transition-none" href="@Model.Url/Edit">Edit movie</a>
+                    <button class="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-brick px-4 text-sm font-bold text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-brick" type="button" data-movie-delete data-movie-id="@Model.Id" data-movie-title="@Model.Title">Delete</button>
+                </div>
+            }
         </div>
 
         <div class="min-w-0">
             <p class="m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60" data-reveal-lines>@eyebrow</p>
-            <h1 class="m-0 mt-2 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl lg:text-7xl" id="movie-title" data-reveal-chars>@Model.Title</h1>
-            <ul class="m-0 mt-4 flex list-none flex-wrap items-center gap-y-2 p-0 text-sm font-semibold" aria-label="Movie details">
+            <h1 class="m-0 mt-2 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl lg:text-7xl" id="movie-title" data-reveal-chars data-view-only>@Model.Title</h1>
+            @if (isAdmin)
+            {
+                <div class="mt-2" data-edit-only>
+                    <label class="@editLabel" for="edit-title">Title</label>
+                    <input class="@editInput text-3xl font-black uppercase leading-tight tracking-tighter sm:text-4xl" id="edit-title" maxlength="120" value="@Model.Title" data-field="title" />
+                </div>
+                <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-edit-only>
+                    <div><label class="@editLabel" for="edit-genre">Genre</label><input class="@editInput" id="edit-genre" maxlength="80" value="@Model.Genre" data-field="genre" /></div>
+                    <div><label class="@editLabel" for="edit-duration">Length (minutes)</label><input class="@editInput" id="edit-duration" type="number" min="1" max="600" value="@Model.DurationMinutes" data-field="durationMinutes" /></div>
+                    <div><label class="@editLabel" for="edit-rating">Rating</label><input class="@editInput" id="edit-rating" maxlength="10" value="@Model.Rating" data-field="rating" /></div>
+                    <div><label class="@editLabel" for="edit-language">Language</label><input class="@editInput" id="edit-language" maxlength="20" value="@Model.Language" data-field="language" /></div>
+                    <div>
+                        <label class="@editLabel" for="edit-status">Status</label>
+                        <select class="@editInput" id="edit-status" data-field="status">
+                            <option value="NowShowing" selected="@(Model.Status == MovieStatus.NowShowing)">Now showing</option>
+                            <option value="Upcoming" selected="@(Model.Status == MovieStatus.Upcoming)">Upcoming</option>
+                        </select>
+                    </div>
+                    <div><label class="@editLabel" for="edit-release">Release date</label><input class="@editInput" id="edit-release" type="date" value="@(Model.ReleaseDate?.ToString("yyyy-MM-dd"))" data-field="releaseDate" /></div>
+                </div>
+            }
+            <ul class="m-0 mt-4 flex list-none flex-wrap items-center gap-y-2 p-0 text-sm font-semibold" aria-label="Movie details" data-view-only>
                 @foreach (var detail in new[] { Model.Genre, Model.Runtime, Model.Rating, Model.Language })
                 {
                     <li class="border-l border-cinema-ink/30 px-3 leading-none first:border-l-0 first:pl-0" data-reveal-up>@detail</li>
                 }
             </ul>
-            <p class="m-0 mt-6 max-w-2xl text-base leading-relaxed text-cinema-ink/80 md:text-lg" data-reveal-lines>@Model.Overview</p>
+            <p class="m-0 mt-6 max-w-2xl whitespace-pre-line text-base leading-relaxed text-cinema-ink/80 md:text-lg" data-reveal-lines data-view-only>@Model.Overview</p>
+            @if (isAdmin)
+            {
+                <div class="mt-5 grid max-w-3xl gap-4" data-edit-only>
+                    <div>
+                        <label class="@editLabel" for="edit-synopsis">Short synopsis (shown on movie cards)</label>
+                        <input class="@editInput" id="edit-synopsis" maxlength="240" value="@Model.Synopsis" data-field="synopsis" />
+                    </div>
+                    <div>
+                        <label class="@editLabel" for="edit-overview">Overview</label>
+                        <textarea class="@editInput min-h-40 resize-none rounded-3xl leading-relaxed" id="edit-overview" maxlength="3000" data-field="overview" data-autosize>@Model.Overview</textarea>
+                    </div>
+                    <div>
+                        <label class="@editLabel" for="edit-trailer">Trailer link (YouTube or Vimeo)</label>
+                        <input class="@editInput" id="edit-trailer" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=..." value="@Model.TrailerUrl" data-field="trailerUrl" />
+                    </div>
+                </div>
+            }
 
             @if (Model.TrailerEmbedUrl is { } trailerUrl)
             {
@@ -78,4 +135,17 @@
             }
         </div>
     </div>
+@if (isAdmin)
+    {
+        <div class="fixed inset-x-0 bottom-0 z-50 border-0 border-t border-solid border-cinema-ink/10 bg-cinema-cream/95 px-5 py-3 backdrop-blur-md md:px-12" data-edit-only role="region" aria-label="Editing this movie">
+            <div class="mx-auto flex max-w-[1440px] flex-wrap items-center gap-3">
+                <p class="m-0 min-w-0 flex-1 text-sm font-semibold text-cinema-ink/70" role="status" data-edit-status>You're editing this page. Changes show to everyone once you save.</p>
+                <a class="text-sm font-bold text-cinema-ink underline underline-offset-2" href="@Model.Url/Edit">Cast &amp; more options</a>
+                <button class="min-h-11 cursor-pointer rounded-full border border-solid border-cinema-ink/20 bg-white px-5 text-sm font-bold text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" data-edit-cancel>Cancel</button>
+                <button class="min-h-11 cursor-pointer rounded-full border-0 bg-cinema-ink px-6 text-sm font-bold text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink disabled:opacity-60" type="button" data-edit-save>Save changes</button>
+            </div>
+        </div>
+    }
 </section>
+
+@await Html.PartialAsync("_AdminMovieDialog")

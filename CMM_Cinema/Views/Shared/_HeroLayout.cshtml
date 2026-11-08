@@ -6,20 +6,23 @@
     <meta name="theme-color" content="#103d3e" />
     <meta name="description" content="CMM Cinema. A little movie magic." />
     <title>@ViewData["Title"]</title>
+    <link rel="icon" href="~/favicon.ico" sizes="any" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/images/favicon-32.png" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="192x192" href="~/images/favicon-192.png" asp-append-version="true" />
+    <link rel="apple-touch-icon" href="~/images/apple-touch-icon.png" asp-append-version="true" />
     <style nonce="@Context.GetNonce()">
         @@media @(ViewData["NewsPage"] is true ? "" : "(min-width: 768px) and ")(prefers-reduced-motion: no-preference) {
             @@view-transition { navigation: auto; }
         }
     </style>
     <script nonce="@Context.GetNonce()">
-        // Arriving through a view transition: keep the navbar still instead of replaying its entrance.
-        // News disc hand-offs (and phones, which never had the swing) arrive without the swing.
+        
         window.addEventListener('pagereveal', function (event) {
             var handoff = '';
             try { handoff = sessionStorage.getItem('cmm-news-handoff') || ''; sessionStorage.removeItem('cmm-news-handoff'); } catch (e) {}
             if (!event.viewTransition) return;
             document.documentElement.setAttribute('data-page-arrived', '');
-            // 'drop' = the story's disc fell away and the gallery rises into place (styled in news-discs.css).
+          
             if (handoff === 'drop') { document.documentElement.setAttribute('data-news-drop', ''); return; }
             if (handoff || !window.matchMedia('(min-width: 768px)').matches) {
                 var vt = event.viewTransition;
@@ -34,6 +37,7 @@
     <link rel="stylesheet" href="~/css/hero.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/cinema-nav.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/page-transition.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/promo-ribbon.css" asp-append-version="true" />
     @await RenderSectionAsync("Head", required: false)
 </head>
 <body class="m-0 min-w-[280px] p-0">
@@ -56,6 +60,7 @@
     <script src="~/js/cinema-marquee.js" asp-append-version="true" defer></script>
     <script src="~/lib/swiper/swiper-bundle.min.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-promos.js" asp-append-version="true" defer></script>
+    <script src="~/js/promo-ribbon.js" asp-append-version="true" defer></script>
     <script src="~/js/now-showing.js" asp-append-version="true" defer></script>
     <script src="~/js/news.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-magnetic.js" asp-append-version="true" defer></script>
@@ -66,6 +71,7 @@
     <script src="~/js/signup.js" asp-append-version="true" defer></script>
     <script src="~/js/forgot-password.js" asp-append-version="true" defer></script>
     <script src="~/js/ajax-form.js" asp-append-version="true" defer></script>
+    <script src="~/js/admin-movies.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

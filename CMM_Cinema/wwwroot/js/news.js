@@ -49,6 +49,13 @@
       image.alt = story.title;
     };
 
+    // Resolves once the picture is downloaded and decoded, so swapping it in never shows an empty frame.
+    const preload = src => {
+      const img = new Image();
+      img.src = src;
+      return (img.decode ? img.decode() : new Promise(resolve => { img.onload = img.onerror = resolve; })).catch(() => {});
+    };
+
     // The story leaving the feature becomes a card again, reusing the clicked card's markup.
     const cardFor = (template, story) => {
       const slide = template.cloneNode(true);
@@ -56,7 +63,10 @@
       const thumb = slide.querySelector('[data-news-thumb]');
       fields.forEach(key => { thumb.dataset[key] = story[key]; });
       thumb.setAttribute('aria-label', `Show story: ${story.title}`);
-      thumb.querySelector('img').src = story.image;
+      const img = thumb.querySelector('img');
+      // The card slides in from off screen, where a lazy image would not load in time.
+      img.loading = 'eager';
+      img.src = story.image;
       return slide;
     };
 
@@ -89,22 +99,42 @@
     };
 
     // The clicked card lifts out of the row and lands in the feature frame.
+    // The flying copy reuses the card's own, already loaded picture with the same crop, so nothing jumps
+    // at take-off. It only lands once the feature picture is ready underneath it.
     const flyUp = (tl, thumb, story) => {
       const from = thumb.getBoundingClientRect();
       const to = frame.getBoundingClientRect();
+      const source = thumb.querySelector('img');
+      const ready = preload(story.image);
       const clone = document.createElement('div');
-      clone.className = 'pointer-events-none absolute z-50 overflow-hidden rounded-2xl shadow-2xl';
-      clone.innerHTML = `<img class="size-full object-cover" alt="" src="${encodeURI(story.image)}">`;
+      // z-30: above the news section (z-20) but under the sticky navbar (z-40).
+      clone.className = 'pointer-events-none absolute z-30 overflow-hidden rounded-2xl shadow-2xl';
+      const picture = source.cloneNode();
+      picture.removeAttribute('loading');
+      picture.className = 'block size-full object-cover';
+      picture.style.objectPosition = getComputedStyle(source).objectPosition;
+      clone.append(picture);
       const place = rect => ({ left: rect.left + scrollX, top: rect.top + scrollY, width: rect.width, height: rect.height });
       gsap.set(clone, place(from));
       document.body.append(clone);
+      const hoverScale = new DOMMatrixReadOnly(getComputedStyle(source).transform === 'none' ? undefined : getComputedStyle(source).transform).a || 1;
+      tl.fromTo(picture, { scale: hoverScale }, { scale: 1, duration: FLY, ease: 'power3.inOut' }, 0);
       tl.to(clone, { ...place(to), duration: FLY, ease: 'power3.inOut' }, 0);
       tl.to(image, { autoAlpha: 0.35, scale: 1.04, duration: FLY * 0.6, ease: 'power2.in' }, 0);
+
+      let landed;
+      const done = new Promise(resolve => { landed = resolve; });
       tl.add(() => {
-        writeFeature(story);
-        gsap.set(image, { clearProps: 'opacity,visibility,transform' });
-        clone.remove();
+        ready.then(() => {
+          writeFeature(story);
+          return image.decode ? image.decode().catch(() => {}) : null;
+        }).then(() => {
+          gsap.set(image, { clearProps: 'opacity,visibility,transform' });
+          clone.remove();
+          landed();
+        });
       }, FLY);
+      return done;
     };
 
     // Cards close the gap with FLIP, while the returning story enters from the left edge of the screen.
@@ -136,10 +166,14 @@
       }
 
       busy = true;
-      const tl = gsap.timeline({ onComplete: () => { busy = false; } });
-      flyUp(tl, thumb, story);
+      let finished;
+      const played = new Promise(resolve => { finished = resolve; });
+      const tl = gsap.timeline({ onComplete: () => finished() });
+      const landed = flyUp(tl, thumb, story);
       reflowRow(tl, slide, fresh);
       swapText(tl, story);
+      // Accept the next click only after the animation has ended and the new picture is in the frame.
+      Promise.all([played, landed]).then(() => { busy = false; });
     };
 
     wrapper.addEventListener('click', event => {

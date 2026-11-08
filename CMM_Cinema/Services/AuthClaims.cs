@@ -19,6 +19,23 @@ public static class AuthClaims
         ],
         CookieAuthenticationDefaults.AuthenticationScheme));
 
+    public const string AdminRole = "Admin";
+
+    public static ClaimsPrincipal CreateAdminPrincipal(Admin admin) => new(new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.NameIdentifier, admin.Id.ToString()),
+            new Claim(ClaimTypes.Name, admin.Username),
+            new Claim(ClaimTypes.Role, AdminRole),
+            new Claim(SecurityStamp, admin.SecurityStamp)
+        ],
+        CookieAuthenticationDefaults.AuthenticationScheme));
+
+    public static bool IsAdmin(ClaimsPrincipal principal) => principal.IsInRole(AdminRole);
+
+    // Admin and user ids come from different tables, so an admin's id must never be read as a user id.
     public static int? UserId(ClaimsPrincipal principal) =>
-        int.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+        !IsAdmin(principal) && int.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+
+    public static int? AdminId(ClaimsPrincipal principal) =>
+        IsAdmin(principal) && int.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
 }
