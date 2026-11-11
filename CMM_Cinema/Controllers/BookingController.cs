@@ -11,7 +11,7 @@ namespace CMM_Cinema.Controllers
         public IActionResult Index(string? movie) => RedirectToAction(nameof(Showtimes), new { movie });
 
         [HttpGet]
-        public async Task<IActionResult> Showtimes(string? movie, DateOnly? date, int? cinemaId, string? format, string? language,
+        public async Task<IActionResult> Showtimes(string? movie, DateOnly? date, int? cinemaId,
             CancellationToken cancellationToken)
         {
             var nowShowing = await movies.GetByStatusAsync(MovieStatus.NowShowing, cancellationToken);
@@ -24,18 +24,14 @@ namespace CMM_Cinema.Controllers
             var dates = booking.GetDates();
             var selectedDate = date is { } d && dates.Contains(d) ? d : dates[0];
             var selectedCinema = cinemaId is { } id && booking.GetCinema(id) is not null ? cinemaId : null;
-            var selectedFormat = booking.Formats.Contains(format) ? format : null;
-            var selectedLanguage = booking.Languages.Contains(language) ? language : null;
 
             var showtimes = booking.GetShowtimes(selectedMovie.Slug)
                 .Where(s => s.Date == selectedDate)
                 .Where(s => selectedCinema is null || s.CinemaId == selectedCinema)
-                .Where(s => selectedFormat is null || s.Format == selectedFormat)
-                .Where(s => selectedLanguage is null || s.Language == selectedLanguage)
                 .ToArray();
 
             return View(new ShowtimesViewModel(selectedMovie, booking.GetCinemas(), dates, showtimes,
-                selectedDate, selectedCinema, selectedFormat, selectedLanguage));
+                selectedDate, selectedCinema));
         }
 
         [HttpGet]

@@ -70,13 +70,6 @@
                 </div>
             </dl>
 
-            <div class="mt-7 border-x-0 border-b-0 border-t border-solid border-cinema-cream/15 pt-4 text-xs text-cinema-cream/60">
-                @foreach (var tier in booking.SeatItems.GroupBy(seat => (seat.Category, seat.Price, seat.Capacity)))
-                {
-                    <p class="mb-0 mt-2 flex flex-wrap justify-between gap-2"><span>@tier.Key.Category.DisplayName() (@(tier.Key.Capacity == 2 ? "pairs" : "seats"))</span><span>@tier.Count() × ฿@tier.Key.Price.ToString("N0", culture)</span></p>
-                }
-                <p class="mb-0 mt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-cinema-cream/40">CMM Cinema · Demo booking</p>
-            </div>
         </div>
     </article>
 

@@ -16,7 +16,7 @@ public sealed class DemoBookingService : IBookingService
 
     private static readonly Cinema[] Cinemas = [new(1, "CMM Central Mall"), new(2, "CMM CB12")];
     private static readonly (string Format, string Language)[] Screenings =
-        [("2D", "English"), ("2D", "Thai (Sub)"), ("3D", "English"), ("IMAX", "English")];
+        [("2D", "Thai"), ("IMAX", "Thai")];
     private static readonly int[] StartHours = [13, 16, 19];
     // A few seats start sold so the seat map does not look empty.
     private static readonly HashSet<string> PresoldSeats = new(StringComparer.OrdinalIgnoreCase) { "A3", "B5", "D11", "F14", "VP3" };
@@ -27,8 +27,8 @@ public sealed class DemoBookingService : IBookingService
     private readonly Dictionary<Guid, BookingHold> bookings = [];
     private readonly Dictionary<int, HashSet<string>> soldSeats = [];
 
-    public IReadOnlyList<string> Formats { get; } = ["2D", "3D", "IMAX"];
-    public IReadOnlyList<string> Languages { get; } = ["English", "Thai (Sub)"];
+    public IReadOnlyList<string> Formats { get; } = ["2D", "IMAX"];
+    public IReadOnlyList<string> Languages { get; } = ["Thai"];
 
     public IReadOnlyList<Cinema> GetCinemas() => Cinemas;
 

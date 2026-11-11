@@ -12,6 +12,21 @@ void Run(string name, Action test) { test(); passed++; Console.WriteLine($"PASS:
     var service = new DemoBookingService();
     return (service, service.GetShowtimes("test-movie").First(show => show.IsAvailable));
 }
+Run("only Thai-dubbed 2D and IMAX are offered across every cinema and date", () => {
+    var service = new DemoBookingService();
+    Check(service.Formats.SequenceEqual(new[] { "2D", "IMAX" }), "Supported formats");
+    Check(service.Languages.SequenceEqual(new[] { "Thai" }), "Only Thai dubbing is offered");
+    var showtimes = service.GetShowtimes("test-movie");
+    Check(showtimes.All(show => show.Format is "2D" or "IMAX"), "No unsupported screening formats");
+    Check(showtimes.All(show => show.Language == "Thai"), "Every screening is Thai-dubbed");
+    foreach (var cinema in service.GetCinemas())
+    foreach (var date in service.GetDates())
+    {
+        var sessions = showtimes.Where(show => show.CinemaId == cinema.Id && show.Date == date).ToArray();
+        Check(sessions.Any(show => show.Format == "2D" && show.Language == "Thai"), "2D Thai dubbing remains");
+        Check(sessions.Any(show => show.Format == "IMAX" && show.Language == "Thai"), "IMAX Thai dubbing remains");
+    }
+});
 Run("seat inventory matches Normal F–D, Premium C–A and eight atomic VIP pairs", () => {
     var (service, show) = Setup();
     var seats = service.GetSeats(show.Id);

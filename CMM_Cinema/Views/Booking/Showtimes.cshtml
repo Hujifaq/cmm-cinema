@@ -1,6 +1,5 @@
 @model ShowtimesViewModel
 @using System.Globalization
-@inject CMM_Cinema.Services.IBookingService Booking
 @{
     ViewData["Title"] = "Showtimes";
     var culture = CultureInfo.InvariantCulture;
@@ -29,7 +28,6 @@
 
         <form class="showtimes-form min-w-0" method="get" asp-action="Showtimes" data-booking-filters>
             <input type="hidden" name="movie" value="@movie.Slug" />
-            <input type="hidden" name="format" value="@Model.Format" />
 
             <div class="booking-movie-info">
                 <h2 class="m-0 text-[clamp(2.25rem,4vw,4.5rem)] font-black uppercase leading-[0.92] tracking-[-0.065em] [overflow-wrap:anywhere]">@movie.Title</h2>
@@ -63,16 +61,6 @@
                         @foreach (var cinema in Model.Cinemas)
                         {
                             <option value="@cinema.Id" selected="@(Model.CinemaId == cinema.Id)">@cinema.Name</option>
-                        }
-                    </select>
-                </label>
-                <label class="booking-field">
-                    <span class="booking-field__name">Language</span>
-                    <select name="language" data-auto-submit>
-                        <option value="">All Languages</option>
-                        @foreach (var language in Booking.Languages)
-                        {
-                            <option value="@language" selected="@(Model.Language == language)">@language</option>
                         }
                     </select>
                 </label>
@@ -120,16 +108,6 @@
             <section class="cinema-screenings">
                 <div class="cinema-screenings__info">
                     <h3>@cinema.Name</h3>
-                    <label class="booking-field booking-row-format">
-                        <span class="booking-field__name">Select format</span>
-                        <select data-format-mirror>
-                            <option value="">All Formats</option>
-                            @foreach (var format in Booking.Formats)
-                            {
-                                <option value="@format" selected="@(Model.Format == format)">@format</option>
-                            }
-                        </select>
-                    </label>
                 </div>
 
                 <div class="screening-groups">
@@ -137,8 +115,14 @@
                     {
                         <div class="screening-group">
                             <h4 class="screening-group__heading">
-                                <span class="inline-flex min-h-7 min-w-10 items-center justify-center rounded-md border border-solid border-cinema-cream/35 bg-cinema-ink/20 px-2.5 py-1 text-[11px] font-extrabold leading-none tracking-[0.08em] text-cinema-cream">@group.Key.Format</span>
-                                <span class="screening-language">@group.Key.Language</span>
+                                <span class="inline-flex min-h-7 w-14 shrink-0 items-center justify-center rounded-md border border-solid border-cinema-cream/35 bg-cinema-ink/20 px-2 py-1 text-xs font-extrabold leading-none tracking-[0.04em] text-cinema-cream">@group.Key.Format</span>
+                                <span class="screening-language inline-flex items-center gap-1.5 whitespace-nowrap leading-none">
+                                    <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+                                        <path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14" />
+                                    </svg>
+                                    @group.Key.Language
+                                </span>
                             </h4>
                             <div class="screening-times">
                                 @foreach (var show in group)
@@ -147,13 +131,13 @@
                                     if (show.IsAvailable)
                                     {
                                         <a class="showtime-button" asp-action="SeatSelection" asp-route-showtimeId="@show.Id" aria-label="@cinema.Name, @show.Format @show.Language, @time">
-                                            <span>@time</span>
+                                            <span class="text-lg leading-none sm:text-xl">@time</span>
                                         </a>
                                     }
                                     else
                                     {
                                         <button class="showtime-button" type="button" disabled aria-label="@time, sold out">
-                                            <span>@time</span>
+                                            <span class="text-lg leading-none sm:text-xl">@time</span>
                                             <small>FULL</small>
                                         </button>
                                     }
@@ -167,7 +151,7 @@
 
         @if (Model.Showtimes.Count == 0)
         {
-            <p class="booking-empty">No showtimes match your filters. Try another cinema, format or language.</p>
+            <p class="booking-empty">No showtimes match your filters. Try another cinema or date.</p>
         }
     </section>
 

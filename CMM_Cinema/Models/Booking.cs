@@ -52,9 +52,7 @@ public record ShowtimesViewModel(
     IReadOnlyList<DateOnly> Dates,
     IReadOnlyList<Showtime> Showtimes,
     DateOnly SelectedDate,
-    int? CinemaId,
-    string? Format,
-    string? Language);
+    int? CinemaId);
 
 public record SeatSelectionViewModel(
     Movie Movie,
