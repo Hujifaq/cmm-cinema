@@ -695,6 +695,17 @@ Confirmation uses a separate vertical admission-ticket layout, with a 480px
 maximum width on the paper page. The current movie's full 2:3 poster fills its
 rounded top, with a cream Demo confirmed badge. The title sits below the poster,
 followed by paper-colored circular perforations and half-round side notches.
+As the perforation scrolls from 78% to 35% of viewport height, its paper edge
+progressively tears from left to right. The lower stub drops up to 14px and tilts
+only 0.7 degrees, keeping all booking details readable. Scrolling up reverses it.
+The two clipped half-perforations meet as the original dotted line at rest;
+paper-colored zigzag masks and independent soft shadows reveal the split.
+`booking/ticket-tear.js` measures the stationary upper edge, batches passive scroll
+updates in requestAnimationFrame and uses the existing GSAP without ScrollTrigger
+or scroll pinning. Image/font loads, resize and back/forward restoration refresh
+the position. GSAP matchMedia cleans up listeners, pending frames and transforms
+when reduced motion is enabled. With reduced motion, missing GSAP or JavaScript,
+the ticket remains fully visible and joined. Booking state and actions are unaffected.
 The dark spotlight-colored body shows the actual cinema, format, language,
 rating, total runtime in minutes, screening date/time, admissions, selected
 seat IDs (including VIP pairs), total and reference. The ticket ends after the
@@ -719,25 +730,37 @@ or payment-method requirement. Old Payment and Pay routes redirect to Summary
 without confirming anything. Expired or missing holds return to Showtimes.
 Summary starts directly with its main heading, without the Step 03 / One last look eyebrow.
 Its detail panel starts with Booking summary, without the Your booking eyebrow.
-The panel follows a compact order-list layout: the live hold countdown sits beside
-the heading, followed by concise movie/session details, admission quantity, and
-rows grouped by seat category and price. Each row shows the matching chair/sofa
-icon and seat IDs, with its subtotal aligned right; the quantity/unit-price
-caption beneath the IDs is omitted. A cyan
-Net total band closes the list before the existing booking actions. It retains
-the teal panel, cream text and rounded surfaces; the movie poster remains in the
-shared order card rather than repeating above a grid of detail tiles. Narrow
-screens wrap the heading/timer and seat IDs without hiding prices.
+Summary uses a centered, 1080px-wide stack: the horizontal paper ticket leads,
+with a compact teal price-review panel directly below it. Both share the same
+outer width. The live hold countdown sits beside Booking summary. The body pairs
+seat-category rows and admission quantity on the left with Net total and two
+full-width actions on the right, separated by a fine vertical rule. Each price
+row retains the matching chair/sofa, seat IDs and right-aligned subtotal.
+Movie/session information appears only on the ticket rather than repeating in
+the price panel. Net total is cyan type rather than a large cyan band; the
+Confirm booking button carries the primary cyan clay treatment with shallow
+inset/cast shadows, and Start over is a quieter outlined pill below it. The total
+row aligns on the text baseline with a 24px price and 14px label, leaving 20px
+before Confirm booking. Both actions have equal full widths, 52px minimum heights,
+matching 14px bold labels and a consistent 12px gap. Fine-pointer
+hover lifts the buttons 2px without changing their colors; reduced motion stays
+static. Below 768px the price rows and actions stack with a horizontal divider.
+Narrow screens wrap the heading/timer and seat IDs without hiding prices.
 The summary panel shares the seat panels' static soft-light grain, clipped to its
 rounded edges and placed behind content so text and controls remain crisp. The
 texture does not receive pointer events or change the teal gradient.
-The shared order card starts with the movie poster, without the Your movie night eyebrow.
-It has a receipt-paper silhouette with small 8px top corners, straight sides and
-a repeating 16px-wide, 8px-deep torn bottom edge made with CSS masks. A wrapper
-casts the shadow around the paper outline. Its existing cream gradient, poster,
-receipt details and total remain; bottom padding keeps the footer above the teeth.
-This receipt is used by Summary; Confirmation uses its own poster-led admission
-ticket so changing it does not alter the Summary receipt.
+The shared order card is a horizontal ticket with 24px corners and the existing
+cream-to-mint paper gradient, without the Your movie night eyebrow. Its main
+section pairs a 112px poster with bold movie information, format, language,
+rating and runtime; a three-column detail grid shows the real date, showtime and
+admissions. A 200px detachable stub holds large seat IDs and the total. Category
+prices appear in the price-review panel below. A vertical dashed perforation
+and 10px semicircular cutouts at its ends replace the torn receipt bottom.
+A wrapper casts a soft shadow around the ticket silhouette. Below
+640px the poster reduces to 68px and the stub moves beneath the main section, with horizontal perforations and
+side notches so long movie titles and seat lists remain readable without overflow.
+The footer still identifies the demo booking; prices and booking data remain server-derived.
+Confirmation retains its separate vertical poster-led admission ticket.
 
 The Showtime heading starts directly with a system-sans, fluid 2.75–6.5rem
 black-weight uppercase "IT'S SHOWTIME." title.

@@ -3,35 +3,51 @@
 @{
     var culture = CultureInfo.InvariantCulture;
     var booking = Model.Booking;
+    var detailLabelClass = "m-0 text-xs text-cinema-deep/60";
+    var detailValueClass = "m-0 mt-1 break-words text-sm font-extrabold leading-snug";
 }
 
 <div class="bk-receipt-shell">
-<aside class="bk-ticket" aria-label="Order information">
-    <div class="bk-ticket-top">
-        <div class="bk-mini-poster" aria-hidden="true">
-            @await Html.PartialAsync("_MoviePoster", Model.Movie)
+    <aside class="bk-ticket" aria-label="Order information">
+        <div class="bk-ticket-main">
+            <div class="bk-ticket-top">
+                <div class="bk-mini-poster" aria-hidden="true">
+                    @await Html.PartialAsync("_MoviePoster", Model.Movie)
+                </div>
+                <div class="min-w-0">
+                    <h2 class="m-0 break-words text-3xl font-black uppercase leading-none tracking-tight sm:text-4xl">@Model.Movie.Title</h2>
+                    <p class="mb-0 mt-3 text-xs font-semibold leading-relaxed text-cinema-deep/70">@Model.Movie.Rating · @Model.Showtime.Format · @Model.Showtime.Language · @(Model.Movie.DurationMinutes)m</p>
+                    <p class="mb-0 mt-1 text-sm font-bold leading-relaxed">@Model.Cinema.Name</p>
+                </div>
+            </div>
+
+            <dl class="bk-receipt-lines">
+                <div>
+                    <dt class="@detailLabelClass">Date</dt>
+                    <dd class="@detailValueClass">@Model.Showtime.Date.ToString("ddd, dd MMM yyyy", culture)</dd>
+                </div>
+                <div>
+                    <dt class="@detailLabelClass">Showtime</dt>
+                    <dd class="@detailValueClass">@Model.Showtime.Time.ToString("HH:mm", culture)</dd>
+                </div>
+                <div>
+                    <dt class="@detailLabelClass">Admissions</dt>
+                    <dd class="@detailValueClass">@booking.TicketCount</dd>
+                </div>
+            </dl>
+
+            <p class="mb-0 mt-5 text-[9px] font-extrabold uppercase tracking-[0.18em] text-cinema-deep/60">CMM Cinema · Demo booking</p>
         </div>
-        <div class="bk-ticket-movie">
-            <h2>@Model.Movie.Title</h2>
-            <p>@Model.Movie.Rating &nbsp;·&nbsp; @Model.Showtime.Format &nbsp;·&nbsp; @Model.Showtime.Language</p>
-            <p>@Model.Cinema.Name</p>
+
+        <div class="bk-ticket-stub">
+            <dl class="m-0">
+                <dt class="@detailLabelClass">Seats</dt>
+                <dd class="m-0 mt-2 break-words text-xl font-black leading-snug">@string.Join(", ", booking.SeatItems.Select(seat => seat.Capacity == 2 ? $"{seat.Id} (pair)" : seat.Id))</dd>
+            </dl>
+            <dl class="m-0 mt-6 border-0 border-t border-solid border-cinema-deep/20 pt-5">
+                <dt class="m-0 text-xs font-bold uppercase tracking-[0.12em] text-cinema-deep/60">Total</dt>
+                <dd class="m-0 mt-2 break-words text-3xl font-black leading-none tracking-tight text-cinema-deep">฿@booking.Total.ToString("N0", culture)</dd>
+            </dl>
         </div>
-    </div>
-
-    <div class="bk-dotted" aria-hidden="true"></div>
-
-    <dl class="bk-receipt-lines">
-        <div><dt>Date</dt><dd>@Model.Showtime.Date.ToString("ddd, dd MMM yyyy", culture)</dd></div>
-        <div><dt>Showtime</dt><dd>@Model.Showtime.Time.ToString("HH:mm", culture)</dd></div>
-        <div><dt>Seats</dt><dd>@string.Join(", ", booking.SeatItems.Select(seat => seat.Capacity == 2 ? $"{seat.Id} (pair)" : seat.Id))</dd></div>
-        <div><dt>Admissions</dt><dd>@booking.TicketCount</dd></div>
-        @foreach (var tier in booking.SeatItems.GroupBy(seat => (seat.Category, seat.Price, seat.Capacity)))
-        {
-            <div><dt>@tier.Key.Category.DisplayName() (@(tier.Key.Capacity == 2 ? "pairs" : "seats"))</dt><dd>@tier.Count() × ฿@tier.Key.Price.ToString("N0", culture)</dd></div>
-        }
-        <div class="bk-total"><dt>Total</dt><dd>฿@booking.Total.ToString("N0", culture)</dd></div>
-    </dl>
-
-    <p class="bk-ticket-note">CMM Cinema · Demo booking</p>
-</aside>
+    </aside>
 </div>

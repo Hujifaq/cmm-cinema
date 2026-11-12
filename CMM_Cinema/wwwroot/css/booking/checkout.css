@@ -299,130 +299,123 @@
   color: #dcf8ed;
 }
 
-/* ---------- Order ticket (cream card on the right) ---------- */
+/* ---------- Horizontal order ticket and detachable total stub ---------- */
+
+.bk-grid.bk-summary-layout {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1080px;
+  margin-inline: auto;
+  gap: 24px;
+}
 
 .bk-receipt-shell {
-  filter: drop-shadow(0 14px 18px rgb(7 28 30 / 0.24));
+  min-width: 0;
+  filter: drop-shadow(0 14px 18px rgb(7 28 30 / 0.2));
 }
 
 .bk-ticket {
+  --bk-ticket-stub-width: 200px;
+  --bk-ticket-seam: calc(100% - var(--bk-ticket-stub-width));
   position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--bk-ticket-stub-width);
   overflow: hidden;
-  padding: 30px 28px 38px;
-  border: 1px solid rgb(255 253 230 / 0.14);
-  border-radius: 8px 8px 0 0;
+  border-radius: 24px;
   background: linear-gradient(153deg, #f9f6dd, #e9ebd9 70%, #c8e8d8);
-  color: #123d3e;
+  color: var(--color-cinema-deep);
   box-shadow: inset 1px 1px 2px #fff;
-  /* A solid paper body meets repeating triangular teeth at the torn edge.
-     The wrapper casts the shadow around this silhouette rather than a rectangle. */
+  /* Cut through the card at each end of the vertical perforation. */
   -webkit-mask:
-    linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
-    conic-gradient(from -45deg at 50% 100%, #000 90deg, transparent 0) bottom / 16px 8px repeat-x;
+    radial-gradient(circle at var(--bk-ticket-seam) 0, transparent 10px, #000 10.5px),
+    radial-gradient(circle at var(--bk-ticket-seam) 100%, transparent 10px, #000 10.5px);
+  -webkit-mask-composite: source-in;
   mask:
-    linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
-    conic-gradient(from -45deg at 50% 100%, #000 90deg, transparent 0) bottom / 16px 8px repeat-x;
+    radial-gradient(circle at var(--bk-ticket-seam) 0, transparent 10px, #000 10.5px),
+    radial-gradient(circle at var(--bk-ticket-seam) 100%, transparent 10px, #000 10.5px);
+  mask-composite: intersect;
 }
 
-.bk-ticket .bk-kicker {
-  color: #266f6a;
+.bk-ticket-main {
+  min-width: 0;
+  padding: 32px;
 }
 
 .bk-ticket-top {
   display: grid;
-  grid-template-columns: 86px minmax(0, 1fr);
+  grid-template-columns: 112px minmax(0, 1fr);
   align-items: center;
-  gap: 18px;
+  gap: 24px;
 }
 
-.bk-ticket-top > .bk-kicker {
-  grid-column: 1 / -1;
-  margin: 0 0 4px;
-}
-
-/* Small movie poster (rendered by _MoviePoster) */
 .bk-mini-poster {
   aspect-ratio: 2 / 3;
   overflow: hidden;
-  border-radius: 13px;
-  box-shadow: 4px 6px 10px #0003;
+  border-radius: 12px;
+  box-shadow: 3px 5px 10px rgb(7 28 30 / 0.18);
 }
 
-/* _MoviePoster sizes its drawn title for full-size cards; shrink it to fit here. */
-.bk-mini-poster p {
-  font-size: 13px;
-}
-
-.bk-mini-poster--large p {
-  font-size: 18px;
-}
-
-.bk-ticket-movie h2 {
-  margin: 0 0 11px;
-  font-size: clamp(21px, 2vw, 28px);
-  line-height: 1.04;
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
-}
-
-.bk-ticket-movie p {
-  margin: 4px 0;
-  color: #52746f;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-/* Tear line across the full card width */
-.bk-dotted {
-  margin: 28px -28px;
-  border-top: 2px dashed #9bbaae;
-}
+/* Keep _MoviePoster's fallback lettering proportional to this thumbnail. */
+.bk-mini-poster p { font-size: 13px; }
 
 .bk-receipt-lines {
-  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
+  gap: 18px 20px;
+  margin: 24px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid color-mix(in srgb, var(--color-cinema-deep) 18%, transparent);
 }
 
-.bk-receipt-lines > div {
+.bk-receipt-lines > div { min-width: 0; }
+
+.bk-ticket-stub {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 22px;
-  margin-bottom: 17px;
-  font-size: 13px;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 32px 26px;
+  border-left: 2px dashed color-mix(in srgb, var(--color-cinema-deep) 28%, transparent);
+  background: color-mix(in srgb, var(--color-cinema-cream) 22%, transparent);
 }
 
-.bk-receipt-lines dt {
-  color: #6a8279;
-}
+@media (max-width: 639px) {
+  .bk-ticket {
+    grid-template-columns: minmax(0, 1fr);
+    -webkit-mask: none;
+    mask: none;
+  }
 
-.bk-receipt-lines dd {
-  margin: 0;
-  font-weight: 800;
-  text-align: right;
-}
+  .bk-ticket-main { padding: 22px; }
+  .bk-ticket-top { grid-template-columns: 68px minmax(0, 1fr); gap: 16px; }
+  .bk-receipt-lines { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bk-receipt-lines > div:first-child { grid-column: 1 / -1; }
 
-.bk-receipt-lines .bk-total {
-  margin-top: 25px;
-  padding-top: 24px;
-  border-top: 1px solid #adc8bd;
-  font-size: 19px;
-}
+  .bk-ticket-stub {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+    padding: 22px;
+    border-left: 0;
+    border-top: 2px dashed color-mix(in srgb, var(--color-cinema-deep) 28%, transparent);
+  }
 
-.bk-receipt-lines .bk-total dd {
-  color: #037f87;
-  font-size: 36px;
-  line-height: 1;
-  letter-spacing: -0.05em;
-}
+  .bk-ticket-stub::before,
+  .bk-ticket-stub::after {
+    content: "";
+    position: absolute;
+    top: -11px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-cinema-paper);
+  }
 
-.bk-ticket-note {
-  margin: 22px 0 0;
-  color: #65867c;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-align: center;
-  text-transform: uppercase;
+  .bk-ticket-stub::before { left: -10px; }
+  .bk-ticket-stub::after { right: -10px; }
+  .bk-ticket-stub > dl:last-child { margin-top: 0; padding-top: 0; border-top: 0; }
 }
 
 /* ---------- Step 2: Seat selection ---------- */
@@ -864,15 +857,62 @@
   line-height: 1.6;
 }
 
-/* ---------- Step 3: Summary ---------- */
+/* ---------- Step 3: Compact price review below the horizontal ticket ---------- */
 
+.bk-summary-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.65fr);
+  gap: 32px;
+  align-items: center;
+}
 
+.bk-summary-items > li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
 
+.bk-summary-checkout {
+  min-width: 0;
+  padding-left: 32px;
+  border-left: 1px solid color-mix(in srgb, var(--color-cinema-cream) 18%, transparent);
+}
 
+.bk-summary-checkout :is(.bk-primary, .bk-secondary) {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 280ms;
+}
 
+.bk-summary-confirm {
+  box-shadow: inset 1px 2px 2px rgb(255 255 255 / 0.65),
+    inset -1px -2px 4px rgb(0 141 146 / 0.3), 0 5px 12px rgb(7 28 30 / 0.18);
+}
 
+.bk-summary-checkout .bk-secondary {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--color-cinema-cream) 28%, transparent);
+  box-shadow: inset 0 1px 1px rgb(255 253 230 / 0.08);
+}
 
+@media (hover: hover) and (pointer: fine) {
+  .bk-summary-checkout :is(.bk-primary, .bk-secondary):not(:disabled):hover {
+    filter: none;
+    transform: translateY(-2px);
+  }
+}
 
+@media (max-width: 767px) {
+  .bk-summary-body { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .bk-summary-checkout {
+    padding: 24px 0 0;
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--color-cinema-cream) 18%, transparent);
+  }
+}
 
 .bk-actions {
   display: flex;
@@ -1042,17 +1082,37 @@
 }
 
 .bk-admission-ticket {
+  border-radius: 28px;
   box-shadow: 0 24px 48px -16px rgb(7 28 30 / 0.3);
+}
+
+.bk-admission-upper,
+.bk-admission-lower {
+  overflow: hidden;
+  background: var(--color-cinema-spotlight);
+}
+.bk-admission-upper { border-radius: 28px 28px 0 0; }
+.bk-admission-lower { border-radius: 0 0 28px 28px; }
+
+/* Two half-height edges meet as one perforation before the paper separates. */
+.bk-admission-ticket[data-ticket-tear-ready] { box-shadow: none; }
+.bk-admission-ticket[data-ticket-tear-ready] .bk-admission-upper {
+  filter: drop-shadow(0 8px 12px rgb(7 28 30 / 0.12));
+}
+.bk-admission-ticket[data-ticket-tear-ready] .bk-admission-lower {
+  filter: drop-shadow(0 16px 18px rgb(7 28 30 / 0.16));
 }
 
 /* Paper-colored holes form the tear line and half-round ticket notches. */
 .bk-admission-perforation {
   position: relative;
-  height: 28px;
+  overflow: hidden;
+  height: 14px;
 }
 .bk-admission-perforation span {
+  position: relative;
   display: block;
-  height: 100%;
+  height: 28px;
   margin: 0 30px;
   background: radial-gradient(circle, var(--color-cinema-paper) 0 3px, transparent 3.5px) center / 24px 28px repeat-x;
 }
@@ -1068,6 +1128,33 @@
 }
 .bk-admission-perforation::before { left: -14px; }
 .bk-admission-perforation::after { right: -14px; }
+
+.bk-admission-perforation--lower span,
+.bk-admission-perforation--lower::before,
+.bk-admission-perforation--lower::after { top: -14px; }
+
+/* A paper-colored zigzag opens from the left, following the scroll progress. */
+[data-ticket-tear-ready] .bk-admission-perforation span::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 0;
+  left: 0;
+  height: 8px;
+  pointer-events: none;
+  background: var(--color-cinema-paper);
+  -webkit-mask: conic-gradient(from 135deg at 50% 0, #000 90deg, transparent 0) top / 12px 8px repeat-x;
+  mask: conic-gradient(from 135deg at 50% 0, #000 90deg, transparent 0) top / 12px 8px repeat-x;
+  clip-path: inset(0 calc(100% - var(--ticket-tear-width, 0%)) 0 0);
+}
+[data-ticket-tear-ready] .bk-admission-perforation--lower span::after {
+  transform: scaleY(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ticket-tear] .bk-admission-lower { transform: none !important; }
+  [data-ticket-tear] .bk-admission-perforation span::after { display: none; }
+}
 
 .bk-confirm-book { color: var(--color-cinema-ink); }
 .bk-confirm-home { color: var(--color-cinema-cream); }
@@ -1274,14 +1361,6 @@
 
 
 
-  .bk-ticket {
-    padding: 25px 24px 33px;
-  }
-
-  .bk-dotted {
-    margin: 25px -24px;
-  }
-
   .bk-actions {
     flex-direction: column-reverse;
     align-items: stretch;
@@ -1330,12 +1409,4 @@
     width: 70px;
   }
 
-
-  .bk-ticket-top {
-    gap: 11px;
-  }
-
-  .bk-ticket-movie h2 {
-    font-size: 20px;
-  }
 }
