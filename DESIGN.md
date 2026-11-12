@@ -144,6 +144,8 @@ at the bottom + a rating pill top-left. Add new themes in the same style
 - **Font:** the system sans stack (`font-sans`). The hero logotype and Movies
   page tabs use `"Arial Black", "Helvetica Neue", Arial, sans-serif`. Do not add
   web fonts.
+- **News story headings/body:** Georgia regular, used as the accent half of
+  split headings on the story page (see 8.12b).
 - **Account poster accents:** Georgia italic / Times New Roman italic for the
   short "freshly" and "made for movie nights" lines; keep forms in system sans.
 - **Display headings:** `font-black uppercase tracking-tighter leading-[0.9]`
@@ -409,6 +411,14 @@ arrow icon 25%, 0.4s `power3.out`; on leave they snap back with
 - **Marker highlight:** the title's hand-drawn highlighter **wipes in left to
   right** (`clip-path: inset(0 100% 0 0) → inset(0)`, 650ms) in a random color.
 
+- **View more pill** (`movie-cursor.js`, homepage Now showing / Upcoming carousels
+  only): with a mouse, a small frosted-glass pill (blurred, faint white sheen,
+  hairline white rim) with white condensed "VIEW MORE"
+  (`.movie-cursor` in `Styles/tailwind.css`) trails just below-right of the
+  normal cursor over a card. It uses the same follow, lean, pop and hide motion
+  as the news card cursor (8.12b), with static text and no arrow or loop. It is
+  off for touch and reduced motion.
+
 ### 8.12 News section — `news.js`
 
 - "Read more" has a **hand-drawn double underline** that **melts into a full
@@ -419,6 +429,70 @@ arrow icon 25%, 0.4s `power3.out`; on leave they snap back with
   story re-enters the row from off-screen left, and the text swaps line by line
   (old lines slide up out of masks, new lines rise in).
 - Thumbnails zoom to 1.04 on hover (600ms).
+
+### 8.12b News story page — `Views/News/Story.cshtml` + `Client/news/news-story.js`
+
+A case-study layout. **Split section:** paper text rows on the left (centered,
+each min 150svh tall) and one navy (`cinema-logo`) panel on the right that is
+`position: sticky` for the whole split. It holds a single movie poster with
+square corners, and neither the poster nor the background changes while the
+text scrolls past. The panel background is a feralui "flow" blend
+(`.case__mesh`): `#000000` held to 16.8%, fading to `#29D9DD` at 66.8% along a
+155deg line. An inline SVG filter (`#case-flow`: `feTurbulence` +
+`feDisplacementMap` + a light blur) bends it into a curved band, and the layer
+drifts slowly (46s, alternate; off for reduced motion). A static SVG
+`feTurbulence` grain sits on top with `overlay` blending. It has no pointer
+interaction.
+Headings mix a black uppercase first word with the rest in **Georgia,
+regular weight, uppercase** (`<strong>` + `<em>`). Body copy in the chapter rows
+is Georgia too; the hero lede stays sans. After the split rows come: a centered
+heading + wide 16:9 trailer (cover image and a charcoal glass-orb play button; the
+YouTube/Vimeo iframe is only created on click, with autoplay); "More stories"
+(three white 28px-radius cards, middle one raised 3.75rem); and an **Up next**
+hand-off. That is a 240svh section with a sticky `deep` stage (rounded top)
+showing a huge "ALL NEWS" link. Scrolling drives `--p`
+(0 → 1): the title lifts, shrinks and fades, and a paper curtain
+rises from the bottom with a dome-shaped top that flattens as it fills the
+screen. At `--p ≥ .985` the page goes to `/News?story=N&arrive=story` with the
+no page swing (8.6 is skipped for this hand-off only, via the `story` handoff
+in `_HeroLayout`, which also marks the page `data-story-return`). The curtain
+(`--c`) is already full by 85% of the scroll, so the screen is plain paper
+before the switch. The navbar stays perfectly still across it, and the story
+page prefetches the News document and the nearby disc art so the gallery's
+rise-in (front disc edge-on, the rest fanning out) starts promptly.
+Back/forward restores rewind to the start of the section. With reduced motion
+it is a plain link.
+Motion (≥900px): the poster panel scales to .92 and fades to .5 as the split
+section scrolls away. Text blocks dim to 0.2 as they leave, the trailer frame grows from
+0.84 to 1 and its radius goes from 56px to 28px. Cards rise in with
+`back.out(1.1)`; the card row sits an extra 3.75rem lower so the raised middle card clears the heading.
+**Card cursor:** with a mouse, hovering a "More stories" card keeps the normal
+cursor and adds a small pill (`.case-cursor`, 8.75rem × 1.75rem) that trails just
+below and to the right of it. It deliberately uses its own reference styling
+outside the palette: pale lavender `#e4e3f6` with blue `#1f2ee6` condensed
+uppercase "VIEW PAGE →", looping sideways (2.6s linear). GSAP `quickTo` drives
+the follow (0.35s `power3.out`) and a lean of up to ±6° with speed. It pops in
+with `back.out(2)` and shrinks away on leave. It is off for touch and reduced
+motion.
+**Layout switch:** the split is used only at `(min-width: 900px) and
+(min-aspect-ratio: 4/5)`. Anything narrower, or any portrait screen taller than
+5:4 (every iPad and iPad Pro held upright), gets the stacked layout. The same
+two queries are the `STACKED` and `SPLIT` constants in `news-story.js`. In the
+split, the poster is sized by width (`min(100%, min(74svh, 100svh - 11rem) × 2/3)`)
+so it always keeps its 2:3 shape and clears the navbar. At 1800px and up the text
+column, headings and body copy step up a size. The trailer is capped at
+`(100svh - 7rem) × 16/9` wide, so the whole video fits on short screens
+(landscape phones, 720p laptops).
+**Stacked:** the poster panel comes first, sized to the
+poster (`min(78vw, 46svh, 460px)` wide) rather than the screen. Headings shrink
+further below 600px. Rows are split
+by hairlines, the action buttons stack, and "More stories" uses three columns
+from 600px and one column below that. Nothing on the text moves there: no
+title/line/char reveals, no scroll fade-ins, no dimming, and no card rise. Text
+is simply present. The poster has no scroll parallax there, because it fought
+with the poster's own entrance and left it tilted. Only the trailer frame's
+scroll growth and the Up next curtain remain. The Up next section is 200svh on
+phones.
 
 ### 8.13 Gooey buttons — `_GooButton` + `_GooFilter` + `goo-button.js`
 

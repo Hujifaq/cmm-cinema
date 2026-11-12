@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CMM_Cinema.Controllers
 {
-    public class NewsController(INewsRepository news, NewsArtService art) : Controller
+    public class NewsController(INewsRepository news, IMovieRepository movies, NewsArtService art) : Controller
     {
         [HttpGet("News")]
         public async Task<IActionResult> Index(CancellationToken cancellationToken) =>
@@ -16,7 +16,10 @@ namespace CMM_Cinema.Controllers
             var stories = await news.GetStoriesAsync(cancellationToken);
             var index = stories.ToList().FindIndex(s => s.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
             if (index < 0) return NotFound();
-            return View(new NewsStoryViewModel(stories[index], index, stories.Count));
+            var story = stories[index];
+            var movie = story.MovieSlug is null ? null : await movies.GetBySlugAsync(story.MovieSlug, cancellationToken);
+            var more = Enumerable.Range(1, Math.Min(3, stories.Count - 1)).Select(step => stories[(index + step) % stories.Count]).ToArray();
+            return View(new NewsStoryViewModel(story, index, stories.Count, movie, more));
         }
 
         // Square, same-origin copy of a story's movie cover (the disc texture); see NewsArtService.

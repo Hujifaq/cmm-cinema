@@ -11,4 +11,4 @@ public record NewsStory(string Slug, string Title, string Category, string Date,
     public string? MovieUrl => MovieSlug is null ? null : $"/Movies/{Uri.EscapeDataString(MovieSlug)}";
 }
 
-public record NewsStoryViewModel(NewsStory Story, int Index, int Count);
+public record NewsStoryViewModel(NewsStory Story, int Index, int Count, Movie? Movie = null, IReadOnlyList<NewsStory>? More = null);

@@ -3,6 +3,7 @@
     Layout = "_HeroLayout";
     ViewData["NewsPage"] = true;
     var s = Model.Story;
+    var movie = Model.Movie;
     ViewData["Title"] = $"{s.Title} - CMM Cinema";
 
     var paragraphs = string.IsNullOrWhiteSpace(s.Body)
@@ -18,111 +19,173 @@
     }
     var words = (s.Excerpt + " " + string.Join(' ', paragraphs)).Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
     var minutes = Math.Max(1, (int)Math.Round(words / 200.0));
-    var cover = s.LandscapeUrl ?? s.PosterUrl;
-    var wide = s.LandscapeUrl is not null;
-    var tones = new[] { "cream", "sun", "white", "brick", "navy" };
-    var marquee = $"{(s.MovieTitle ?? "CMM Cinema")} ✦ Now at CMM Cinema ✦ ";
+
+    var rowCount = Math.Min(3, chapters.Count);
+    var perRow = rowCount == 0 ? 0 : (int)Math.Ceiling(chapters.Count / (double)rowCount);
+    var fallbackHeadings = new[] { "The story", "The details", "The big picture" };
+    var rows = Enumerable.Range(0, rowCount)
+        .Select(r => chapters.Skip(r * perRow).Take(perRow).ToList())
+        .Where(group => group.Count > 0)
+        .Select((group, r) => (Heading: group.Select(c => c.Heading).FirstOrDefault(h => h is not null) ?? fallbackHeadings[r % fallbackHeadings.Length], Paragraphs: group.Select(c => c.Text).ToList()))
+        .ToList();
+
+    var posterUrl = movie?.PosterUrl ?? s.PosterUrl;
+    var trailer = movie?.TrailerEmbedUrl;
+    var trailerCover = s.LandscapeUrl ?? posterUrl;
+    var bookUrl = s.MovieSlug is null ? null : $"/Booking/Showtimes?movie={Uri.EscapeDataString(s.MovieSlug)}";
+    var filmTitle = s.MovieTitle ?? movie?.Title;
+}
+
+@functions {
+    private static (string Strong, string Soft) SplitHeading(string text)
+    {
+        var space = text.IndexOf(' ');
+        return space < 0 ? (text, "") : (text[..space], text[(space + 1)..]);
+    }
 }
 
 @section Head {
     <link rel="stylesheet" href="~/css/news-story.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/news-index.css" asp-append-version="true" />
+    <link rel="prefetch" href="/News?story=@Model.Index&amp;arrive=story" />
+    <link rel="prefetch" href="@s.ArtUrl" as="image" />
+    @foreach (var other in Model.More ?? [])
+    {
+        <link rel="prefetch" href="@other.ArtUrl" as="image" />
+    }
 }
 
 <article class="story" data-story data-story-index="@Model.Index" data-back-url="/News">
-    <section class="story-hero" data-story-hero>
-        <svg class="story-hero__waves" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-            <path class="story-hero__wave story-hero__wave--a" d="M-60 610C120 520 260 700 470 640S760 420 980 470S1290 650 1500 560V980H-60Z" />
-            <path class="story-hero__wave story-hero__wave--b" d="M-60 760C160 690 330 840 560 790S900 610 1120 660S1380 800 1500 740V980H-60Z" />
-            <path class="story-hero__wave story-hero__wave--c" d="M1040 -40C1000 90 1120 160 1240 170S1460 120 1500 40V-40Z" />
-        </svg>
-
-        <div class="story-hero__inner" data-story-hero-inner>
-            <div class="story-hero__copy">
-                <p class="story-hero__kicker" data-reveal-lines><a href="/News">News &amp; Updates</a> · @((Model.Index + 1).ToString("00")) / @Model.Count.ToString("00")</p>
-                <h1 class="story-hero__title" data-reveal-chars>@s.Title</h1>
-                <ul class="story-chips" aria-label="Story details">
-                    <li class="story-chip story-chip--ink" data-reveal>@s.Category</li>
-                    <li class="story-chip" data-reveal>@s.Date</li>
-                    <li class="story-chip" data-reveal>@minutes min read</li>
-                </ul>
-                <a class="story-button story-button--ink story-hero__cta" href="#story-read" data-reveal>Start reading</a>
-            </div>
-
-            <div class="story-hero__art" aria-hidden="true">
-                <div class="story-hero__float" data-story-float>
-                    <div class="story-poster @(wide ? "story-poster--wide" : "")" data-reveal>
-                        <img src="@cover" alt="" loading="eager" decoding="async" />
+    <div class="case">
+        <div class="case__copy">
+            <section class="case-row case-row--intro" data-case-row>
+                <div class="case-row__copy">
+                    <div class="case-row__intro-top" data-case-text>
+                        <p class="case-kicker" data-reveal-lines><a href="/News">News &amp; Updates</a> · @((Model.Index + 1).ToString("00")) / @Model.Count.ToString("00")</p>
+                        <p class="case-serif case-serif--lead" data-reveal-lines>@s.Category · @s.Date · @minutes min read</p>
+                        <h1 class="case-title case-title--hero" data-reveal-chars>@s.Title</h1>
                     </div>
-                    <img class="story-hero__disc" data-reveal src="@s.ArtUrl" alt="" width="900" height="900" />
+                    <p class="case-lede" data-case-text data-reveal-up>@s.Excerpt</p>
+                </div>
+            </section>
+
+            @for (var r = 0; r < rows.Count; r++)
+            {
+                var (strong, soft) = SplitHeading(rows[r].Heading);
+                <section class="case-row" data-case-row>
+                    <div class="case-row__copy">
+                        <div class="case-block" data-case-text>
+                            <p class="case-kicker">@((r + 1).ToString("00")) — @(r == 0 ? "Read on" : "Keep going")</p>
+                            <h2 class="case-title"><strong>@strong</strong> @if (soft.Length > 0) { <em>@soft</em> }</h2>
+                            @foreach (var text in rows[r].Paragraphs)
+                            {
+                                <p class="case-body">@text</p>
+                            }
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @if (movie is not null)
+            {
+                <section class="case-row" data-case-row>
+                    <div class="case-row__copy">
+                        <div class="case-block" data-case-text>
+                            <p class="case-serif case-serif--lead">What's on screen</p>
+                            <h2 class="case-title case-title--film">@movie.Title</h2>
+                            <ul class="case-meta" aria-label="Movie details">
+                                <li>@movie.Genre</li>
+                                <li>@movie.Runtime</li>
+                                <li>@movie.Rating</li>
+                                <li>@movie.Language</li>
+                            </ul>
+                            <p class="case-body">@(string.IsNullOrWhiteSpace(movie.Synopsis) ? movie.Overview : movie.Synopsis)</p>
+                            <div class="case-actions">
+                                @if (bookUrl is not null)
+                                {
+                                    <a class="case-button case-button--ink" href="@bookUrl"><span class="case-button__icon" aria-hidden="true">→</span><span class="case-button__label">Book a seat</span></a>
+                                }
+                                <a class="case-link" href="@movie.Url">About the movie</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            }
+        </div>
+        <div class="case__media" aria-hidden="true">
+            <svg class="case__flow-defs" width="0" height="0" aria-hidden="true" focusable="false">
+                <filter id="case-flow" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.0016 0.0026" numOctaves="2" seed="5" result="warp" />
+                    <feDisplacementMap in="SourceGraphic" in2="warp" scale="1050" xChannelSelector="R" yChannelSelector="G" result="bent" />
+                    <feGaussianBlur in="bent" stdDeviation="16" />
+                </filter>
+            </svg>
+            <div class="case__mesh"></div>
+            <div class="case__stage" data-case-stage>
+                <div class="case-poster" data-case-media>
+                    <img src="@posterUrl" alt="" loading="eager" decoding="async" />
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <section class="story-panel story-panel--paper story-statement" id="story-read" data-story-statement>
-        <p class="story-eyebrow">The story so far</p>
-        <p class="story-statement__text" data-story-statement-text>@s.Excerpt</p>
-    </section>
+    @if (trailer is not null)
+    {
+        <section class="case-trailer" aria-labelledby="case-trailer-title">
+            <header class="case-head" data-case-head>
+                <h2 class="case-title case-title--center" id="case-trailer-title"><strong>That's how we</strong> <em>roll</em></h2>
+                <p class="case-serif">The official trailer for @filmTitle.<br />Lights down, sound up.</p>
+            </header>
+            <div class="case-video" data-case-video>
+                <div class="case-video__frame" data-trailer data-trailer-src="@trailer" data-trailer-title="@filmTitle trailer">
+                    <img class="case-video__cover" src="@trailerCover" alt="" loading="lazy" decoding="async" />
+                    <button class="case-video__play" type="button" data-trailer-play aria-label="Play the @filmTitle trailer">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z" /></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+    }
 
-    <section class="story-panel story-panel--sky story-chapters" data-story-chapters aria-label="The full story">
-        <div class="story-chapters__head">
-            <p class="story-eyebrow">In @chapters.Count chapters</p>
-            <h2 class="story-chapters__title">Read on</h2>
-        </div>
-        <div class="story-chapters__viewport">
-            <ol class="story-chapters__track" data-story-track>
-                @for (var c = 0; c < chapters.Count; c++)
+    @if (Model.More is { Count: > 0 } more)
+    {
+        <section class="case-more" aria-labelledby="case-more-title">
+            <h2 class="case-title case-title--center" id="case-more-title" data-case-head><strong>More</strong> <em>stories</em></h2>
+            <ul class="case-cards" data-case-cards>
+                @foreach (var other in more)
                 {
-                    var (heading, text) = chapters[c];
-                    <li class="story-card story-card--@tones[c % tones.Length]" data-story-card>
-                        <span class="story-card__no">@((c + 1).ToString("00"))</span>
-                        @if (heading is not null)
-                        {
-                            <h3 class="story-card__title">@heading</h3>
-                        }
-                        <p class="story-card__text">@text</p>
+                    <li class="case-card" data-case-card>
+                        <a class="case-card__link" href="@other.Url">
+                            <span class="case-card__media"><img src="@other.PosterUrl" alt="" loading="lazy" decoding="async" /></span>
+                            <span class="case-card__title">@other.Title</span>
+                            <span class="case-card__meta">@other.Category</span>
+                        </a>
                     </li>
                 }
-            </ol>
-        </div>
-    </section>
+            </ul>
+        </section>
+    }
 
-    <section class="story-panel story-panel--night story-spotlight" data-story-spotlight>
-        <div class="story-spotlight__marquee" aria-hidden="true">
-            <p data-story-marquee="-1">@marquee@marquee@marquee</p>
-            <p data-story-marquee="1">@marquee@marquee@marquee</p>
-        </div>
-
-        <div class="story-spotlight__stage" aria-hidden="true">
-            <div class="story-disc" data-story-spin>
-                <span class="story-disc__rim" style="--z: -2px"></span>
-                <span class="story-disc__rim" style="--z: -4px"></span>
-                <span class="story-disc__rim" style="--z: -6px"></span>
-                <span class="story-disc__back"></span>
-                <img class="story-disc__face" src="@s.ArtUrl" alt="" width="900" height="900" />
-                <span class="story-disc__shine"></span>
+    <section class="story-next" data-story-next aria-labelledby="story-next-title">
+        <div class="story-next__stage">
+            <div class="story-next__content" data-story-next-content>
+                <p class="story-next__kicker">Up next · @Model.Count stories</p>
+                <h2 class="story-next__title" id="story-next-title">
+                    <a href="/News?story=@Model.Index" data-story-next-link><strong>All</strong> <em>news</em></a>
+                </h2>
             </div>
-            <span class="story-spotlight__shadow" data-story-spot-shadow></span>
+            <div class="story-next__curtain" aria-hidden="true"></div>
         </div>
-
-        @if (s.MovieSlug is not null)
-        {
-            <div class="story-spotlight__cta" data-story-cta>
-                <h2 class="story-spotlight__title">See @s.MovieTitle on the big screen</h2>
-                <div class="story-actions">
-                    <a class="story-button story-button--cream" href="/Booking/Showtimes?movie=@Uri.EscapeDataString(s.MovieSlug)">Book a seat</a>
-                    <a class="story-button story-button--glass" href="@s.MovieUrl">About the movie</a>
-                </div>
+    </section>
+    @if (Model.More is { Count: > 0 })
+    {
+        <div class="case-cursor" aria-hidden="true" data-case-cursor>
+            <div class="case-cursor__track">
+                <div class="case-cursor__run"><span>View page</span><svg class="case-cursor__arrow" viewBox="0 0 12 12" focusable="false"><path d="M1.5 6h8M6 2l4 4-4 4" /></svg><span>View page</span><svg class="case-cursor__arrow" viewBox="0 0 12 12" focusable="false"><path d="M1.5 6h8M6 2l4 4-4 4" /></svg><span>View page</span><svg class="case-cursor__arrow" viewBox="0 0 12 12" focusable="false"><path d="M1.5 6h8M6 2l4 4-4 4" /></svg></div>
+                <div class="case-cursor__run"><span>View page</span><svg class="case-cursor__arrow" viewBox="0 0 12 12" focusable="false"><path d="M1.5 6h8M6 2l4 4-4 4" /></svg><span>View page</span><svg class="case-cursor__arrow" viewBox="0 0 12 12" focusable="false"><path d="M1.5 6h8M6 2l4 4-4 4" /></svg><span>View page</span><svg class="case-cursor__arrow" viewBox="0 0 12 12" focusable="false"><path d="M1.5 6h8M6 2l4 4-4 4" /></svg></div>
             </div>
-        }
-    </section>
-
-    <section class="story-panel story-panel--paper story__drop" data-story-drop aria-label="Back to all news">
-        <div class="story__drop-stage">
-            <img class="story__drop-disc" data-story-drop-disc src="@s.ArtUrl" alt="" width="900" height="900" />
         </div>
-    </section>
+    }
 </article>
 
 @section Scripts {
