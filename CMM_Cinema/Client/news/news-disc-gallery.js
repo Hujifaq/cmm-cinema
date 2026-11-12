@@ -43,7 +43,6 @@ const S = {
   introRise: 1.6, introDepth: 0.7, introSpin: 1.1, introDuration: 1.15,
   flightStagger: 0.45, flightPopScale: 0.35,
   exitPress: 0.94, exitPressTime: 0.12, exitSpring: 1.015, exitSpringTime: 0.16, exitOthers: 0.55, exitDuration: 0.8,
-  loopDrop: 3.4, loopRadius: 0.36, loopDepth: 0.3, loopDuration: 1.7,
   // Touch screens (991px and below)
   touchPeek: 1, touchMinScale: 0.3, touchMaxScale: 3, touchGap: 2.2, touchDepth: 0.5,
   touchLeadMaxHeight: 0.6, touchDropY: 1, touchActiveScale: 1.5, touchInactiveScale: 0.6, touchFlickVelocity: 0.035,
@@ -568,7 +567,7 @@ async function createGallery(root) {
   let inView = true;
   let lastFrame = performance.now();
   const moveTween = { value: 0 };
-  const intro = { active: reduced ? 1 : 0.001, others: reduced ? 1 : 0, rise: 1, playing: false, path: 'rise' };
+  const intro = { active: reduced ? 1 : 0.001, others: reduced ? 1 : 0, rise: 1, playing: false };
   // Leaving for a story: the front disc is pressed, springs, then turns edge-on and shrinks away.
   const exit = { press: 1, shrink: 1, others: 1 };
   let leaving = false;
@@ -729,20 +728,6 @@ async function createGallery(root) {
     tmpV.applyQuaternion(tmpQ);
     return tmpV.divideScalar(gallery.scale.x || 1);
   };
-  // Back from a story: the disc drops in from above, swings round one small loop and settles.
-  const loopOffset = progress => {
-    const t = clamp(progress, 0, 1);
-    // Straight fall from above the screen, plus a small circle that opens up and closes as it lands.
-    const fall = S.loopDrop * (1 - t) ** 3;
-    const r = S.loopRadius * 4 * t * (1 - t);
-    const a = Math.PI / 2 + Math.PI * 2 * t;
-    tmpV.set(Math.cos(a) * r, fall + Math.sin(a) * r - r, S.loopDepth * (1 - t) ** 2);
-    if (t === 1) return tmpV.set(0, 0, 0);
-    tmpQ.copy(gallery.quaternion).invert();
-    tmpV.applyQuaternion(tmpQ);
-    return tmpV.divideScalar(gallery.scale.x || 1);
-  };
-
   function layout(dt, snap = false) {
     const front = nearest();
     const moving = !reduced && !intro.playing;
@@ -824,7 +809,7 @@ async function createGallery(root) {
         disc.pushRotX = disc.pushRotY = disc.pushRotVX = disc.pushRotVY = 0;
       }
 
-      if (intro.playing && isFront) { const o = intro.path === 'loop' ? loopOffset(intro.rise) : introOffset(intro.rise); x += o.x; y += o.y; z += o.z; }
+      if (intro.playing && isFront) { const o = introOffset(intro.rise); x += o.x; y += o.y; z += o.z; }
 
       const k = down.dragging ? S.followTight : clamp(follow - h * S.followFalloff, S.followMin, S.followTight);
       const a = snap || reduced || intro.playing ? 1 : Math.min(1, dt * k);
@@ -1412,10 +1397,10 @@ async function createGallery(root) {
   }, { rootMargin: '200px 0px' }).observe(root);
   window.addEventListener('pagehide', stop);
 
-  // Arriving from the bottom of a story (?story=N&arrive=drop) opens on that story's disc.
+  // Arriving from the end of a story (?story=N&arrive=story) opens on that story's disc.
   const params = new URLSearchParams(window.location.search);
   const first = clamp(Number.parseInt(params.get('story') || '0', 10) || 0, 0, count - 1);
-  const dropped = params.get('arrive') === 'drop';
+  const fromStory = params.get('arrive') === 'story';
   if (params.has('story') || params.has('arrive')) {
     params.delete('story');
     params.delete('arrive');
@@ -1423,15 +1408,8 @@ async function createGallery(root) {
     history.replaceState(history.state, '', window.location.pathname + (query ? `?${query}` : '') + window.location.hash);
   }
   L = lastL = pending = first;
-  if (dropped && !reduced) {
-    // Hold the pose before the first frame so nothing can move the row while the disc drops in.
-    intro.playing = true;
-    intro.path = 'loop';
-    intro.rise = 0;
-    intro.active = 0.85;
-  }
-  // The scroll that dropped the reader here may still be coasting: ignore it until it stops.
-  wheelQuiet = dropped;
+  // The scroll that brought the reader here may still be coasting: ignore it until it stops.
+  wheelQuiet = fromStory;
 
   resize();
   setActive(first);
@@ -1440,19 +1418,7 @@ async function createGallery(root) {
   try { if (renderer.compileAsync) await renderer.compileAsync(scene, camera); } catch {}
   root.setAttribute('data-disc-ready', 'true');
 
-  if (!reduced && dropped) {
-    // The disc falls in from the top, swings round one little loop (turning over once) and settles.
-    const lead = discs[first];
-    const d = S.loopDuration;
-    // When the story page is still lifting away above the gallery, wait for it to clear the top
-    // so the disc falls in through open space instead of from behind it.
-    const wait = document.documentElement.hasAttribute('data-news-drop') ? 0.5 : 0;
-    lead.spinY = -Math.PI * 2;
-    tween(intro, { rise: 1 }, { duration: d, ease: EASE.out2, delay: wait });
-    tween(lead, { spinY: 0 }, { duration: d, ease: EASE.out3, delay: wait });
-    tween(intro, { active: 1 }, { duration: d * 0.8, ease: EASE.glide, delay: wait });
-    tween(intro, { others: 1 }, { duration: 0.9, ease: EASE.linear, delay: wait + d * 0.55, onComplete: () => { intro.playing = false; intro.path = 'rise'; } });
-  } else if (!reduced) {
+  if (!reduced) {
     // The front disc rises into place turning from edge-on, then the others fan out behind it.
     const lead = discs[first];
     const d = S.introDuration;
@@ -1469,7 +1435,7 @@ async function createGallery(root) {
     tween(intro, { others: 1 }, { duration: d * 0.85, ease: EASE.linear, delay: d * 0.1, onComplete: () => { intro.playing = false; } });
   }
   const arrival = document.documentElement;
-  revealText({ full: true, delay: dropped ? 0.6 : arrival.hasAttribute('data-page-arrived') ? 0.5 : 0.1 });
+  revealText({ full: true, delay: arrival.hasAttribute('data-page-arrived') && !arrival.hasAttribute('data-story-return') ? 0.5 : 0.1 });
   wake(3);
   start();
 }

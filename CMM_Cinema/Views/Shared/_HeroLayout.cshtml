@@ -21,9 +21,16 @@
             var handoff = '';
             try { handoff = sessionStorage.getItem('cmm-news-handoff') || ''; sessionStorage.removeItem('cmm-news-handoff'); } catch (e) {}
             if (!event.viewTransition) return;
+            if (handoff === 'story') {
+                document.documentElement.setAttribute('data-page-arrived', '');
+                document.documentElement.setAttribute('data-story-return', '');
+                var st = event.viewTransition;
+                st.ready.catch(function () {}); st.finished.catch(function () {}); st.updateCallbackDone.catch(function () {});
+                st.skipTransition();
+                return;
+            }
             document.documentElement.setAttribute('data-page-arrived', '');
-          
-            if (handoff === 'drop') { document.documentElement.setAttribute('data-news-drop', ''); return; }
+
             if (handoff || !window.matchMedia('(min-width: 768px)').matches) {
                 var vt = event.viewTransition;
                 vt.ready.catch(function () {}); vt.finished.catch(function () {}); vt.updateCallbackDone.catch(function () {});
@@ -62,6 +69,7 @@
     <script src="~/js/cinema-promos.js" asp-append-version="true" defer></script>
     <script src="~/js/promo-ribbon.js" asp-append-version="true" defer></script>
     <script src="~/js/now-showing.js" asp-append-version="true" defer></script>
+    <script src="~/js/movie-cursor.js" asp-append-version="true" defer></script>
     <script src="~/js/news.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-magnetic.js" asp-append-version="true" defer></script>
     <script src="~/js/quick-book.js" asp-append-version="true" defer></script>
