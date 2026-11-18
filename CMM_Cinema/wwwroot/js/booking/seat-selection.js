@@ -37,6 +37,38 @@
     });
   }
 
-  seats.forEach(seat => seat.addEventListener('change', refresh));
+  // Picks are saved to the signed-in user's temporary booking session so a refresh or return visit keeps them.
+  const draftUrl = form.dataset.draftUrl;
+  const draftStatus = layout.querySelector('[data-draft-status]');
+  const clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Asia/Bangkok' });
+  let saveTimer = 0;
+  let pendingSave = null;
+
+  function stopSaving() {
+    clearTimeout(saveTimer);
+    pendingSave?.abort();
+    pendingSave = null;
+  }
+
+  function saveDraft() {
+    if (!draftUrl || typeof fetch !== 'function') return;
+    stopSaving();
+    saveTimer = setTimeout(() => {
+      const request = new AbortController();
+      pendingSave = request;
+      fetch(draftUrl, { method: 'POST', body: new FormData(form), credentials: 'same-origin', signal: request.signal })
+        .then(response => (response.ok ? response.json() : null))
+        .then(draft => {
+          if (draft && draftStatus) draftStatus.textContent = `Your session is saved until ${clock.format(new Date(draft.expiresAt * 1000))}.`;
+        })
+        .catch(() => {});
+    }, 350);
+  }
+
+  seats.forEach(seat => seat.addEventListener('change', () => {
+    refresh();
+    saveDraft();
+  }));
+  form.addEventListener('submit', stopSaving);
   refresh();
 })();

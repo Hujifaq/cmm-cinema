@@ -21,4 +21,9 @@ public interface IBookingService
     BookingHold? GetBooking(int ownerId, Guid bookingId);
     bool TryConfirmBooking(int ownerId, Guid bookingId, out string error);
     void CancelHold(int ownerId, Guid bookingId);
+
+    // One draft per user. Returns null when the showtime is unknown or unavailable.
+    BookingDraft? StartDraft(int ownerId, int showtimeId);
+    BookingDraft? SaveDraftSeats(int ownerId, int showtimeId, IEnumerable<string> seatIds);
+    void ClearDraft(int ownerId);
 }

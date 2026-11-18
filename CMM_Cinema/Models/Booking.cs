@@ -47,6 +47,9 @@ public record BookingHold(
     public string Reference => Id.ToString("N")[..12].ToUpperInvariant();
 }
 
+// A signed-in user's temporary seat-picking session: it remembers their picks but does not reserve them.
+public record BookingDraft(int OwnerId, int ShowtimeId, IReadOnlyList<string> SeatIds, DateTimeOffset ExpiresAt);
+
 public record ShowtimesViewModel(
     Movie Movie,
     IReadOnlyList<Cinema> Cinemas,
@@ -60,6 +63,7 @@ public record SeatSelectionViewModel(
     Cinema Cinema,
     Showtime Showtime,
     IReadOnlyList<Seat> Seats,
+    BookingDraft Draft,
     string? Error);
 
 public record BookingDetailsViewModel(BookingHold Booking, Movie Movie, Cinema Cinema, Showtime Showtime);

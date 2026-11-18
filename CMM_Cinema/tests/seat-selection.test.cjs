@@ -78,3 +78,24 @@ test('sidebar summary stays in sync and its external button submits the selected
     assert.equal(ui.d.querySelector('[data-seat-total]').textContent, '฿0');
   } finally { ui.dom.window.close(); }
 });
+
+test('restored session seats show on load, and new picks are saved to the booking session', async () => {
+  const dom = new JSDOM(`<div data-seat-selection><form id="seat-reservation" data-seat-form data-max="8" data-draft-url="/Booking/SaveSeats"><input type="hidden" name="showtimeId" value="7"><input type="checkbox" name="seatIds" value="D4" data-seat-row="D" data-seat-number="4" data-seat-type="Normal" data-seat-price="300" data-seat-capacity="1" checked><input type="checkbox" name="seatIds" value="C12" data-seat-row="C" data-seat-number="12" data-seat-type="Premium" data-seat-price="330" data-seat-capacity="1"><p data-seat-feedback></p></form><aside><div data-selected-seats></div><span data-seat-total></span><button type="submit" form="seat-reservation" data-seat-submit></button><span data-draft-status></span></aside></div>`, { runScripts: 'outside-only' });
+  const calls = [];
+  dom.window.fetch = (url, options) => {
+    calls.push({ url, seats: options.body.getAll('seatIds'), showtimeId: options.body.get('showtimeId') });
+    return Promise.resolve({ ok: true, json: () => Promise.resolve({ seats: ['D4', 'C12'], expiresAt: Date.UTC(2026, 0, 1, 7, 30) / 1000 }) });
+  };
+  try {
+    dom.window.eval(source);
+    const d = dom.window.document;
+    assert.equal(d.querySelector('[data-selected-seats]').textContent, 'D4');
+    assert.equal(d.querySelector('[data-seat-total]').textContent, '฿300');
+    assert.equal(d.querySelector('[data-seat-submit]').disabled, false);
+    assert.equal(calls.length, 0);
+    d.querySelectorAll('input[name="seatIds"]')[1].click();
+    await new Promise(resolve => setTimeout(resolve, 450));
+    assert.deepEqual(calls, [{ url: '/Booking/SaveSeats', seats: ['D4', 'C12'], showtimeId: '7' }]);
+    assert.equal(d.querySelector('[data-draft-status]').textContent, 'Your session is saved until 14:30.');
+  } finally { dom.window.close(); }
+});

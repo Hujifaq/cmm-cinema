@@ -968,6 +968,14 @@ Seat-type prices use three compact rounded cards in a centered grid (maximum
 price, using the existing cream, sky and sun palette on ink surfaces.
 The card prices display ฿300, ฿330 and ฿900 without trailing per-seat or per-pair text.
 The movie-details card omits the duplicate seat-price list.
+Its poster panel shows the selected movie's own `PosterUrl`, cropped with
+`object-fit: cover` at 22% from the top, under a soft ink gradient so the
+CMM Cinema label stays legible; the drawn title and cyan ring remain the fallback
+for movies without a poster. Below the title, one muted line gives rating,
+runtime and genre, then a two-column cream-on-ink fact list shows Cinema,
+Date, Time and Screen (format · language) with small uppercase labels.
+A cyan line under the hold notice reports the user's temporary booking session:
+seat picks save as they change and are restored on return to the same showtime.
 The availability legend and visible admission-limit instructions are omitted;
 selection feedback remains a screen-reader-only live status.
 The selected-seats summary shows bold, comma-separated seat IDs (for example,

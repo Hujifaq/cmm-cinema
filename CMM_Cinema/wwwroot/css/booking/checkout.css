@@ -804,6 +804,8 @@
 }
 
 .bk-poster-small > span {
+  position: relative;
+  z-index: 1;
   color: #c6f5ea;
   font-size: 10px;
   font-weight: 700;
@@ -834,6 +836,28 @@
   box-shadow:
     inset 9px 9px 18px #0007,
     8px 12px 16px #0006;
+}
+
+/* The selected movie's own poster replaces the drawn ring when it has one */
+.bk-poster-small--image {
+  background: #042a2d;
+}
+
+.bk-poster-small__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+}
+
+.bk-poster-small--image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #042a2dcc 0%, transparent 32%, transparent 70%, #042a2d88 100%);
+  pointer-events: none;
 }
 
 .bk-show-facts {

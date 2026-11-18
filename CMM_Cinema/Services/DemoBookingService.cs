@@ -12,6 +12,7 @@ public sealed class DemoBookingService : IBookingService
     private const int MaxSeatsPerBooking = 8;
     private const int DaysAhead = 7;
     private static readonly TimeSpan HoldLength = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan DraftLength = TimeSpan.FromMinutes(20);
     private static readonly TimeSpan BangkokOffset = TimeSpan.FromHours(7);
 
     private static readonly Cinema[] Cinemas = [new(1, "CMM Central Mall"), new(2, "CMM CB12")];
@@ -26,6 +27,7 @@ public sealed class DemoBookingService : IBookingService
     private readonly Dictionary<(string Slug, DateOnly Date), Showtime[]> showtimesByDay = [];
     private readonly Dictionary<Guid, BookingHold> bookings = [];
     private readonly Dictionary<int, HashSet<string>> soldSeats = [];
+    private readonly Dictionary<int, BookingDraft> drafts = [];
 
     public IReadOnlyList<string> Formats { get; } = ["2D", "IMAX"];
     public IReadOnlyList<string> Languages { get; } = ["Thai"];
@@ -189,6 +191,54 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
+    public BookingDraft? StartDraft(int ownerId, int showtimeId)
+    {
+        lock (gate)
+        {
+            RemoveExpiredHolds();
+            if (!showtimesById.TryGetValue(showtimeId, out var showtime) || !showtime.IsAvailable) return null;
+            var kept = drafts.TryGetValue(ownerId, out var existing) && existing.ShowtimeId == showtimeId ? existing.SeatIds : [];
+            return StoreDraft(ownerId, showtime, kept);
+        }
+    }
+
+    public BookingDraft? SaveDraftSeats(int ownerId, int showtimeId, IEnumerable<string> seatIds)
+    {
+        lock (gate)
+        {
+            RemoveExpiredHolds();
+            if (!showtimesById.TryGetValue(showtimeId, out var showtime) || !showtime.IsAvailable) return null;
+            return StoreDraft(ownerId, showtime, seatIds);
+        }
+    }
+
+    public void ClearDraft(int ownerId)
+    {
+        lock (gate)
+        {
+            drafts.Remove(ownerId);
+        }
+    }
+
+    // Unknown, sold or over-limit seats are dropped, so a draft only ever lists seats the user could still hold.
+    private BookingDraft StoreDraft(int ownerId, Showtime showtime, IEnumerable<string> seatIds)
+    {
+        var seatMap = CreateSeatMap(showtime).ToDictionary(seat => seat.Id, StringComparer.OrdinalIgnoreCase);
+        var kept = new List<string>();
+        var admissions = 0;
+        foreach (var id in seatIds.Select(id => (id ?? "").Trim().ToUpperInvariant()).Distinct())
+        {
+            if (!seatMap.TryGetValue(id, out var seat) || seat.State == SeatState.Sold
+                || admissions + seat.Capacity > MaxSeatsPerBooking) continue;
+            kept.Add(seat.Id);
+            admissions += seat.Capacity;
+        }
+
+        var draft = new BookingDraft(ownerId, showtime.Id, kept.AsReadOnly(), DateTimeOffset.UtcNow + DraftLength);
+        drafts[ownerId] = draft;
+        return draft;
+    }
+
     private BookingHold? FindOwned(int ownerId, Guid bookingId) =>
         bookings.TryGetValue(bookingId, out var booking) && booking.OwnerId == ownerId ? booking : null;
 
@@ -236,5 +286,8 @@ public sealed class DemoBookingService : IBookingService
             .Select(booking => booking.Id)
             .ToArray();
         foreach (var id in expired) bookings.Remove(id);
+
+        foreach (var owner in drafts.Where(draft => draft.Value.ExpiresAt <= now).Select(draft => draft.Key).ToArray())
+            drafts.Remove(owner);
     }
 }

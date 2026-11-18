@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CMM_Cinema.Controllers
 {
-    // Showtimes -> SeatSelection -> Reserve -> Summary -> Confirm -> Confirmation
+    // Showtimes -> SeatSelection (draft session, SaveSeats) -> Reserve -> Summary -> Confirm -> Confirmation
     // Browsing showtimes is public; choosing seats onwards needs an account, and every booking belongs to its owner.
     [Authorize(Policy = AuthSetup.CustomerPolicy)]
     public class BookingController(IMovieRepository movies, IBookingService booking) : Controller
@@ -51,8 +51,18 @@ namespace CMM_Cinema.Controllers
             var movie = await movies.GetBySlugAsync(showtime.MovieSlug, cancellationToken);
             if (movie is null) return NotFound();
 
+            if (booking.StartDraft(UserId, showtimeId) is not { } draft)
+                return RedirectToAction(nameof(Showtimes), new { movie = showtime.MovieSlug });
+
             return View(new SeatSelectionViewModel(movie, booking.GetCinema(showtime.CinemaId)!, showtime,
-                booking.GetSeats(showtimeId), TempData["SeatError"] as string));
+                booking.GetSeats(showtimeId), draft, TempData["SeatError"] as string));
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public IActionResult SaveSeats(int showtimeId, string[]? seatIds)
+        {
+            if (booking.SaveDraftSeats(UserId, showtimeId, seatIds ?? []) is not { } draft) return NotFound();
+            return Json(new { seats = draft.SeatIds, expiresAt = draft.ExpiresAt.ToUnixTimeSeconds() });
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -60,9 +70,11 @@ namespace CMM_Cinema.Controllers
         {
             if (!booking.TryHoldSeats(UserId, showtimeId, seatIds ?? [], out var hold, out var error))
             {
+                booking.SaveDraftSeats(UserId, showtimeId, seatIds ?? []);
                 TempData["SeatError"] = error;
                 return RedirectToAction(nameof(SeatSelection), new { showtimeId });
             }
+            booking.ClearDraft(UserId);
             return RedirectToAction(nameof(Summary), new { bookingId = hold!.Id });
         }
 
@@ -105,6 +117,7 @@ namespace CMM_Cinema.Controllers
         {
             var showtime = booking.GetBooking(UserId, bookingId) is { } hold ? booking.GetShowtime(hold.ShowtimeId) : null;
             booking.CancelHold(UserId, bookingId);
+            booking.ClearDraft(UserId);
             return RedirectToAction(nameof(Showtimes), new { movie = showtime?.MovieSlug });
         }
 
