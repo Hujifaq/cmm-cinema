@@ -1,0 +1,73 @@
+@model TicketPassViewModel
+@{
+    Layout = "_HeroLayout";
+    var ticket = Model.Ticket;
+    var culture = System.Globalization.CultureInfo.InvariantCulture;
+    ViewData["Title"] = $"Ticket {ticket.BookingCode} - {ticket.Movie.Title} - CMM Cinema";
+    var (banner, heading, detail) = Model.Status switch
+    {
+        TicketPassStatus.Today => ("bg-cinema-sun text-cinema-ink", "Valid ticket", $"Showing today at {ticket.Showtime.ToString("HH:mm", culture)}"),
+        TicketPassStatus.Ended => ("bg-cinema-ink/10 text-cinema-ink/70", "Screening has ended", $"Showed on {ticket.Showtime.ToString("ddd d MMM yyyy, HH:mm", culture)}"),
+        _ => ("bg-cinema-logo text-white", "Valid ticket", ticket.Showtime.ToString("ddd d MMM yyyy · HH:mm", culture)),
+    };
+    var factLabel = "m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/50";
+    var factValue = "m-0 mt-1 break-words text-base font-bold leading-snug";
+}
+
+@section Head {
+    <meta name="robots" content="noindex, nofollow" />
+}
+
+<section class="min-h-screen bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="ticket-pass-status">
+    <div class="mx-auto max-w-2xl px-5 md:px-8">
+        <div class="flex items-center gap-4 rounded-[28px] px-6 py-5 sm:px-8 sm:py-6 @banner" role="status">
+            @if (Model.Status == TicketPassStatus.Ended)
+            {
+                <svg class="block size-9 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+            }
+            else
+            {
+                <svg class="block size-9 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><path d="m8 12.5 2.7 2.7L16 9.8" /></svg>
+            }
+            <div class="min-w-0">
+                <h1 class="m-0 text-2xl font-black uppercase leading-none tracking-tighter sm:text-3xl" id="ticket-pass-status">@heading</h1>
+                <p class="m-0 mt-1.5 text-sm font-semibold opacity-80">@detail</p>
+            </div>
+        </div>
+
+        <article class="mt-5 overflow-hidden rounded-[28px] bg-white ring-1 ring-cinema-ink/10 shadow-[0_18px_40px_-28px_rgb(7_28_30/0.45)]" aria-label="Ticket details">
+            <div class="p-5 sm:p-8">
+                @await Html.PartialAsync("_TicketSummary", ticket, new ViewDataDictionary(ViewData) { ["TitleId"] = "ticket-pass-title", ["PosterSize"] = "w-24 sm:w-32" })
+            </div>
+
+            <dl class="m-0 grid grid-cols-2 gap-x-6 gap-y-5 border-0 border-t border-solid border-cinema-ink/10 px-5 py-6 sm:grid-cols-3 sm:px-8">
+                <div class="min-w-0">
+                    <dt class="@factLabel">Screen</dt>
+                    <dd class="@factValue">@ticket.Format · @Model.Language</dd>
+                </div>
+                <div class="min-w-0">
+                    <dt class="@factLabel">Admits</dt>
+                    <dd class="@factValue">@Model.Admissions</dd>
+                </div>
+                <div class="col-span-2 min-w-0 sm:col-span-1">
+                    <dt class="@factLabel">Booking</dt>
+                    <dd class="m-0 mt-1 font-mono text-base font-bold tracking-wider">@ticket.BookingCode</dd>
+                </div>
+            </dl>
+
+            <div class="border-0 border-t border-solid border-cinema-ink/10 px-5 py-6 sm:px-8">
+                <h2 class="m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/50">@(ticket.Seats.Count == 1 ? "Seat" : "Seats")</h2>
+                <ul class="m-0 mt-3 flex list-none flex-wrap gap-2 p-0">
+                    @foreach (var seat in ticket.Seats)
+                    {
+                        <li class="grid min-w-12 place-items-center rounded-lg bg-cinema-logo px-3 py-2 font-mono text-base font-bold text-white">@seat</li>
+                    }
+                </ul>
+            </div>
+        </article>
+
+        <p class="mx-auto mb-0 mt-6 max-w-md text-center text-sm leading-relaxed text-cinema-ink/60">
+            Show this page or the ticket's QR code at the hall entrance. For privacy, it does not show who booked the ticket or what was paid.
+        </p>
+    </div>
+</section>

@@ -1,24 +1,25 @@
+@model IReadOnlyList<Movie>
+@using CMM_Cinema.Services
 @{
-    var today = DateTime.Today;
+    // Real data: now-showing movies, the booking service's cinemas and its next seven days (Bangkok time).
+    // Choosing all three opens that movie's Showtimes page already filtered to the cinema and date.
+    var culture = System.Globalization.CultureInfo.InvariantCulture;
+    var formats = string.Join(" · ", BookingRules.Formats);
     var fields = new[]
     {
-        (Id: "cinema", Label: "Cinema", Placeholder: "Select cinema", Options: new[]
-        {
-            (Value: "central", Text: "CMM Central", Badge: "C", Meta: "Downtown"),
-            (Value: "riverside", Text: "CMM Riverside", Badge: "R", Meta: "Riverfront"),
-            (Value: "skyline", Text: "CMM Skyline", Badge: "S", Meta: "Rooftop"),
-            (Value: "harbor-point", Text: "CMM Harbor Point", Badge: "H", Meta: "Marina"),
-        }),
-        (Id: "date", Label: "Date", Placeholder: "Select date", Options: Enumerable.Range(0, 7).Select(i =>
-        {
-            var d = today.AddDays(i);
-            return (Value: d.ToString("yyyy-MM-dd"), Text: d.ToString("ddd, d MMM"), Badge: d.Day.ToString(), Meta: i == 0 ? "Today" : i == 1 ? "Tomorrow" : "");
-        }).ToArray()),
+        (Id: "movie", Name: "movie", Label: "Movie", Placeholder: "Select movie", Options: Model.Select(m =>
+            (Value: m.Slug, Text: m.Title, Badge: m.Title.Length > 0 ? m.Title[..1].ToUpperInvariant() : "·", Meta: m.Rating)).ToArray()),
+        (Id: "cinema", Name: "cinemaId", Label: "Cinema", Placeholder: "Select cinema", Options: BookingRules.Cinemas.Select(c =>
+            (Value: c.Id.ToString(culture), Text: c.Name, Badge: c.Name.Split(' ')[^1][..1].ToUpperInvariant(), Meta: formats)).ToArray()),
+        (Id: "date", Name: "date", Label: "Date", Placeholder: "Select date", Options: BookingRules.GetDates().Select((d, i) =>
+            (Value: d.ToString("yyyy-MM-dd", culture), Text: d.ToString("ddd, d MMM", culture), Badge: d.Day.ToString(culture), Meta: i == 0 ? "Today" : i == 1 ? "Tomorrow" : "")).ToArray()),
     };
     const string check = "M4.5 10.5 8 14l7.5-8";
 }
 
-<div class="qb-dock pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 w-[calc(100vw-2rem)] md:bottom-6 md:right-6 md:w-[min(calc(100vw-3rem),64rem)]" data-quick-book data-qb-dock>
+@if (Model.Count > 0)
+{
+<div class="qb-dock pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 w-[calc(100vw-2rem)] md:bottom-6 md:right-6 md:w-[min(calc(100vw-3rem),36rem)] lg:w-[min(calc(100vw-3rem),64rem)]" data-quick-book data-qb-dock>
     <svg class="absolute size-0" aria-hidden="true" focusable="false">
         <defs>
             <filter id="qb-goo" x="-50%" y="-50%" width="200%" height="200%">
@@ -32,15 +33,15 @@
         </defs>
     </svg>
 
-    <div class="qb-dock__shell absolute bottom-0 right-0 rounded-[36px] bg-black/55 shadow-[0_8px_32px_#0003,inset_0_1px_0_#ffffff14] ring-1 ring-inset ring-white/15 backdrop-blur-xl backdrop-saturate-150 md:rounded-full" aria-hidden="true"></div>
+    <div class="qb-dock__shell absolute bottom-0 right-0 rounded-[36px] bg-black/55 shadow-[0_8px_32px_#0003,inset_0_1px_0_#ffffff14] ring-1 ring-inset ring-white/15 backdrop-blur-xl backdrop-saturate-150 md:rounded-[36px] lg:rounded-full" aria-hidden="true"></div>
 
-    <form class="qb-dock__form relative flex flex-col gap-3 p-3 font-sans md:flex-row md:items-center md:gap-4 md:py-3 md:pl-8 md:pr-19" id="quick-book-form" aria-label="Quick book" data-qb-form inert>
-        <h2 class="m-0 shrink-0 px-2 text-xl font-black uppercase leading-none tracking-tight text-white md:px-0">Quick Book</h2>
+    <form class="qb-dock__form relative flex flex-col gap-3 p-3 font-sans lg:flex-row lg:items-center lg:gap-4 lg:py-3 lg:pl-8 lg:pr-19" id="quick-book-form" method="get" asp-controller="Booking" asp-action="Showtimes" asp-fragment="screenings-title" aria-label="Quick book" data-qb-form inert>
+        <h2 class="m-0 shrink-0 px-2 text-xl font-black uppercase leading-none tracking-tight text-white lg:px-0">Quick Book</h2>
 
         @foreach (var f in fields)
         {
             <div class="group/qb relative min-w-0 flex-1" data-qb-select>
-                <input type="hidden" name="@f.Id" data-qb-value />
+                <input type="hidden" name="@f.Name" data-qb-value />
                 <span class="sr-only" id="qb-@f.Id-label">@f.Label</span>
                 <button type="button" id="qb-@f.Id-trigger" class="relative flex h-12 w-full cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-full border border-white/25 bg-transparent pl-5 pr-4 text-left text-sm font-semibold text-white/60 outline-none transition-[background-color,border-color,color] duration-300 hover:border-white/45 hover:bg-cinema-nav-hover focus-visible:border-cinema-cream/70 focus-visible:bg-cinema-nav-hover group-data-[open]/qb:border-white/50 group-data-[open]/qb:bg-cinema-nav-hover group-data-[filled]/qb:text-white" aria-haspopup="listbox" aria-expanded="false" aria-controls="qb-@f.Id-list" aria-labelledby="qb-@f.Id-label qb-@f.Id-trigger" data-qb-trigger>
                     <span class="block min-w-0 truncate" data-qb-label>@f.Placeholder</span>
@@ -81,7 +82,7 @@
             </div>
         }
 
-        <button type="submit" class="relative isolate mr-15 flex h-12 shrink-0 md:mr-0 cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-full border-0 bg-cinema-cream py-0 pl-6 pr-1.5 text-sm font-extrabold text-cinema-ink shadow-[inset_0_-2px_0_#0000001a] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream" data-qb-submit>
+        <button type="submit" class="relative isolate mr-15 flex h-12 shrink-0 lg:mr-0 cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-full border-0 bg-cinema-cream py-0 pl-6 pr-1.5 text-sm font-extrabold text-cinema-ink shadow-[inset_0_-2px_0_#0000001a] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream" data-qb-submit>
             <span class="pointer-events-none absolute inset-0 -z-1" aria-hidden="true">
                 <span class="absolute right-1.5 top-1.5 size-9 rounded-full bg-cinema-ink" data-qb-ink></span>
             </span>
@@ -98,3 +99,4 @@
         <svg class="qb-dock__icon qb-dock__icon--close col-start-1 row-start-1 size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
     </button>
 </div>
+}

@@ -37,6 +37,60 @@
     });
   }
 
-  seats.forEach(seat => seat.addEventListener('change', refresh));
+  // Phones show the whole hall by default; Zoom in enlarges the seats and pans the map to the picked seats.
+  const zoom = layout.querySelector('[data-seat-zoom]');
+  const scroller = form.querySelector('.bk-seat-scroller');
+  if (zoom && scroller) {
+    zoom.addEventListener('click', () => {
+      const zoomed = scroller.dataset.zoom !== 'in';
+      scroller.dataset.zoom = zoomed ? 'in' : 'fit';
+      zoom.setAttribute('aria-pressed', String(zoomed));
+
+      const target = seats.find(seat => seat.checked)?.closest('.bk-seat');
+      if (!zoomed) {
+        scroller.scrollLeft = 0;
+      } else if (target) {
+        const box = scroller.getBoundingClientRect();
+        const rect = target.getBoundingClientRect();
+        scroller.scrollLeft += rect.left - box.left - (box.width - rect.width) / 2;
+      } else {
+        scroller.scrollLeft = (scroller.scrollWidth - scroller.clientWidth) / 2;
+      }
+    });
+  }
+
+  // Picks are saved to the signed-in user's temporary booking session so a refresh or return visit keeps them.
+  const draftUrl = form.dataset.draftUrl;
+  const draftStatus = layout.querySelector('[data-draft-status]');
+  const clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Asia/Bangkok' });
+  let saveTimer = 0;
+  let pendingSave = null;
+
+  function stopSaving() {
+    clearTimeout(saveTimer);
+    pendingSave?.abort();
+    pendingSave = null;
+  }
+
+  function saveDraft() {
+    if (!draftUrl || typeof fetch !== 'function') return;
+    stopSaving();
+    saveTimer = setTimeout(() => {
+      const request = new AbortController();
+      pendingSave = request;
+      fetch(draftUrl, { method: 'POST', body: new FormData(form), credentials: 'same-origin', signal: request.signal })
+        .then(response => (response.ok ? response.json() : null))
+        .then(draft => {
+          if (draft && draftStatus) draftStatus.textContent = `Your session is saved until ${clock.format(new Date(draft.expiresAt * 1000))}.`;
+        })
+        .catch(() => {});
+    }, 350);
+  }
+
+  seats.forEach(seat => seat.addEventListener('change', () => {
+    refresh();
+    saveDraft();
+  }));
+  form.addEventListener('submit', stopSaving);
   refresh();
 })();

@@ -14,15 +14,24 @@
             <a class="shrink-0 border-b-2 border-cinema-ink pb-0.5 text-sm font-bold text-cinema-ink no-underline" href="/Movies?show=@Model.Id">View all</a>
         </div>
 
-        <div class="swiper movie-swiper mt-8 md:mt-12" data-movie-swiper>
-            <div class="swiper-wrapper">
-                @foreach (var movie in Model.Movies)
-                {
-                    <div class="swiper-slide h-auto">
-                        @await Html.PartialAsync("_MovieCard", movie)
-                    </div>
-                }
+        @* Arrows (glass circles) appear on hover or keyboard focus at the carousel's edges, at poster height. Touch devices swipe. *@
+        <div class="group/carousel relative mt-8 md:mt-12" data-carousel>
+            <div class="swiper movie-swiper" data-movie-swiper>
+                <div class="swiper-wrapper">
+                    @foreach (var movie in Model.Movies)
+                    {
+                        <div class="swiper-slide h-auto">
+                            @await Html.PartialAsync("_MovieCard", movie)
+                        </div>
+                    }
+                </div>
             </div>
+            <button type="button" class="group/arrow -left-2 md:left-3 absolute top-[var(--arrow-top,40%)] z-10 grid size-14 -translate-y-1/2 scale-90 cursor-pointer place-items-center rounded-full border-0 bg-black/30 p-0 text-white opacity-0 ring-1 ring-inset ring-white/35 backdrop-blur-xl backdrop-saturate-150 outline-none [box-shadow:0_12px_32px_rgb(0_0_0/0.3),inset_0_1px_0_rgb(255_255_255/0.4)] transition-[opacity,scale,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white enabled:hover:bg-black/45 enabled:active:scale-95 disabled:pointer-events-none motion-reduce:transition-none pointer-coarse:hidden group-hover/carousel:enabled:scale-100 group-hover/carousel:enabled:opacity-100 group-focus-within/carousel:enabled:scale-100 group-focus-within/carousel:enabled:opacity-100" aria-label="Previous movies" data-carousel-prev>
+                <svg class="size-6 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/arrow:-translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m14.5 5-7 7 7 7" /></svg>
+            </button>
+            <button type="button" class="group/arrow -right-2 md:right-3 absolute top-[var(--arrow-top,40%)] z-10 grid size-14 -translate-y-1/2 scale-90 cursor-pointer place-items-center rounded-full border-0 bg-black/30 p-0 text-white opacity-0 ring-1 ring-inset ring-white/35 backdrop-blur-xl backdrop-saturate-150 outline-none [box-shadow:0_12px_32px_rgb(0_0_0/0.3),inset_0_1px_0_rgb(255_255_255/0.4)] transition-[opacity,scale,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white enabled:hover:bg-black/45 enabled:active:scale-95 disabled:pointer-events-none motion-reduce:transition-none pointer-coarse:hidden group-hover/carousel:enabled:scale-100 group-hover/carousel:enabled:opacity-100 group-focus-within/carousel:enabled:scale-100 group-focus-within/carousel:enabled:opacity-100" aria-label="Next movies" data-carousel-next>
+                <svg class="size-6 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/arrow:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9.5 5 7 7-7 7" /></svg>
+            </button>
         </div>
     </div>
 </section>

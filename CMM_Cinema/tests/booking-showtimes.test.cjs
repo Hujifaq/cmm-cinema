@@ -8,9 +8,7 @@ test('changing date keeps filters and refreshes the ticket stamp with the screen
   const dom = new JSDOM(`<div data-showtimes>
     <form action="/Booking/Showtimes" data-booking-filters>
       <input name="movie" value="silent-wills">
-      <input name="format" value="2D">
       <select name="cinemaId" data-auto-submit><option value="2" selected>CMM CB12</option></select>
-      <select name="language" data-auto-submit><option value="English" selected>English</option></select>
       <div data-date-stamp aria-hidden="true"><small>Thu</small><strong>05</strong><small>Nov</small></div>
       <span data-date-month>November 2026</span>
       <div data-date-options>
@@ -40,7 +38,7 @@ test('changing date keeps filters and refreshes the ticket stamp with the screen
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(requests.length, 1);
     assert.deepEqual(Object.fromEntries(requests[0].searchParams), {
-      movie: 'silent-wills', format: '2D', cinemaId: '2', language: 'English', date: '2026-11-07'
+      movie: 'silent-wills', cinemaId: '2', date: '2026-11-07'
     });
     assert.equal(document.querySelector('form'), originalForm);
     assert.equal(document.querySelector('[data-date-stamp] strong').textContent, '07');

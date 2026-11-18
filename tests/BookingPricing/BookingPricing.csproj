@@ -7,6 +7,11 @@
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="ZXing.Net" Version="0.16.11" />
     <ProjectReference Include="../../CMM_Cinema/CMM_Cinema.csproj" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+    <None Include="../../CMM_Cinema/Data/migrations/0006_bookings.sql" Link="0006_bookings.sql" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../CMM_Cinema/wwwroot/images/favicon-192.png" Link="wwwroot/images/favicon-192.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../CMM_Cinema/Data/migrations/0007_ticket_tokens.sql" Link="0007_ticket_tokens.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

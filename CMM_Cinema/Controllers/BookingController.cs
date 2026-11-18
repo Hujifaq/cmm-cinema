@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CMM_Cinema.Controllers
 {
-    // Showtimes -> SeatSelection -> Reserve -> Summary -> Confirm -> Confirmation
+    // Showtimes -> SeatSelection (draft session, SaveSeats) -> Reserve -> Summary -> Confirm -> Confirmation
     // Browsing showtimes is public; choosing seats onwards needs an account, and every booking belongs to its owner.
     [Authorize(Policy = AuthSetup.CustomerPolicy)]
     public class BookingController(IMovieRepository movies, IBookingService booking) : Controller
@@ -18,7 +18,7 @@ namespace CMM_Cinema.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Showtimes(string? movie, DateOnly? date, int? cinemaId, string? format, string? language,
+        public async Task<IActionResult> Showtimes(string? movie, DateOnly? date, int? cinemaId,
             CancellationToken cancellationToken)
         {
             var nowShowing = await movies.GetByStatusAsync(MovieStatus.NowShowing, cancellationToken);
@@ -28,46 +28,55 @@ namespace CMM_Cinema.Controllers
                 ?? nowShowing[0];
 
             // Unknown filter values fall back to "all" instead of returning an error.
-            var dates = booking.GetDates();
+            var dates = BookingRules.GetDates();
             var selectedDate = date is { } d && dates.Contains(d) ? d : dates[0];
-            var selectedCinema = cinemaId is { } id && booking.GetCinema(id) is not null ? cinemaId : null;
-            var selectedFormat = booking.Formats.Contains(format) ? format : null;
-            var selectedLanguage = booking.Languages.Contains(language) ? language : null;
+            var selectedCinema = cinemaId is { } id && BookingRules.GetCinema(id) is not null ? cinemaId : null;
 
-            var showtimes = booking.GetShowtimes(selectedMovie.Slug)
+            var showtimes = (await booking.GetShowtimesAsync(selectedMovie.Slug, cancellationToken))
                 .Where(s => s.Date == selectedDate)
                 .Where(s => selectedCinema is null || s.CinemaId == selectedCinema)
-                .Where(s => selectedFormat is null || s.Format == selectedFormat)
-                .Where(s => selectedLanguage is null || s.Language == selectedLanguage)
                 .ToArray();
 
-            return View(new ShowtimesViewModel(selectedMovie, booking.GetCinemas(), dates, showtimes,
-                selectedDate, selectedCinema, selectedFormat, selectedLanguage));
+            return View(new ShowtimesViewModel(selectedMovie, BookingRules.Cinemas, dates, showtimes,
+                selectedDate, selectedCinema));
         }
 
         [HttpGet]
         public async Task<IActionResult> SeatSelection(int showtimeId, CancellationToken cancellationToken)
         {
-            var showtime = booking.GetShowtime(showtimeId);
+            var showtime = await booking.GetShowtimeAsync(showtimeId, cancellationToken);
             if (showtime is null) return NotFound();
             if (!showtime.IsAvailable) return RedirectToAction(nameof(Showtimes), new { movie = showtime.MovieSlug });
 
             var movie = await movies.GetBySlugAsync(showtime.MovieSlug, cancellationToken);
             if (movie is null) return NotFound();
 
-            return View(new SeatSelectionViewModel(movie, booking.GetCinema(showtime.CinemaId)!, showtime,
-                booking.GetSeats(showtimeId), TempData["SeatError"] as string));
+            if (await booking.StartDraftAsync(UserId, showtimeId, cancellationToken) is not { } draft)
+                return RedirectToAction(nameof(Showtimes), new { movie = showtime.MovieSlug });
+
+            return View(new SeatSelectionViewModel(movie, BookingRules.GetCinema(showtime.CinemaId)!, showtime,
+                await booking.GetSeatsAsync(showtimeId, cancellationToken), draft, TempData["SeatError"] as string));
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public IActionResult Reserve(int showtimeId, string[]? seatIds)
+        public async Task<IActionResult> SaveSeats(int showtimeId, string[]? seatIds, CancellationToken cancellationToken)
         {
-            if (!booking.TryHoldSeats(UserId, showtimeId, seatIds ?? [], out var hold, out var error))
+            if (await booking.SaveDraftSeatsAsync(UserId, showtimeId, seatIds ?? [], cancellationToken) is not { } draft) return NotFound();
+            return Json(new { seats = draft.SeatIds, expiresAt = draft.ExpiresAt.ToUnixTimeSeconds() });
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reserve(int showtimeId, string[]? seatIds, CancellationToken cancellationToken)
+        {
+            var result = await booking.HoldSeatsAsync(UserId, showtimeId, seatIds ?? [], cancellationToken);
+            if (result.Booking is not { } hold)
             {
-                TempData["SeatError"] = error;
+                await booking.SaveDraftSeatsAsync(UserId, showtimeId, seatIds ?? [], cancellationToken);
+                TempData["SeatError"] = result.Error;
                 return RedirectToAction(nameof(SeatSelection), new { showtimeId });
             }
-            return RedirectToAction(nameof(Summary), new { bookingId = hold!.Id });
+            await booking.ClearDraftAsync(UserId, cancellationToken);
+            return RedirectToAction(nameof(Summary), new { bookingId = hold.Id });
         }
 
         [HttpGet]
@@ -87,13 +96,17 @@ namespace CMM_Cinema.Controllers
         public IActionResult Pay(Guid bookingId) => RedirectToAction(nameof(Summary), new { bookingId });
 
         [HttpPost, ValidateAntiForgeryToken]
-        public IActionResult Confirm(Guid bookingId)
+        public async Task<IActionResult> Confirm(Guid bookingId, CancellationToken cancellationToken)
         {
-            if (booking.TryConfirmBooking(UserId, bookingId, out var error))
+            var result = await booking.ConfirmBookingAsync(UserId, bookingId, cancellationToken);
+            if (result.Succeeded)
+            {
+                TempData["Celebrate"] = true;
                 return RedirectToAction(nameof(Confirmation), new { bookingId });
+            }
 
-            if (booking.GetBooking(UserId, bookingId) is null) return RedirectToAction(nameof(Showtimes));
-            TempData["BookingError"] = error;
+            if (await booking.GetBookingAsync(UserId, bookingId, cancellationToken) is null) return RedirectToAction(nameof(Showtimes));
+            TempData["BookingError"] = result.Error;
             return RedirectToAction(nameof(Summary), new { bookingId });
         }
 
@@ -101,23 +114,34 @@ namespace CMM_Cinema.Controllers
         public async Task<IActionResult> Confirmation(Guid bookingId, CancellationToken cancellationToken)
         {
             var details = await FindDetailsAsync(bookingId, cancellationToken);
-            return details?.Booking.Status == BookingStatus.Confirmed ? View(details) : NotFound();
+            if (details?.Booking.Status != BookingStatus.Confirmed) return NotFound();
+
+            // Arriving from the Confirm loader: play the confetti once, with no page transition in between.
+            if (TempData["Celebrate"] is true)
+            {
+                ViewData["Celebrate"] = true;
+                ViewData["NoPageTransition"] = true;
+            }
+            return View(details);
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public IActionResult Cancel(Guid bookingId)
+        public async Task<IActionResult> Cancel(Guid bookingId, CancellationToken cancellationToken)
         {
-            var showtime = booking.GetBooking(UserId, bookingId) is { } hold ? booking.GetShowtime(hold.ShowtimeId) : null;
-            booking.CancelHold(UserId, bookingId);
+            var showtime = await booking.GetBookingAsync(UserId, bookingId, cancellationToken) is { } hold
+                ? await booking.GetShowtimeAsync(hold.ShowtimeId, cancellationToken)
+                : null;
+            await booking.CancelHoldAsync(UserId, bookingId, cancellationToken);
+            await booking.ClearDraftAsync(UserId, cancellationToken);
             return RedirectToAction(nameof(Showtimes), new { movie = showtime?.MovieSlug });
         }
 
         private async Task<BookingDetailsViewModel?> FindDetailsAsync(Guid bookingId, CancellationToken cancellationToken)
         {
-            if (booking.GetBooking(UserId, bookingId) is not { } hold) return null;
-            if (booking.GetShowtime(hold.ShowtimeId) is not { } showtime) return null;
+            if (await booking.GetBookingAsync(UserId, bookingId, cancellationToken) is not { } hold) return null;
+            if (await booking.GetShowtimeAsync(hold.ShowtimeId, cancellationToken) is not { } showtime) return null;
             if (await movies.GetBySlugAsync(showtime.MovieSlug, cancellationToken) is not { } movie) return null;
-            return new BookingDetailsViewModel(hold, movie, booking.GetCinema(showtime.CinemaId)!, showtime);
+            return new BookingDetailsViewModel(hold, movie, BookingRules.GetCinema(showtime.CinemaId)!, showtime);
         }
     }
 }

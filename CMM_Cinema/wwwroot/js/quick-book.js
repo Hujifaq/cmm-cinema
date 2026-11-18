@@ -287,18 +287,32 @@
   submit.addEventListener('pointerup', release);
   submit.addEventListener('pointercancel', release);
 
-  // Demo submit: wobble whatever is missing, otherwise send the arrow off.
+  // Submit: wobble whatever is missing, otherwise send the arrow off and open the Showtimes page.
+  // The form is a real GET to /Booking/Showtimes (movie, cinemaId, date), so the choices carry over as filters.
   const submitLabel = form.querySelector('[data-qb-submit-label]');
   const arrow = form.querySelector('[data-qb-submit-arrow]');
   const status = form.querySelector('[data-qb-status]');
   const idleText = submitLabel.textContent;
-  let resetTimer = 0;
+  const SEND_MS = 380;
+  let sending = false;
+
+  const nameOf = field => (field.root.querySelector('.sr-only')?.textContent || 'option').toLowerCase();
+  const list = names => names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0];
+
+  const restore = () => {
+    sending = false;
+    submitLabel.textContent = idleText;
+    status.textContent = '';
+    if (gsap) gsap.set([arrow, submitLabel], { clearProps: 'all' });
+  };
 
   form.addEventListener('submit', event => {
     event.preventDefault();
+    if (sending) return;
+
     const missing = fields.filter(field => !field.value);
     if (missing.length) {
-      status.textContent = 'Choose a cinema and a date first.';
+      status.textContent = `Choose a ${list(missing.map(nameOf))} first.`;
       missing.forEach(field => {
         if (animated()) gsap.fromTo(field.trigger, { x: 0 }, { keyframes: { x: [-8, 7, -5, 3, 0] }, duration: 0.45, ease: 'power1.out' });
       });
@@ -306,20 +320,18 @@
       return;
     }
 
-    status.textContent = 'Demo only: showtimes are coming soon.';
-    clearTimeout(resetTimer);
-    if (!animated()) { submitLabel.textContent = 'Coming soon'; }
-    else {
-      gsap.timeline()
-        .to(arrow, { x: 28, opacity: 0, duration: 0.25, ease: 'power2.in' })
-        .to(submitLabel, { yPercent: -120, opacity: 0, duration: 0.18 }, 0)
-        .add(() => { submitLabel.textContent = 'Coming soon'; })
-        .fromTo(submitLabel, { yPercent: 120 }, { yPercent: 0, opacity: 1, duration: 0.45, ease: 'back.out(2)' })
-        .fromTo(arrow, { x: -28 }, { x: 0, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, '<');
-    }
-    resetTimer = setTimeout(() => {
-      submitLabel.textContent = idleText;
-      status.textContent = '';
-    }, 1800);
+    sending = true;
+    status.textContent = 'Opening showtimes.';
+    if (!animated()) { form.submit(); return; }
+
+    gsap.timeline()
+      .to(arrow, { x: 28, opacity: 0, duration: 0.25, ease: 'power2.in' })
+      .to(submitLabel, { yPercent: -120, opacity: 0, duration: 0.18 }, 0)
+      .add(() => { submitLabel.textContent = 'Opening…'; })
+      .fromTo(submitLabel, { yPercent: 120 }, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'back.out(2)' });
+    setTimeout(() => form.submit(), SEND_MS);
   });
+
+  // Coming back with the Back button restores this page from cache mid-animation.
+  window.addEventListener('pageshow', event => { if (event.persisted) restore(); });
 })();

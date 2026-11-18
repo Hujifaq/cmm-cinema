@@ -10,6 +10,9 @@
   document.querySelectorAll('[data-goo-button]').forEach(button => {
     const fill = button.querySelector('[data-goo-fill]');
     const blob = button.querySelector('[data-goo-blob]');
+    // Upcoming booking steps carry the attribute but no fill or blob; skipping them keeps one inert button from
+    // stopping every liquid button after it (such as Continue to summary) from being set up.
+    if (!fill || !blob) return;
     const layer = blob.parentElement;
     const label = button.querySelector('[data-goo-label]');
     const follow = (target, prop, duration) => gsap.quickTo(target, prop, { duration, ease: 'power3.out' });

@@ -1,0 +1,23 @@
+@{
+    Layout = "_HeroLayout";
+    ViewData["Title"] = "Ticket not found - CMM Cinema";
+}
+
+@section Head {
+    <meta name="robots" content="noindex, nofollow" />
+}
+
+<section class="min-h-screen bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="ticket-pass-missing">
+    <div class="mx-auto max-w-2xl px-5 md:px-8">
+        <div class="flex items-center gap-4 rounded-[28px] bg-cinema-brick px-6 py-5 text-white sm:px-8 sm:py-6" role="status">
+            <svg class="block size-9 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><path d="m9 9 6 6m0-6-6 6" /></svg>
+            <div class="min-w-0">
+                <h1 class="m-0 text-2xl font-black uppercase leading-none tracking-tighter sm:text-3xl" id="ticket-pass-missing">Ticket not found</h1>
+                <p class="m-0 mt-1.5 text-sm font-semibold opacity-85">This QR code does not match a confirmed booking.</p>
+            </div>
+        </div>
+        <p class="mx-auto mb-0 mt-6 max-w-md text-center text-sm leading-relaxed text-cinema-ink/60">
+            Check the code was scanned from a CMM Cinema ticket. Bookings that were cancelled or never confirmed have no valid ticket.
+        </p>
+    </div>
+</section>

@@ -6,6 +6,15 @@
     var showtime = Model.Showtime;
     var legendCardClass = "flex min-h-[88px] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-solid bg-cinema-ink/15 px-2 py-3 text-center text-[10px] font-bold text-cinema-cream sm:min-h-[108px] sm:rounded-2xl sm:py-4 sm:text-xs";
     var zones = Model.Seats.GroupBy(seat => seat.Category).OrderBy(zone => zone.Key).ToArray();
+    var movie = Model.Movie;
+    var draft = Model.Draft;
+    var draftSeats = draft.SeatIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+    var hasPoster = !string.IsNullOrEmpty(movie.PosterUrl);
+    var runtime = movie.DurationMinutes >= 60 ? movie.Runtime : $"{movie.DurationMinutes}m";
+    var movieFacts = string.Join(" · ", new[] { movie.Rating, runtime, movie.Genre }.Where(fact => !string.IsNullOrWhiteSpace(fact)));
+    var draftUntil = draft.ExpiresAt.ToOffset(CinemaTime.Offset).ToString("HH:mm", culture);
+    var factLabelClass = "m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-cinema-cream/55";
+    var factValueClass = "m-0 mt-1 break-words text-xs font-bold text-cinema-cream sm:text-sm";
 }
 
 <div class="bk-flow">
@@ -15,16 +24,22 @@
         <div>
             <h1 id="seat-heading" class="break-words">@Model.Movie.Title</h1>
             <p class="bk-screening-meta text-lg font-semibold sm:text-xl">@Model.Cinema.Name · @showtime.Date.ToString("ddd dd MMM", culture) · @showtime.Time.ToString("HH:mm", culture)</p>
-            <p>Pick your favorite seats. The big screen is waiting.</p>
-            <a class="bk-secondary bk-seat-back" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">← Back</a>
+            <a class="bk-seat-back" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">Back</a>
         </div>
         <img class="bk-heading-art bk-heading-art--glasses" src="~/images/hero/glasses.svg" alt="" aria-hidden="true" />
     </header>
 
     <div class="bk-grid bk-seat-layout" data-seat-selection>
         <section class="bk-panel bk-seat-panel relative isolate" aria-labelledby="seat-heading">
-            <div class="mb-6 flex justify-end">
-                <span class="bk-tag">@showtime.Format</span>
+            <div class="mb-6 flex items-center justify-between gap-3">
+                <button class="bk-seat-zoom" type="button" aria-pressed="false" data-seat-zoom>
+                    @* Icons: Heroicons 2.2.0 outline (MIT), magnifying-glass-plus and magnifying-glass-minus. *@
+                    <svg data-zoom-in viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6" /></svg>
+                    <svg data-zoom-out viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM13.5 10.5h-6" /></svg>
+                    <span data-zoom-in>Zoom in</span>
+                    <span data-zoom-out>See whole hall</span>
+                </button>
+                <span class="bk-tag ml-auto">@showtime.Format</span>
             </div>
 
             @if (!string.IsNullOrWhiteSpace(Model.Error))
@@ -47,7 +62,7 @@
                 <span>Screen</span>
             </div>
 
-            <form id="seat-reservation" method="post" asp-action="Reserve" data-seat-form data-max="8">
+            <form id="seat-reservation" method="post" asp-action="Reserve" data-seat-form data-max="8" data-draft-url="@Url.Action("SaveSeats")">
                 <input type="hidden" name="showtimeId" value="@showtime.Id" />
 
                 <div class="bk-seat-scroller" role="group" aria-label="Choose seats, rows F to A and VIP pairs">
@@ -65,7 +80,7 @@
                                             var sold = seat.State == SeatState.Sold;
                                             var unit = seat.Capacity == 2 ? "Pair" : "Seat";
                                             <label class="bk-seat bk-seat--@zoneClass @(sold ? "bk-seat--sold" : "bk-seat--available")">
-                                                <input type="checkbox" name="seatIds" value="@seat.Id" aria-label="@seat.Category.DisplayName(), row @seat.Row, @unit @seat.Number, ฿@seat.Price.ToString("N0", culture) per @(seat.Capacity == 2 ? "pair, 2 seats" : "seat"), @seat.State" data-seat-row="@seat.Row" data-seat-number="@seat.Number" data-seat-type="@seat.Category.DisplayName()" data-seat-price="@seat.Price.ToString(culture)" data-seat-capacity="@seat.Capacity" disabled="@sold" />
+                                                <input type="checkbox" name="seatIds" value="@seat.Id" aria-label="@seat.Category.DisplayName(), row @seat.Row, @unit @seat.Number, ฿@seat.Price.ToString("N0", culture) per @(seat.Capacity == 2 ? "pair, 2 seats" : "seat"), @seat.State" data-seat-row="@seat.Row" data-seat-number="@seat.Number" data-seat-type="@seat.Category.DisplayName()" data-seat-price="@seat.Price.ToString(culture)" data-seat-capacity="@seat.Capacity" checked="@(!sold && draftSeats.Contains(seat.Id))" disabled="@sold" />
                                                 @await Html.PartialAsync("_SeatVisual", seat)
                                             </label>
                                         }
@@ -94,20 +109,50 @@
             </form>
         </section>
 
-        <aside class="bk-panel bk-show-info relative isolate lg:sticky lg:top-32 lg:self-center">
-            <div class="bk-poster-small" aria-hidden="true">
+        <aside class="bk-panel bk-show-info relative isolate lg:sticky lg:top-32 lg:self-center" aria-labelledby="show-info-heading">
+            <div class="bk-poster-small @(hasPoster ? "bk-poster-small--image" : null)" aria-hidden="true">
+                @if (hasPoster)
+                {
+                    <img class="bk-poster-small__image" src="@movie.PosterUrl" alt="" draggable="false" />
+                }
                 <span>CMM Cinema</span>
-                <strong>@Model.Movie.Title</strong>
-                <b></b>
+                @if (!hasPoster)
+                {
+                    <strong>@(movie.PosterTitle ?? movie.Title)</strong>
+                    <b></b>
+                }
             </div>
             <div class="bk-show-facts">
                 <p class="bk-kicker">You're watching</p>
-                <h2>@Model.Movie.Title</h2>
-                <p>@showtime.Format · @showtime.Language · @Model.Movie.Rating</p>
-                <p>@(Model.Movie.DurationMinutes)m · @Model.Movie.Genre</p>
+                <h2 id="show-info-heading" class="break-words">@movie.Title</h2>
+                @if (movieFacts.Length > 0)
+                {
+                    <p>@movieFacts</p>
+                }
+                <dl class="mb-0 mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div class="col-span-2">
+                        <dt class="@factLabelClass">Cinema</dt>
+                        <dd class="@factValueClass">@Model.Cinema.Name</dd>
+                    </div>
+                    <div>
+                        <dt class="@factLabelClass">Date</dt>
+                        <dd class="@factValueClass">@showtime.Date.ToString("ddd dd MMM", culture)</dd>
+                    </div>
+                    <div>
+                        <dt class="@factLabelClass">Time</dt>
+                        <dd class="@factValueClass">@showtime.Time.ToString("HH:mm", culture)</dd>
+                    </div>
+                    <div class="col-span-2">
+                        <dt class="@factLabelClass">Screen</dt>
+                        <dd class="@factValueClass">@showtime.Format · @showtime.Language</dd>
+                    </div>
+                </dl>
             </div>
-            <p class="bk-muted">Selected seats are held for 10 minutes after you continue. This is a demo, so no payment will be charged.</p>
-            <a class="bk-text-link" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">← Change showtime</a>
+            <p class="bk-muted">
+                Selected seats are held for 10 minutes after you continue. This is a demo, so no payment will be charged.
+                <span class="mt-2 block font-semibold text-cinema-cyan" data-draft-status>@(draft.SeatIds.Count > 0 ? "We kept the seats you picked earlier. " : "")Your session is saved until @draftUntil.</span>
+            </p>
+            <a class="bk-change-showtime" asp-action="Showtimes" asp-route-movie="@movie.Slug">Change showtime</a>
             <div class="bk-seat-bottom mt-6">
                 <div><small class="text-sm sm:text-base">Selected seats</small><div class="break-words text-2xl font-bold leading-relaxed text-cinema-cream sm:text-3xl" data-selected-seats>None yet</div></div>
                 <div class="bk-price shrink-0 text-right"><small class="text-sm sm:text-base">Total</small><strong class="text-2xl sm:text-3xl" data-seat-total>฿0</strong></div>
@@ -118,7 +163,7 @@
                             <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full" data-goo-fill></span></span>
                             <span class="absolute left-0 top-0 size-9 rounded-full" data-goo-blob></span>
                         </span>
-                        <span class="relative inline-flex items-center gap-4" data-goo-label>Continue to summary <span aria-hidden="true">→</span></span>
+                        <span class="relative inline-flex items-center" data-goo-label>Continue to summary</span>
                     </button>
                 </div>
             </div>
