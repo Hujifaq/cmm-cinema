@@ -797,9 +797,22 @@ Confirmation uses a separate vertical admission-ticket layout, with a 480px
 maximum width on the paper page. The current movie's full 2:3 poster fills its
 rounded top, with a cream Demo confirmed badge. The title sits below the poster,
 followed by paper-colored circular perforations and half-round side notches.
+As the perforation scrolls from 78% to 35% of viewport height, its paper edge
+progressively tears from left to right. The lower stub drops up to 14px and tilts
+only 0.7 degrees, keeping all booking details readable. Scrolling up reverses it.
+The two clipped half-perforations meet as the original dotted line at rest;
+paper-colored zigzag masks and independent soft shadows reveal the split.
+`booking/ticket-tear.js` measures the stationary upper edge, batches passive scroll
+updates in requestAnimationFrame and uses the existing GSAP without ScrollTrigger
+or scroll pinning. Image/font loads, resize and back/forward restoration refresh
+the position. GSAP matchMedia cleans up listeners, pending frames and transforms
+when reduced motion is enabled. With reduced motion, missing GSAP or JavaScript,
+the ticket remains fully visible and joined. Booking state and actions are unaffected.
 The dark spotlight-colored body shows the actual cinema, format, language,
 rating, total runtime in minutes, screening date/time, admissions, selected
-seat IDs (including VIP pairs), total, reference and category price breakdown.
+seat IDs (including VIP pairs), total and reference. The ticket ends after the
+reference, without the category price breakdown, footer divider or CMM Cinema ·
+Demo booking footer.
 Sun-yellow highlights emphasize the price, seats and reference; cream text
 and muted labels retain the site palette. A compact Booking confirmed heading
 and the existing demo notice replace the oversized success heading, check stamp
@@ -819,25 +832,37 @@ or payment-method requirement. Old Payment and Pay routes redirect to Summary
 without confirming anything. Expired or missing holds return to Showtimes.
 Summary starts directly with its main heading, without the Step 03 / One last look eyebrow.
 Its detail panel starts with Booking summary, without the Your booking eyebrow.
-The panel follows a compact order-list layout: the live hold countdown sits beside
-the heading, followed by concise movie/session details, admission quantity, and
-rows grouped by seat category and price. Each row shows the matching chair/sofa
-icon and seat IDs, with its subtotal aligned right; the quantity/unit-price
-caption beneath the IDs is omitted. A cyan
-Net total band closes the list before the existing booking actions. It retains
-the teal panel, cream text and rounded surfaces; the movie poster remains in the
-shared order card rather than repeating above a grid of detail tiles. Narrow
-screens wrap the heading/timer and seat IDs without hiding prices.
+Summary uses a centered, 1080px-wide stack: the horizontal paper ticket leads,
+with a compact teal price-review panel directly below it. Both share the same
+outer width. The live hold countdown sits beside Booking summary. The body pairs
+seat-category rows and admission quantity on the left with Net total and two
+full-width actions on the right, separated by a fine vertical rule. Each price
+row retains the matching chair/sofa, seat IDs and right-aligned subtotal.
+Movie/session information appears only on the ticket rather than repeating in
+the price panel. Net total is cyan type rather than a large cyan band; the
+Confirm booking button carries the primary cyan clay treatment with shallow
+inset/cast shadows, and Start over is a quieter outlined pill below it. The total
+row aligns on the text baseline with a 24px price and 14px label, leaving 20px
+before Confirm booking. Both actions have equal full widths, 52px minimum heights,
+matching 14px bold labels and a consistent 12px gap. Fine-pointer
+hover lifts the buttons 2px without changing their colors; reduced motion stays
+static. Below 768px the price rows and actions stack with a horizontal divider.
+Narrow screens wrap the heading/timer and seat IDs without hiding prices.
 The summary panel shares the seat panels' static soft-light grain, clipped to its
 rounded edges and placed behind content so text and controls remain crisp. The
 texture does not receive pointer events or change the teal gradient.
-The shared order card starts with the movie poster, without the Your movie night eyebrow.
-It has a receipt-paper silhouette with small 8px top corners, straight sides and
-a repeating 16px-wide, 8px-deep torn bottom edge made with CSS masks. A wrapper
-casts the shadow around the paper outline. Its existing cream gradient, poster,
-receipt details and total remain; bottom padding keeps the footer above the teeth.
-This receipt is used by Summary; Confirmation uses its own poster-led admission
-ticket so changing it does not alter the Summary receipt.
+The shared order card is a horizontal ticket with 24px corners and the existing
+cream-to-mint paper gradient, without the Your movie night eyebrow. Its main
+section pairs a 112px poster with bold movie information, format, language,
+rating and runtime; a three-column detail grid shows the real date, showtime and
+admissions. A 200px detachable stub holds large seat IDs and the total. Category
+prices appear in the price-review panel below. A vertical dashed perforation
+and 10px semicircular cutouts at its ends replace the torn receipt bottom.
+A wrapper casts a soft shadow around the ticket silhouette. Below
+640px the poster reduces to 68px and the stub moves beneath the main section, with horizontal perforations and
+side notches so long movie titles and seat lists remain readable without overflow.
+The footer still identifies the demo booking; prices and booking data remain server-derived.
+Confirmation retains its separate vertical poster-led admission ticket.
 
 The Showtime heading starts directly with a system-sans, fluid 2.75–6.5rem
 black-weight uppercase "IT'S SHOWTIME." title.
@@ -848,7 +873,7 @@ The movie information in the showtime filter panel starts directly with the movi
 title, without the Now showing eyebrow.
 The showtime overview uses two separate columns: a raised 2:3 poster stands on
 the paper page to the left, outside the teal rounded form card. The card contains
-only movie information and cinema/date/language controls, with no poster inside.
+only movie information and cinema/date controls, with no poster inside.
 Poster images cover their frame edge to edge without letterboxing. The poster has a gently tilted paper silhouette with a cream folded
 bottom-right corner inspired by the supplied Watch & Listen reference; the
 decorative cloud is omitted. Fine-pointer hover straightens and lifts the poster
@@ -861,8 +886,8 @@ or a poster inside the card. Large, tightly tracked movie type and the synopsis
 sit on the left above a three-row Rating/Runtime/Genre list with fine horizontal
 rules and right-aligned values, replacing metadata pills.
 Movie duration throughout Booking uses total minutes, such as 13m or 90m,
-without an hours prefix. Cinema and language
-stack in a narrower right-hand column, separated by a fine vertical rule.
+without an hours prefix. The cinema control sits
+in a narrower right-hand column, separated by a fine vertical rule.
 A cream date stub with clipped corners displays the selected weekday/day/month
 above the controls, with a decorative barcode stripe; it updates from the same
 server response as the screenings. The surface shares the homepage's dark-to-cyan
@@ -871,16 +896,16 @@ and has visible, static monochrome grain (180px tile, 0.82 base frequency,
 2.2 contrast slope, 28% soft-light). Texture stays behind the content and ignores
 pointer events, leaving typography and controls crisp. The earlier orbit ring, side notches and dashed
 calendar divider are omitted. Below 1024px the movie information spans the card,
-the decorative date stub is hidden, and the selects share a row before stacking
-on phones. The full-width calendar puts the month and 44px scroll controls
+the decorative date stub is hidden, and the cinema control follows the movie details.
+The full-width calendar puts the month and 44px scroll controls
 above the date strip. Date controls use softly rounded clay tiles with a muted
 weekday, a large tabular day number and a separate, lightly shaded month footer.
 The footer's fine rule stays clear of its text. The selected tile lifts without
 rotation, keeps the cyan clay fill and shows a small cream circular check badge.
 Fine-pointer hover lifts the other tiles with a sky-colored edge; focus outlines
 and reduced-motion guards remain intact.
-The hidden format value retains per-cinema desktop pickers; native selects, focus
-outlines, filtering hooks and reduced-motion behavior remain.
+Cinema/date filters retain native controls, focus outlines, filtering
+hooks and reduced-motion behavior. There is no format or language picker or hidden filter.
 The visible numbered Select cinema and Pick a date headings are omitted;
 the cinema control and date fieldset retain accessible names.
 From 768px the separate poster and card stay side by side, aligned at their
@@ -892,21 +917,27 @@ selected dates retain the existing clay highlights and focus/reduced-motion beha
 Cinema session cards start with the cinema name, without a "Now booking" badge.
 The screenings section starts with Pick your time, without the Choose a session eyebrow.
 The Tap a showtime to choose seats hint and its arrow are omitted.
-Each cinema card has a full-width header with a bold name and the existing desktop
-format picker, without a cinema icon. Its background shares the filter card's
+Each cinema card has a full-width header with a bold name, without a format picker
+or cinema icon. Its background shares the filter card's
 homepage gradient, sky/navy wash and static grain through the same CSS rules.
 Session cards enlarge the grain tile to 220px at 40% soft-light so the texture
 reads clearly on their wider surfaces. Texture stays behind the content and ignores pointer events. Format/language
 groups sit in lightly outlined, 45% ink glass panels to keep labels readable over
 the brighter background, in a two-column grid stacking on phones. Format labels
-(2D, 3D, IMAX) use compact 6px-rounded rectangular plaques with a fine cream
+(2D and IMAX only) use compact 6px-rounded rectangular plaques with a fine cream
 outline, subtle ink fill and cream lettering beside the softer language label,
 replacing the cyan-filled pills. These are informational labels, not buttons. Cream pill-shaped
-time links use restrained clay highlights and centered tabular times, without arrow icons;
+time links use restrained clay highlights and centered, bold tabular times
+(18px on phones, 20px from 640px), without arrow icons;
 fine-pointer hover lifts them 2px with a subtle cyan wash. Sold-out sessions stay
 disabled with a dark translucent fill, dashed border and Full label. Shadows are
 soft and shallow. Phones retain 50px touch targets, and below 360px time buttons
 use two columns to preserve readable labels. Existing reduced-motion rules apply.
+The booking catalogue offers only Thai-dubbed sessions in 2D and IMAX, labelled "Thai" without a parenthetical suffix.
+Format plaques share a 56px width and 28px minimum height for aligned 2D/IMAX headers.
+Language labels remain on the screenings, preceded by a 14px outlined speaker
+icon with a 6px gap in the same muted cream color. Both labels use 12px type,
+centered vertically; no language selector is shown.
 
 The seat-selection heading displays the current booking's movie title below
 the progress strip, without a step eyebrow, retaining the bold display styling
@@ -961,8 +992,10 @@ are Premium (sky, ฿330 per seat), and VP has eight VIP pairs (sun, ฿900 per 
 Row C uses the same cream chair fabric, shading and edges as row D while retaining
 its Premium category and price; rows B and A remain sky.
 Zone names and prices appear in the price cards below the map, without headings above the seat rows.
-Each single-seat row contains sixteen seats; Premium is slightly inset, and broad
-cross-aisles separate the three zones. A VIP pair is one selectable two-person sofa,
+Each single-seat row contains sixteen seats on the same column grid, with row
+labels aligned on both sides. Normal and Premium have equal widths and spacing;
+there is no one-sided Premium indent. Broad cross-aisles separate the three zones.
+A VIP pair is one selectable two-person sofa,
 with two distinct backrests and cushions separated by a narrow center gap, and armrests
 only at the outer edges, overlapping the cushion edges above a connected lower base
 so the arms do not float apart. Its softly rounded rectangular pads retain the existing

@@ -16,17 +16,6 @@
 
   const screenings = () => root.querySelector('[data-screenings]');
 
-  // The per-cinema format pickers mirror the hidden format filter in the form.
-  function bindFormatMirrors() {
-    root.querySelectorAll('[data-format-mirror]').forEach(select => {
-      select.value = form.elements.format.value;
-      select.addEventListener('change', () => {
-        form.elements.format.value = select.value;
-        update();
-      });
-    });
-  }
-
   function updateScrollButtons() {
     const atStart = dates.scrollLeft <= 1;
     const atEnd = dates.scrollLeft + dates.clientWidth >= dates.scrollWidth - 1;
@@ -59,7 +48,6 @@
       const stamp = root.querySelector('[data-date-stamp]');
       const nextStamp = page.querySelector('[data-date-stamp]');
       if (stamp && nextStamp) stamp.replaceChildren(...nextStamp.childNodes);
-      bindFormatMirrors();
 
       history.replaceState(null, '', url);
       status.textContent = 'Showtimes updated.';
@@ -77,7 +65,6 @@
 
   root.dataset.enhanced = '';
   root.querySelectorAll('[data-auto-submit]').forEach(control => control.addEventListener('change', update));
-  bindFormatMirrors();
 
   scrollButtons.forEach(button => button.addEventListener('click', () => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
