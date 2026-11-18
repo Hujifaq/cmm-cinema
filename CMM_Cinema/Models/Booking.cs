@@ -1,5 +1,13 @@
 namespace CMM_Cinema.Models;
 
+// Showtimes are in Bangkok time whatever time zone the server runs in (Azure runs in UTC).
+public static class CinemaTime
+{
+    public static readonly TimeSpan Offset = TimeSpan.FromHours(7);
+    public static DateTime Now => DateTimeOffset.UtcNow.ToOffset(Offset).DateTime;
+    public static DateOnly Today => DateOnly.FromDateTime(Now);
+}
+
 public enum SeatState { Available, Sold }
 
 public enum BookingStatus { Held, Confirmed }
@@ -32,20 +40,25 @@ public static class SeatCategoryLabels
 public record Seat(string Id, string Row, int Number, SeatState State, SeatCategory Category, decimal Price, int Capacity = 1);
 public record BookedSeat(string Id, SeatCategory Category, decimal Price, int Capacity);
 
-// A seat hold lives in memory only: it is demo data, not a real ticket or payment.
+// A seat hold or confirmed booking. No real payment is taken.
 public record BookingHold(
     Guid Id,
     int OwnerId,
     int ShowtimeId,
     IReadOnlyList<BookedSeat> SeatItems,
     DateTimeOffset ExpiresAt,
-    BookingStatus Status)
+    BookingStatus Status,
+    string? TicketToken = null)
 {
     public IReadOnlyList<string> Seats => SeatItems.Select(seat => seat.Id).ToArray();
     public int TicketCount => SeatItems.Sum(seat => seat.Capacity);
     public decimal Total => SeatItems.Sum(seat => seat.Price);
     public string Reference => Id.ToString("N")[..12].ToUpperInvariant();
 }
+
+public record HoldResult(BookingHold? Booking, string Error);
+
+public record ConfirmResult(bool Succeeded, string Error);
 
 // A signed-in user's temporary seat-picking session: it remembers their picks but does not reserve them.
 public record BookingDraft(int OwnerId, int ShowtimeId, IReadOnlyList<string> SeatIds, DateTimeOffset ExpiresAt);

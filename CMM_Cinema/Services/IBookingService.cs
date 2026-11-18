@@ -2,28 +2,28 @@ using CMM_Cinema.Models;
 
 namespace CMM_Cinema.Services;
 
-// Showtimes, seat holds and confirmation. Movies themselves come from IMovieRepository.
+// Showtimes, seat holds, confirmation and seat-picking sessions. Movies themselves come from IMovieRepository.
+// Cinemas, dates, prices and seat rules are fixed in BookingRules.
 public interface IBookingService
 {
-    IReadOnlyList<string> Formats { get; }
-    IReadOnlyList<string> Languages { get; }
-
-    IReadOnlyList<Cinema> GetCinemas();
-    Cinema? GetCinema(int cinemaId);
-    IReadOnlyList<DateOnly> GetDates();
-    IReadOnlyList<Showtime> GetShowtimes(string movieSlug);
-    Showtime? GetShowtime(int showtimeId);
-    decimal GetSeatPrice(Showtime showtime, SeatCategory category = SeatCategory.Normal);
-    IReadOnlyList<Seat> GetSeats(int showtimeId);
+    Task<IReadOnlyList<Showtime>> GetShowtimesAsync(string movieSlug, CancellationToken cancellationToken = default);
+    Task<Showtime?> GetShowtimeAsync(int showtimeId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Seat>> GetSeatsAsync(int showtimeId, CancellationToken cancellationToken = default);
 
     // Bookings belong to the signed-in user who held them; another user's id behaves as if the booking doesn't exist.
-    bool TryHoldSeats(int ownerId, int showtimeId, IEnumerable<string> seatIds, out BookingHold? booking, out string error);
-    BookingHold? GetBooking(int ownerId, Guid bookingId);
-    bool TryConfirmBooking(int ownerId, Guid bookingId, out string error);
-    void CancelHold(int ownerId, Guid bookingId);
+    Task<HoldResult> HoldSeatsAsync(int ownerId, int showtimeId, IEnumerable<string> seatIds, CancellationToken cancellationToken = default);
+    Task<BookingHold?> GetBookingAsync(int ownerId, Guid bookingId, CancellationToken cancellationToken = default);
+    Task<ConfirmResult> ConfirmBookingAsync(int ownerId, Guid bookingId, CancellationToken cancellationToken = default);
+    Task CancelHoldAsync(int ownerId, Guid bookingId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<BookingHold>> GetConfirmedBookingsAsync(int ownerId, CancellationToken cancellationToken = default);
+
+    // A confirmed booking's ticket token is what its QR code carries. Anyone holding the token can view that ticket,
+    // so the lookup ignores the owner. Confirming sets the token once; Ensure gives older confirmed bookings one.
+    Task<BookingHold?> GetBookingByTicketTokenAsync(string ticketToken, CancellationToken cancellationToken = default);
+    Task<string?> EnsureTicketTokenAsync(int ownerId, Guid bookingId, CancellationToken cancellationToken = default);
 
     // One draft per user. Returns null when the showtime is unknown or unavailable.
-    BookingDraft? StartDraft(int ownerId, int showtimeId);
-    BookingDraft? SaveDraftSeats(int ownerId, int showtimeId, IEnumerable<string> seatIds);
-    void ClearDraft(int ownerId);
+    Task<BookingDraft?> StartDraftAsync(int ownerId, int showtimeId, CancellationToken cancellationToken = default);
+    Task<BookingDraft?> SaveDraftSeatsAsync(int ownerId, int showtimeId, IEnumerable<string> seatIds, CancellationToken cancellationToken = default);
+    Task ClearDraftAsync(int ownerId, CancellationToken cancellationToken = default);
 }

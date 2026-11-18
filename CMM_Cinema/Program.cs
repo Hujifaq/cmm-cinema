@@ -31,8 +31,13 @@ builder.Services.AddHttpClient("news-art", client => client.Timeout = TimeSpan.F
 builder.Services.AddSingleton<NewsArtService>();
 builder.Services.AddHostedService<NewsArtWarmup>();
 
-// Demo booking flow: showtimes, seat holds and payments are kept in memory until bookings move to D1.
-builder.Services.AddSingleton<IBookingService, DemoBookingService>();
+// Showtimes, seat holds, bookings and seat-picking sessions live in D1; without it they are kept in memory.
+if (builder.Configuration.GetSection("Cloudflare").Get<CloudflareD1Options>()?.IsConfigured == true)
+    builder.Services.AddScoped<IBookingService, D1BookingService>();
+else
+    builder.Services.AddSingleton<IBookingService, DemoBookingService>();
+
+builder.Services.AddSingleton<TicketQrService>();
 
 builder.Services.AddCinemaAuth(builder.Configuration);
 

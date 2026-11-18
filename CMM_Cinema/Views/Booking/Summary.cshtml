@@ -67,7 +67,7 @@
                         <span class="text-sm font-bold leading-none text-cinema-cream/70">Net total</span>
                         <strong class="text-2xl font-black leading-none tabular-nums tracking-tight text-cinema-cyan">฿@booking.Total.ToString("N0", culture)</strong>
                     </div>
-                    <form class="m-0" method="post" asp-action="Confirm">
+                    <form class="m-0" method="post" asp-action="Confirm" data-loader-form>
                         <input type="hidden" name="bookingId" value="@booking.Id" />
                         <button class="bk-primary bk-summary-confirm" type="submit" data-hold-action>Confirm booking</button>
                     </form>
@@ -80,3 +80,5 @@
         </section>
     </div>
 </div>
+
+@await Html.PartialAsync("_BookingLoader")

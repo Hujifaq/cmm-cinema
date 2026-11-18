@@ -289,8 +289,9 @@ root as revealed, with a 3s safety unhide if scripts never run:
 The script then: waits for `document.fonts.ready` + one `requestAnimationFrame`,
 builds the timeline with `.from()` states (already applied), **then** sets
 `data-revealed`. If the user arrived through a page transition
-(`html[data-page-arrived]`), delay the timeline by `0.55s` so the new page lands
-first; otherwise `0.1s`. See `movie-detail.js` and `my-tickets.js`.
+(`html[data-page-arrived]`), delay the timeline so the new page lands first (`0.55s`;
+`0.3s` on movie detail); otherwise `0.1s` (`0.03s` on movie detail). See
+`movie-detail.js` and `my-tickets.js`.
 
 Standard reveal attributes:
 - `data-reveal-chars` — SplitText chars with `mask: 'chars'`, `yPercent: 110`, stagger 0.025–0.03, `power4.out`
@@ -419,6 +420,26 @@ arrow icon 25%, 0.4s `power3.out`; on leave they snap back with
   as the news card cursor (8.12b), with static text and no arrow or loop. It is
   off for touch and reduced motion.
 
+- **Movie carousel scrolling and arrows** (`now-showing.js`, `_MovieSection`): the
+  homepage Now showing and Upcoming carousels scroll three ways. *Trackpad:* a
+  two-finger sideways swipe (or shift + wheel) glides the cards 1:1 with momentum
+  (`freeMode`, `momentumRatio 0.9`); only sideways wheel movement is taken
+  (`forceToAxis`), so vertical page scrolling is untouched, and it hands back to
+  the page at either end (`releaseOnEdges`). The wheel listens on the whole
+  `[data-carousel]` wrapper, so it also works with the pointer over an arrow.
+  *Touch:* dragging, as before. *Mouse:* hovering the carousel (or focusing
+  inside it with the keyboard) fades in two **glass circle arrows** at its left and
+  right edges, 56px, `bg-black/30` with `backdrop-blur-xl`, a 35% white inset rim
+  and a white top highlight, with a white chevron that nudges 2px on hover. They
+  are vertically centered on the posters (a `--arrow-top` variable measured from
+  the first poster and kept current by a `ResizeObserver`), scale in from 0.9 with
+  the signature easing over 300ms, darken slightly on hover and press to 0.95. The
+  previous arrow is hidden at the start and the next arrow at the end (Swiper
+  disables them), and a carousel whose cards all fit (such as Upcoming with two
+  movies) shows none. Arrows are hidden on touch-first devices
+  (`pointer-coarse:hidden`), and reduced motion removes their transitions. They are
+  real buttons labelled "Previous movies" and "Next movies"; one click moves one card.
+
 ### 8.12 News section — `news.js`
 
 - "Read more" has a **hand-drawn double underline** that **melts into a full
@@ -520,7 +541,21 @@ Quick Book docks fixed to the bottom-right corner (16px from the edges on phones
 Hovering it with a mouse, or clicking/tapping it, stretches the glass shell from
 the corner into the full form (width 720ms, height 560ms, signature-out) while
 the fields fade and slide in 24px after a short delay; the ticket icon spins into
-a close ×. On phones the form stacks with Find showtimes beside the close button.
+a close ×. Below 1024px the form stacks (36px-radius glass, 36rem wide from 768px)
+with Find showtimes beside the close button; from 1024px it is the single-row pill
+(64rem wide, three equal fields about 165–180px each).
+It is a real booking shortcut with three linked dropdowns, filled from live data:
+**Movie** (now-showing movies only, with the movie's rating on the right and its
+first letter as the badge), **Cinema** (the booking service's cinemas, showing their
+formats) and **Date** (the next seven Bangkok days, with Today and Tomorrow marked).
+The bar is not rendered when no movie is now showing. It is a GET form to
+`/Booking/Showtimes#screenings-title`, sending `movie` (slug), `cinemaId` and
+`date`, so Showtimes opens on that movie already filtered to the cinema and day and
+scrolled to the session list. Find showtimes needs all three: otherwise the missing
+triggers shake and the status line names them ("Choose a cinema and date first.").
+When complete, the arrow slides out and the label rolls to "Opening…" for 380ms
+before the page opens; reduced motion opens it immediately, and returning with the
+Back button restores the idle button.
 A hover-opened dock collapses 350ms after the pointer leaves unless the visitor
 has interacted with it; once used, it stays open until the × button, Escape, an
 outside click, or focus leaving it. The collapsed form is `inert`. Reduced motion
@@ -567,13 +602,31 @@ Visitors and customers never see these controls, and the actions refuse them.
 
 ### 8.16 Movie detail — `movie-detail.js`
 
-Poster **unmasks upward** (`clip-path` 1.1s expo-out) while its image settles
+Poster **unmasks upward** (`clip-path` 0.8s expo-out) while its image settles
 from `scale 1.25`; eyebrow line and title letters rise through masks; meta
 items fade up; goo buttons pop in with `back.out(1.6)`; cast avatars scale in.
 From 768px, the poster and its Book Now/Showtimes actions form one sticky column
 128px below the viewport top, stopping at the end of the movie-details grid.
 The column aligns to the start so it can move within the taller content row;
 phones retain normal document flow. Existing poster and button entrances remain.
+Upcoming movies show no Book Now or Showtimes buttons, since they cannot be booked
+yet; only Now Showing movies render them, and the entrance skips the button tween
+when there are none.
+The opening sequence is tuned to feel quick but still eased: it starts 0.03s after
+load (0.3s when arriving through the page swing, so the new page has just landed),
+every element uses 0.5–0.8s durations with the same easings, and the last item
+(the Trailer heading) lands about 1.2s in, finishing the whole sequence roughly 0.5s
+sooner than the earlier 1.1–1.4s durations and 0.55–1.0s start offsets.
+The trailer embed has its own scroll-triggered entrance on every movie page: its
+dark 16:9 frame stays masked (`clip-path: inset(100% 0 0 0 round 16px)`) and the
+video inside starts at `scale 1.15`. As soon as 12% of it scrolls into view it starts,
+overlapping the last 40% of any opening sequence still running rather than waiting
+for it, and the frame **unmasks upward** (0.8s expo-out, the same motion as the
+poster) while the video settles to `scale 1` over 1s, then both temporary styles are
+cleared. The scroll observer watches an unclipped `[data-trailer-watch]` wrapper,
+because browsers treat an element hidden by its own `clip-path` as off-screen. The
+CSS reveal guard also hides `[data-reveal-trailer]` until the script runs, and
+reduced motion or missing GSAP shows the frame as normal.
 
 ### 8.17 Section titles — `Client/now-showing-title.tsx`
 
@@ -813,19 +866,87 @@ rating, total runtime in minutes, screening date/time, admissions, selected
 seat IDs (including VIP pairs), total and reference. The ticket ends after the
 reference, without the category price breakdown, footer divider or CMM Cinema ·
 Demo booking footer.
-Sun-yellow highlights emphasize the price, seats and reference; cream text
+On the Confirmation ticket, the total, seats and reference use `cinema-lemon`
+(`#fde047`, the site's bright marker yellow) so they stand out from the cream text.
+Peach, cyan, amber, clay pink and orchid were tried and rejected. The admissions
+count stays cream, and other pages keep sun yellow. Cream text
 and muted labels retain the site palette. A compact Booking confirmed heading
 and the existing demo notice replace the oversized success heading, check stamp
 and separate reference pill. No watched status, buyer, purchase date, theatre
 number, QR code or ticket validity is invented. The CMM Cinema eyebrow and star
 remain omitted. Long seat lists and references wrap on phones.
-Its Book another screening and Return to homepage links use an equal-width,
-640px-wide two-column action row, stacking to full width below 640px. Both have
-56px minimum height, matching typography, padding and shallow inset/cast shadows.
-The booking action retains cyan and ink; the homepage action uses deep teal and
-cream. The earlier hard offset shadow is omitted. Fine-pointer hover lifts each
-action 2px with signature easing; reduced motion stays static and keyboard focus
-uses a visible ink outline. Destinations remain unchanged.
+Below the ticket, the actions sit in a 480px column matching the ticket width.
+The primary action, View my ticket, is itself a cream ticket stub (`.bk-stub-link`):
+the white-to-`cinema-linen` stub gradient with `shadow-clay-stub`, 11px half-round
+notches masked out of both side edges, and a 76px tear-off end (60px on phones)
+holding a `cinema-logo` Heroicons ticket icon behind a 2px dashed perforation.
+It reads "View my ticket" with a caption "Saved in My Tickets ·" plus the
+monospace booking reference, which wraps to its own line on phones rather than
+truncating, and ends in an SVG arrow. The drop shadow sits on the link, because
+the notch mask would cut a shadow on the paper itself. It opens the booking's
+My Tickets page (`/MyTickets/{reference}/{slug}`). Fine-pointer hover lifts it 3px
+and tilts it -0.7 degrees from the top right, echoing the ticket tear, deepens the
+shadow and slides the arrow 4px; pressing squashes it slightly. No text arrow
+glyphs are used.
+Book another screening and Return to homepage follow as plain 48px pills with no
+goo effect, centered at natural width and full width below 640px. Book another
+screening is deep teal with a cream label and Heroicons film icon, darkening to ink
+on hover; Return to homepage is a quiet 25% ink outline with no icon that gains a
+5% ink wash on hover. Label colors sit on the label span, because the booking pages'
+unlayered `:where(.booking-page) a { color: inherit }` rule overrides utility
+colors on links. Reduced motion keeps every action static; keyboard focus uses a
+visible ink outline.
+Continue to summary navigates normally. Confirm booking on Summary (the form marked
+`data-loader-form`) opens a full-screen popcorn loader (`_BookingLoader`,
+`booking/booking-loader.js`) on the paper background instead of navigating at
+once. A 176px animated popcorn-and-tickets WebP (132px minimum on phones, white
+background removed with `mix-blend-mode: multiply`) sits above one bold ink line
+that cycles every 1.4s through "Confirming your booking", "Getting your tickets
+ready", "Saving your seats" and "Buttering the popcorn": each new line rises in from
+below as the last leaves upward, clipped to a single-line window. The overlay fades
+in over 280ms while its content rises 14px with signature easing. The form posts
+after 2.2s so at least two lines are seen; a second click is ignored, a screen-reader
+status says "Confirming your booking. Please wait.", and returning through the
+history cache hides the loader. The loader markup ships hidden on Summary so the art
+is already downloaded. Reduced motion swaps lines without movement.
+No page transition runs from Summary to Confirmation: the loader skips the
+cross-document view transition on `pageswap`, and Confirmation reached from it omits
+the `@view-transition` opt-in (`ViewData["NoPageTransition"]`).
+On that arrival only (a one-time `TempData` flag set by a successful Confirm),
+Confirmation plays a single Lottie confetti burst (`wwwroot/animations/confetti.json`,
+`lib/lottie/lottie_light.min.js`, `booking/confetti.js`): a fixed, full-screen,
+click-through layer that covers the viewport (`xMidYMid slice`), plays once over 4s
+and then removes itself. Revisiting Confirmation does not replay it, and reduced
+motion skips it.
+Every confirmed ticket carries a real, scannable QR code (QRCoder, rendered
+server-side as an ink-on-white SVG). The **CMM "C" emblem** (`images/favicon-192.png`)
+is set into the centre of every code for trust: a white rounded knockout about 22% of
+the code's width (under 6% of its area, snapped to an odd number of modules so it sits
+dead centre) holds the emblem with a one-module margin. Error correction is level Q
+(repairs 25%), chosen over H because H adds a whole version of modules, shrinking
+each one and, for longer addresses, putting the centre alignment pattern under the
+logo. The SVG has no border of its own: the white tile's 8px padding is the only
+margin, roughly half the white the code used to have. The same emblem is drawn into
+the downloadable PNG, which keeps a standard 4-module margin.
+On Confirmation the ticket's details use a two-column grid (left column flexible,
+right column sized to the QR): Total, Seats and the reference run down the left, and
+Admissions heads the right column with the QR code directly beneath it, beside the
+Seats. The code sits on a white 8px-padded rounded tile (112px wide, 128px from
+640px), left-aligned with Admissions and linked to the ticket page, with a small
+centered "Show at the hall entrance" caption under it. Long seat lists wrap in the
+left column and never reach the code, down to 320px wide; on My Tickets it replaces the earlier
+decorative pattern in the cream stub (144px, 160px from 768px), with an
+Open ticket page link under the reference. Download Ticket saves the same code as
+a PNG (`cmm-ticket-{reference}.png`).
+The code opens `/t/{token}`, a public ticket page on the paper background, the
+same for customers and cinema staff. A full-width 28px-radius status banner leads:
+logo navy with cream text and a check for an upcoming Valid ticket, `cinema-sun`
+with ink text for "Showing today at HH:mm", muted 10% ink with a clock once the
+screening has ended, and `cinema-brick` with a cross for Ticket not found (404).
+Below, a white card reuses `_TicketSummary` (poster, title, cinema · hall, date,
+format), then Screen, Admits and the monospace booking reference, then seat chips
+in logo navy (a VIP pair as "VPn L" and "VPn R"). A muted footnote explains the page
+shows no buyer details or price. The page is `noindex` and not cached.
 Summary posts directly to Confirm, with anti-forgery validation and an idempotent
 in-memory confirmation that marks the held seats sold. There is no payment stage
 or payment-method requirement. Old Payment and Pay routes redirect to Summary
@@ -861,7 +982,8 @@ and 10px semicircular cutouts at its ends replace the torn receipt bottom.
 A wrapper casts a soft shadow around the ticket silhouette. Below
 640px the poster reduces to 68px and the stub moves beneath the main section, with horizontal perforations and
 side notches so long movie titles and seat lists remain readable without overflow.
-The footer still identifies the demo booking; prices and booking data remain server-derived.
+The card ends after the detail grid, with no CMM Cinema · Demo booking footer;
+prices and booking data remain server-derived.
 Confirmation retains its separate vertical poster-led admission ticket.
 
 The Showtime heading starts directly with a system-sans, fluid 2.75–6.5rem
@@ -904,8 +1026,25 @@ The footer's fine rule stays clear of its text. The selected tile lifts without
 rotation, keeps the cyan clay fill and shows a small cream circular check badge.
 Fine-pointer hover lifts the other tiles with a sky-colored edge; focus outlines
 and reduced-motion guards remain intact.
-Cinema/date filters retain native controls, focus outlines, filtering
-hooks and reduced-motion behavior. There is no format or language picker or hidden filter.
+The date filter keeps its native radio controls and focus outline. The cinema filter
+is a custom dropdown (`booking/custom-select.js`, styles in `showtimes.css`) because the
+OS draws a native select's open list and CSS cannot style or animate it. The native
+`<select>` stays in the form, hidden, as the source of truth; picking an option sets
+it and fires a bubbling `change`, so the page's auto-update still runs, and without
+JavaScript the native select still works. The trigger is the same 56px dark pill (52px
+on phones) with an inline chevron that flips 180° on the springy curve. **Focus** is a
+`cinema-cream` border with a soft 4px cream halo (18% cream) instead of the global cyan
+3px outline; the open state looks the same. The list is a dark-glass panel (90% ink,
+16px blur, 26px radius, 1px cream edge, deep shadow) the width of the trigger, opening
+below or flipping above when there is no room. It **eases open** (0.5s `back.out(1.5)`,
+scaling from the trigger edge) while the 46px option pills rise in on a 0.04s stagger. A
+**cream pill slides under whichever option is active** (hover or keyboard, 0.5s
+`elastic.out(1, 0.75)`), turning its text ink, and the chosen option shows a check. The
+trigger label rolls to the new choice (`back.out(2.2)`); closing fades the panel in 0.2s.
+Reduced motion and missing GSAP make every change instant. It is a real listbox:
+Arrow keys, Home/End, Enter or Space to pick, type-ahead (a space mid-search counts as
+part of the search), Escape or an outside click to close, and Tab to leave.
+There is no format or language picker or hidden filter.
 The visible numbered Select cinema and Pick a date headings are omitted;
 the cinema control and date fieldset retain accessible names.
 From 768px the separate poster and card stay side by side, aligned at their
@@ -942,7 +1081,10 @@ centered vertically; no language selector is shown.
 The seat-selection heading displays the current booking's movie title below
 the progress strip, without a step eyebrow, retaining the bold display styling
 and wrapping long titles. The cinema, date and time sit directly beneath this title.
-This screening line uses semibold `text-lg sm:text-xl` typography.
+This screening line uses semibold `text-lg sm:text-xl` typography. No tagline follows
+it. Below sits a Back action with no arrow: a solid 44px-tall `cinema-ink` pill
+with a `cinema-cream` 14px extra-bold label, no border and no shadow.
+It has no hover effect yet; keyboard focus keeps the shared visible outline.
 On desktop, the movie-details card is vertically centered beside the seat-map panel
 and sticks 128px below the viewport top while scrolling, bounded by the seat-layout
 grid so it clears the floating navigation and stops at the panel's end.
@@ -976,6 +1118,9 @@ runtime and genre, then a two-column cream-on-ink fact list shows Cinema,
 Date, Time and Screen (format · language) with small uppercase labels.
 A cyan line under the hold notice reports the user's temporary booking session:
 seat picks save as they change and are restored on return to the same showtime.
+Change showtime beneath it is a solid `cinema-cream` pill, 44px tall, with an
+ink 14px extra-bold label, no arrow and no hover effect yet, aligned to the card's
+left edge (full row on phones, second column on tablets).
 The availability legend and visible admission-limit instructions are omitted;
 selection feedback remains a screen-reader-only live status.
 The selected-seats summary shows bold, comma-separated seat IDs (for example,
@@ -988,7 +1133,8 @@ and the total set in `text-2xl sm:text-3xl` for clearer reading.
 Selected seats, Total and Continue to summary sit at the bottom of the movie-details
 card, rather than below the seat map. They update immediately when seats change.
 Continue to summary occupies a separate row below Selected seats and Total,
-spanning the full details-card width at every screen size. Its native `form`
+spanning the full details-card width at every screen size. Its label has no
+trailing arrow. Its native `form`
 attribute submits the seat-map form with its existing anti-forgery token and seat
 inputs. On tablets and phones this block spans both columns of the details card.
 It uses the same goo fill, pointer-following bulge, label movement and elastic press
@@ -1013,8 +1159,16 @@ silhouette in a neutral gray circle. They retain
 the disabled checkbox and accessible row/seat/availability label. The checkbox remains the full
 click target, with a visible keyboard outline and the existing selection/price
 behavior. Fine-pointer hover lifts only enabled seats; reduced motion removes
-transitions. Coarse pointers use a wider, locally scrolling map with at least
-44px seat targets. Chair artwork and states live in `css/booking/checkout.css`.
+transitions. The map always fits its panel, so it never scrolls sideways and no
+seat is hidden off-screen: row rails shrink to 14px and chairs scale with the
+width, from about 36px on tablets and desktops to 30px at 560px, 19px at 430px and
+12px at 320px. Touch devices no longer force a wider map. Below 560px a Zoom in
+pill (Heroicons magnifying-glass-plus, 40px tall, cream outline) sits left of the
+format tag; it enlarges the map to a 560px minimum (about 30px chairs) that the
+panel pans sideways, centered on the first picked seat or the middle of the hall,
+and becomes See whole hall (magnifying-glass-minus) with `aria-pressed` set. Going
+back to the whole hall resets the pan.
+Chair artwork and states live in `css/booking/checkout.css`.
 
 The seat-selection total sums each selected unit's server-supplied price. The
 limit is eight admissions, so a VIP pair uses two places; when one admission

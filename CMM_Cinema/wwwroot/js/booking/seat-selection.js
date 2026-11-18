@@ -37,6 +37,28 @@
     });
   }
 
+  // Phones show the whole hall by default; Zoom in enlarges the seats and pans the map to the picked seats.
+  const zoom = layout.querySelector('[data-seat-zoom]');
+  const scroller = form.querySelector('.bk-seat-scroller');
+  if (zoom && scroller) {
+    zoom.addEventListener('click', () => {
+      const zoomed = scroller.dataset.zoom !== 'in';
+      scroller.dataset.zoom = zoomed ? 'in' : 'fit';
+      zoom.setAttribute('aria-pressed', String(zoomed));
+
+      const target = seats.find(seat => seat.checked)?.closest('.bk-seat');
+      if (!zoomed) {
+        scroller.scrollLeft = 0;
+      } else if (target) {
+        const box = scroller.getBoundingClientRect();
+        const rect = target.getBoundingClientRect();
+        scroller.scrollLeft += rect.left - box.left - (box.width - rect.width) / 2;
+      } else {
+        scroller.scrollLeft = (scroller.scrollWidth - scroller.clientWidth) / 2;
+      }
+    });
+  }
+
   // Picks are saved to the signed-in user's temporary booking session so a refresh or return visit keeps them.
   const draftUrl = form.dataset.draftUrl;
   const draftStatus = layout.querySelector('[data-draft-status]');

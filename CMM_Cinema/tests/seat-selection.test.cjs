@@ -99,3 +99,22 @@ test('restored session seats show on load, and new picks are saved to the bookin
     assert.equal(d.querySelector('[data-draft-status]').textContent, 'Your session is saved until 14:30.');
   } finally { dom.window.close(); }
 });
+
+test('Zoom in toggles the seat map between the whole hall and a larger view, and reports its state', () => {
+  const dom = new JSDOM(`<div data-seat-selection><button type="button" aria-pressed="false" data-seat-zoom>Zoom</button><form id="seat-reservation" data-seat-form data-max="4"><div class="bk-seat-scroller"><label class="bk-seat"><input type="checkbox" name="seatIds" value="D4" data-seat-row="D" data-seat-number="4" data-seat-type="Normal" data-seat-price="300" data-seat-capacity="1" checked></label></div><p data-seat-feedback></p><div data-selected-seats></div><span data-seat-total></span><button type="submit" data-seat-submit></button></form></div>`, { runScripts: 'outside-only' });
+  try {
+    dom.window.eval(source);
+    const d = dom.window.document;
+    const zoom = d.querySelector('[data-seat-zoom]');
+    const scroller = d.querySelector('.bk-seat-scroller');
+    assert.equal(scroller.dataset.zoom, undefined);
+    zoom.click();
+    assert.equal(scroller.dataset.zoom, 'in');
+    assert.equal(zoom.getAttribute('aria-pressed'), 'true');
+    zoom.click();
+    assert.equal(scroller.dataset.zoom, 'fit');
+    assert.equal(zoom.getAttribute('aria-pressed'), 'false');
+    assert.equal(scroller.scrollLeft, 0);
+    assert.equal(d.querySelector('[data-selected-seats]').textContent, 'D4', 'Zooming leaves the picked seats alone');
+  } finally { dom.window.close(); }
+});

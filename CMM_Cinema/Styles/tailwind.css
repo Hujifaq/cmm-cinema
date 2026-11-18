@@ -15,7 +15,6 @@
   --color-cinema-deep: #103d3e;
   --color-cinema-cyan: #29d9dd;
   --color-cinema-ink: #071c1e;
-  --color-cinema-spotlight: #1c2c2e;
   --color-cinema-paper: #fffdf5;
   --color-cinema-sky: #6fd8e4;
   --color-cinema-sun: #ecc861;
@@ -34,13 +33,20 @@
   --color-cinema-clay-blush: #ffd1e3;
   --color-cinema-clay-pink: #ee91bd;
   --color-cinema-clay-rose: #b85b8c;
+  /* Bright yellow for the confirmed-ticket details (the site's marker yellow). */
+  --color-cinema-lemon: #fde047;
   /* Claymorphism: a soft drop shadow outside, a bright top-left rim and a shaded bottom-right inside. */
   --shadow-clay: 0 28px 48px -26px rgb(7 28 30 / 0.42), 0 10px 18px -10px rgb(7 28 30 / 0.14), inset 6px 6px 14px rgb(255 255 255 / 0.95), inset -10px -12px 26px rgb(7 28 30 / 0.07);
   --shadow-clay-hover: 0 40px 60px -28px rgb(7 28 30 / 0.48), 0 16px 26px -12px rgb(7 28 30 / 0.18), inset 6px 6px 14px rgb(255 255 255 / 0.95), inset -12px -14px 30px rgb(7 28 30 / 0.09);
-  --shadow-clay-stub: inset 6px 6px 14px rgb(255 255 255 / 0.85), inset -10px -12px 26px rgb(120 90 20 / 0.06);
   --shadow-clay-raised: 0 12px 20px -12px rgb(7 28 30 / 0.55), 0 3px 6px -3px rgb(7 28 30 / 0.25);
   --shadow-clay-pill: inset 0 2px 3px rgb(255 255 255 / 0.3), inset 0 -2px 4px rgb(0 0 0 / 0.25), 0 6px 12px -6px rgb(26 68 102 / 0.7);
   --color-cinema-nav-hover: rgba(255, 255, 255, 0.08);
+}
+
+/* Used from hand-written CSS (the confirmation ticket and its stub link), so they must be emitted even with no utility using them. */
+@theme static {
+  --color-cinema-spotlight: #1c2c2e;
+  --shadow-clay-stub: inset 6px 6px 14px rgb(255 255 255 / 0.85), inset -10px -12px 26px rgb(120 90 20 / 0.06);
 }
 
 
@@ -242,7 +248,7 @@
 
 /* Movie detail: copy waits hidden for its GSAP reveal; the fallback shows it if scripts never run. */
 @media (prefers-reduced-motion: no-preference) {
-  [data-movie-detail]:not([data-revealed]) :is([data-detail-poster], [data-reveal-chars], [data-reveal-lines], [data-reveal-up], [data-reveal-cast], [data-goo-button]) {
+  [data-movie-detail]:not([data-revealed]) :is([data-detail-poster], [data-reveal-chars], [data-reveal-lines], [data-reveal-up], [data-reveal-cast], [data-goo-button], [data-reveal-trailer]) {
     visibility: hidden;
     animation: movie-detail-unhide 0s 3s forwards;
   }

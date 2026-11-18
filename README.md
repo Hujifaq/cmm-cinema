@@ -33,6 +33,41 @@ listening there. Stop the other CMM Cinema instance before restarting the watche
 the HTTP and HTTPS profiles both use that port and cannot run together. Inspect
 the listener on macOS with `lsof -nP -iTCP:5081 -sTCP:LISTEN`.
 
+## Bookings database
+
+When the `Cloudflare` settings are present, showtimes, seat holds, confirmed
+bookings and each user's seat-picking session are stored in D1
+(`D1BookingService`). Without them the app falls back to `DemoBookingService`,
+which keeps everything in memory and loses it on restart.
+
+Create the booking tables once per database, from `CMM_Cinema`:
+
+```sh
+npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0006_bookings.sql
+npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0007_ticket_tokens.sql
+```
+
+### Ticket QR codes
+
+Confirming a booking gives it a random 22-character ticket token. Its QR code
+(generated server-side with [QRCoder](https://github.com/codebude/QRCoder), MIT,
+with the CMM emblem in its centre)
+holds `{App:BaseUrl}/t/{token}`, a public page that shows that ticket's movie,
+screening, seats and status to whoever scans it, customer or cinema staff alike.
+It needs no sign-in and shows no buyer details or price. Set `App:BaseUrl` to the
+deployed site's address so printed codes point there; without it, codes use the
+host of the current request. My Tickets gives older confirmed bookings a token
+the first time they are opened.
+
+The migration needs the `users` table from `0003_auth.sql`. Showtimes are
+created by the app for the next 7 days the first time a movie's Showtimes page
+opens. The booking checks run both services, D1 against a private in-memory
+SQLite database, so they never touch the real one:
+
+```sh
+dotnet run --project tests/BookingPricing --artifacts-path /tmp/cmm-booking-tests
+```
+
 ## Cinema hero
 
 The home page uses a dedicated `_HeroLayout` with a floating glass navbar and

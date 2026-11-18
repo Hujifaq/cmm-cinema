@@ -10,11 +10,14 @@
     <link rel="icon" type="image/png" sizes="32x32" href="~/images/favicon-32.png" asp-append-version="true" />
     <link rel="icon" type="image/png" sizes="192x192" href="~/images/favicon-192.png" asp-append-version="true" />
     <link rel="apple-touch-icon" href="~/images/apple-touch-icon.png" asp-append-version="true" />
-    <style nonce="@Context.GetNonce()">
-        @@media @(ViewData["NewsPage"] is true ? "" : "(min-width: 768px) and ")(prefers-reduced-motion: no-preference) {
-            @@view-transition { navigation: auto; }
-        }
-    </style>
+    @if (ViewData["NoPageTransition"] is not true)
+    {
+        <style nonce="@Context.GetNonce()">
+            @@media @(ViewData["NewsPage"] is true ? "" : "(min-width: 768px) and ")(prefers-reduced-motion: no-preference) {
+                @@view-transition { navigation: auto; }
+            }
+        </style>
+    }
     <script nonce="@Context.GetNonce()">
         
         window.addEventListener('pagereveal', function (event) {

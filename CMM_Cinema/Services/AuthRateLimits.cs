@@ -7,6 +7,8 @@ public static class AuthRateLimits
 {
     public const string Login = "auth-login";
     public const string EmailSending = "auth-email";
+    // Public ticket pages: generous enough for staff scanning a queue on shared cinema Wi-Fi, low enough to stop token guessing.
+    public const string TicketLookup = "ticket-lookup";
 
     public static IServiceCollection AddAuthRateLimits(this IServiceCollection services) =>
         services.AddRateLimiter(options =>
@@ -14,6 +16,7 @@ public static class AuthRateLimits
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.AddPolicy(Login, context => PerIp(context, permits: 10, TimeSpan.FromMinutes(1)));
             options.AddPolicy(EmailSending, context => PerIp(context, permits: 5, TimeSpan.FromMinutes(15)));
+            options.AddPolicy(TicketLookup, context => PerIp(context, permits: 120, TimeSpan.FromMinutes(1)));
             options.OnRejected = async (context, cancellationToken) =>
             {
                 var response = context.HttpContext.Response;

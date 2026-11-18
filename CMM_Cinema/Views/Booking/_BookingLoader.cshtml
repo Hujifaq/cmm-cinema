@@ -1,0 +1,13 @@
+@* Shown by booking-loader.js while Confirm booking posts. Rendered hidden so the art is already loaded. *@
+<div class="bk-loader" data-booking-loader hidden>
+    <div class="bk-loader__inner">
+        <img class="bk-loader__art" src="~/images/booking/popcorn-loader.webp" alt="" width="176" height="176" decoding="async" fetchpriority="low" />
+        <p class="bk-loader__lines" aria-hidden="true">
+            <span data-loader-line>Confirming your booking</span>
+            <span data-loader-line>Getting your tickets ready</span>
+            <span data-loader-line>Saving your seats</span>
+            <span data-loader-line>Buttering the popcorn</span>
+        </p>
+        <p class="sr-only" role="status" data-loader-status></p>
+    </div>
+</div>

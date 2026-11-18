@@ -54,16 +54,17 @@
                     <strong>@Model.SelectedDate.ToString("dd", culture)</strong>
                     <small>@Model.SelectedDate.ToString("MMM", culture)</small>
                 </div>
-                <label class="booking-field cinema-filter">
-                    <span class="sr-only">Select cinema</span>
-                    <select name="cinemaId" data-auto-submit>
+                @* booking/custom-select.js swaps the select for a styled, animated listbox; without JS the native select still works. *@
+                <div class="booking-field cinema-filter">
+                    <span class="sr-only" id="cinema-filter-label">Select cinema</span>
+                    <select name="cinemaId" aria-labelledby="cinema-filter-label" data-auto-submit data-custom-select>
                         <option value="">All Cinemas</option>
                         @foreach (var cinema in Model.Cinemas)
                         {
                             <option value="@cinema.Id" selected="@(Model.CinemaId == cinema.Id)">@cinema.Name</option>
                         }
                     </select>
-                </label>
+                </div>
             </div>
 
             <fieldset class="booking-dates" aria-label="Pick a date">
