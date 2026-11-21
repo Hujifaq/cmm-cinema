@@ -1,3 +1,4 @@
+@{ Context.RequireAssets("admin-movies"); }
 @if (User.IsInRole(CMM_Cinema.Services.AuthClaims.AdminRole))
 {
     <dialog class="m-auto w-[min(92vw,26rem)] rounded-[28px] border-0 bg-cinema-paper p-0 font-sans text-cinema-ink shadow-clay backdrop:bg-black/50 backdrop:backdrop-blur-sm" aria-labelledby="delete-movie-title" data-delete-dialog>

@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "createdAt": "2026-11-21T08:08:45.687Z",
+        "reason": "DESIGN.md sanctions the Arial Black system stack for the hero logotype and forbids web fonts; existing design, not introduced by this change"
+      }
+    ]
+  }
+}

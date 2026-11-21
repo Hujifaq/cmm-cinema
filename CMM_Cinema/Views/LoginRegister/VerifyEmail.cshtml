@@ -1,4 +1,5 @@
 @model VerifyEmailViewModel
+@{ Context.RequireAssets("forgot-password"); }
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = (Model.IsValid ? "Confirm your email" : "Link expired") + " - CMM Cinema";

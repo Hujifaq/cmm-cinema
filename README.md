@@ -84,8 +84,9 @@ selection synchronization, viewport changes and reduced motion. Short mobile
 viewports scroll inside the menu. Standard styling uses Tailwind; custom CSS
 owns the entrance and state selectors. The navbar's drawing area is bounded
 locally so the decorative canvas cannot widen the document.
-The colored logo is served from `CMM_Logo_Colored.png` (the supplied `.svg`
-file contains PNG data). The page entrance opens from the center with a short
+The colored logo is served from `CMM_Logo_Colored.webp`, a 384px-wide export sized
+for the nav. The full-size originals of the logo, hero props and promo banners
+were replaced by WebP exports and remain in git history. The page entrance opens from the center with a short
 slide and content reveal. `Client/nav-entrance.cjs` latches that entrance once
 after all delayed labels finish, or immediately on interaction. Moving focus
 and closing Spotlight cannot replay the entrance. Reduced motion skips it.
@@ -102,8 +103,8 @@ The hero fills the current viewport without outer spacing. Both background SVGs
 scale uniformly using the hero's width and height; their anchors preserve the
 large crossing and the bottom-right loop across portrait and landscape sizes.
 The large background crossing uses two independent shaded vector tubes:
-`clay-line-large-up.svg` travels upward behind
-`clay-line-large-down-right.svg`, which travels down and then right.
+`clay-line-large-rear.svg` travels upward behind
+`clay-line-large-front.svg`, which travels down and then right.
 GSAP reveals each tube independently, with overlapping timing. They have separate
 endpoints above the frame, and a soft crossing shadow establishes their depth.
 `clay-line-large-vector.svg` contains the combined composition.
@@ -126,26 +127,30 @@ geometry rather than traced color islands.
 Completed artwork has no reveal mask. Motion preferences are respected, and
 the complete composition is visible without JavaScript.
 
-The standalone SVGs in `wwwroot/images/hero` are the editable source assets.
-Their definitions are mirrored into `_ClayLineLargeGeometry.cshtml` and
-`_ClayLineSmallGeometry.cshtml` so SVG filters render consistently inline.
-Regenerate the small loop and its inline definitions together with:
+`clay-line-large-vector.svg` and `clay-line-small-vector.svg` in
+`wwwroot/images/hero` are the editable source assets. The hero loads each tube
+layer as its own file (`clay-line-*-rear.svg`, `clay-line-*-front.svg`) through
+SVG `<image>`, which keeps the reveal fast in Safari. Rebuild those layer files
+from the vector sources with:
+
+```sh
+python3 CMM_Cinema/scripts/split-clay-lines.py
+```
+
+Regenerate the small loop (and its layer files) with:
 
 ```sh
 python3 CMM_Cinema/scripts/generate-small-clay-line.py
 ```
 
 Run this command from the repository root. No Python packages are required.
-Edit its curves, radii and lighting in that script. The large artwork's
-definitions are maintained in `_ClayLineLargeGeometry.cshtml` and the
-standalone large SVGs.
+Edit its curves, radii and lighting in that script. Edit the large artwork in
+`clay-line-large-vector.svg`, then run the split script.
 Keep the corresponding reveal centerlines in `Views/Home/Index.cshtml` aligned
 with the generated curves.
 
-The original supplied assets remain in `wwwroot/images/hero` for reference.
-The props' empty SVG margins were trimmed. The original clay exports contain
-embedded bitmaps; their black luminance masks were corrected for reference,
-but the hero now uses the new vector versions.
+The props' empty SVG margins were trimmed. The original bitmap clay exports
+were removed; they remain in git history.
 
 ## Navbar icons and actions
 
@@ -205,9 +210,9 @@ generated with the built-in image generation tool. Their exact prompts are in
 [`docs/promo-image-prompts.md`](docs/promo-image-prompts.md). Replace the `offers`
 array and images in `wwwroot/images/promos` when real campaigns are ready:
 
-- `midweek-promo-demo.png`: Wednesday buy-one-get-one promotion.
-- `late-shows-promo-demo.png`: late shows from ฿150.
-- `student-promo-demo.png`: student savings of 20%.
+- `midweek-promo-demo.webp`: Wednesday buy-one-get-one promotion.
+- `late-shows-promo-demo.webp`: late shows from ฿150.
+- `student-promo-demo.webp`: student savings of 20%.
 
 The full artwork scales proportionally on every screen, without cropping its
 lettering or adding duplicate text overlays. Screen-reader text also provides

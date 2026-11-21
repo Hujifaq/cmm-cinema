@@ -1,4 +1,5 @@
 @model NewsSectionViewModel
+@{ Context.RequireAssets("swiper", "news"); }
 @{
     var first = Model.Items[0];
 }

@@ -1,4 +1,6 @@
 @model MovieListingsViewModel
+@inject Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider FileVersions
+@{ Context.RequireAssets("hero"); }
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "CMM Cinema";
@@ -20,10 +22,9 @@
                     <path class="hero-line__independent-trace" data-duration="2" data-delay="0.12" pathLength="1000" d="M 153 -70 C 110 65 99 240 244 327 C 375 407 510 371 625 267" stroke="white" stroke-width="160" stroke-linecap="round" stroke-linejoin="round" />
                 </mask>
             </defs>
-            @await Html.PartialAsync("_ClayLineLargeGeometry")
             <g opacity="0.61">
-                <use href="#clay-large-up-surface" data-independent-reveal="clay-large-up-reveal" />
-                <use href="#clay-large-front-layer" data-independent-reveal="clay-large-down-right-reveal" />
+                <image href="@FileVersions.AddFileVersionToPath(Context.Request.PathBase, "/images/hero/clay-line-large-rear.svg")" x="-180" y="-180" width="1060" height="1053" data-independent-reveal="clay-large-up-reveal" />
+                <image href="@FileVersions.AddFileVersionToPath(Context.Request.PathBase, "/images/hero/clay-line-large-front.svg")" x="-180" y="-180" width="1060" height="1053" data-independent-reveal="clay-large-down-right-reveal" />
             </g>
         </svg>
     </div>
@@ -38,10 +39,9 @@
                     <path class="hero-line__trace" data-start="0.20149645" data-end="1" pathLength="1000" d="M 313 304 C 243 399 330 463 413 377 C 531 252 463 66 302 58 C 124 46 40 203 49 358 C 57 514 137 617 267 666" stroke="white" stroke-width="176" stroke-linecap="round" stroke-linejoin="round" />
                 </mask>
             </defs>
-            @await Html.PartialAsync("_ClayLineSmallGeometry")
             <g opacity="0.65">
-                <use href="#clay-small-segment-0" data-reveal-mask="clay-small-rear-reveal" />
-                <use href="#clay-small-segment-1" data-reveal-mask="clay-small-front-reveal" />
+                <image href="@FileVersions.AddFileVersionToPath(Context.Request.PathBase, "/images/hero/clay-line-small-rear.svg")" x="-180" y="-180" width="1060" height="1081" data-reveal-mask="clay-small-rear-reveal" />
+                <image href="@FileVersions.AddFileVersionToPath(Context.Request.PathBase, "/images/hero/clay-line-small-front.svg")" x="-180" y="-180" width="1060" height="1081" data-reveal-mask="clay-small-front-reveal" />
             </g>
         </svg>
     </div>
@@ -61,16 +61,16 @@
 
    
     <div class="hero-prop hero-prop--glasses pointer-events-none absolute z-2" aria-hidden="true">
-        <img class="block h-auto w-full select-none" src="~/images/hero/glasses.svg" asp-append-version="true" width="577" height="522" alt="" fetchpriority="high" draggable="false" />
+        <img class="block h-auto w-full select-none" src="~/images/hero/glasses.webp" asp-append-version="true" width="577" height="522" alt="" fetchpriority="high" draggable="false" />
     </div>
     <div class="hero-prop hero-prop--star pointer-events-none absolute z-2" aria-hidden="true">
-        <img class="block h-auto w-full select-none" src="~/images/hero/star.svg" asp-append-version="true" width="290" height="292" alt="" fetchpriority="high" draggable="false" />
+        <img class="block h-auto w-full select-none" src="~/images/hero/star.webp" asp-append-version="true" width="290" height="292" alt="" fetchpriority="high" draggable="false" />
     </div>
     <div class="hero-prop hero-prop--clapper pointer-events-none absolute z-2" aria-hidden="true">
-        <img class="block h-auto w-full select-none" src="~/images/hero/clapperboard.svg" asp-append-version="true" width="232" height="245" alt="" draggable="false" />
+        <img class="block h-auto w-full select-none" src="~/images/hero/clapperboard.webp" asp-append-version="true" width="232" height="245" alt="" draggable="false" />
     </div>
     <div class="hero-prop hero-prop--popcorn pointer-events-none absolute z-2" aria-hidden="true">
-        <img class="block h-auto w-full select-none" src="~/images/hero/popcorn.svg" asp-append-version="true" width="592" height="610" alt="" draggable="false" />
+        <img class="block h-auto w-full select-none" src="~/images/hero/popcorn.webp" asp-append-version="true" width="592" height="610" alt="" draggable="false" />
     </div>
 
     <div class="hero-title hero-title--outline pointer-events-none absolute z-3 m-0" aria-hidden="true">

@@ -52,6 +52,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseSecurityHeaders(SecurityHeadersSetup.Policies());
+if (!app.Environment.IsDevelopment())
+{
+    app.UseVersionedAssetCaching();
+}
 app.UseHttpsRedirection();
 
 app.UseRouting();
