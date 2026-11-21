@@ -40,8 +40,7 @@
   top: 30.4%;
 }
 
-.hero-title text,
-.hero-title__split {
+.hero-title text {
   font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -49,15 +48,6 @@
   stroke-width: var(--hero-outline-width);
   paint-order: stroke;
 }
-
-/* SplitText's HTML letters live in the same SVG coordinate system as the
-   original type, so the fill and foreground outline stay registered. */
-.hero-title--outline .hero-title__split {
-  color: transparent;
-  -webkit-text-stroke: var(--hero-outline-width) var(--color-cinema-cream);
-}
-
-.hero-title__split { transform-origin: 50% 0; }
 
 .hero-prop--glasses { width: 20%; left: 15.2%; top: 24%; }
 .hero-prop--star { width: 20%; left: 62.7%; top: 13.2%; }

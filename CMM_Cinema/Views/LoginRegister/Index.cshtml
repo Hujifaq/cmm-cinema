@@ -1,5 +1,6 @@
 @model AuthPageViewModel
 @inject Microsoft.Extensions.Options.IOptions<CMM_Cinema.Services.TurnstileOptions> Turnstile
+@{ Context.RequireAssets("signup", "ajax-form"); }
 @{
     Layout = "_HeroLayout";
     var formErrors = ViewData.ModelState.Values.SelectMany(entry => entry.Errors).Select(error => error.ErrorMessage).Distinct().ToList();

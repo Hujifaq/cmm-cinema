@@ -26,7 +26,7 @@
             <p class="bk-screening-meta text-lg font-semibold sm:text-xl">@Model.Cinema.Name · @showtime.Date.ToString("ddd dd MMM", culture) · @showtime.Time.ToString("HH:mm", culture)</p>
             <a class="bk-seat-back" asp-action="Showtimes" asp-route-movie="@Model.Movie.Slug">Back</a>
         </div>
-        <img class="bk-heading-art bk-heading-art--glasses" src="~/images/hero/glasses.svg" alt="" aria-hidden="true" />
+        <img class="bk-heading-art bk-heading-art--glasses" src="~/images/hero/glasses.webp" asp-append-version="true" alt="" aria-hidden="true" decoding="async" />
     </header>
 
     <div class="bk-grid bk-seat-layout" data-seat-selection>

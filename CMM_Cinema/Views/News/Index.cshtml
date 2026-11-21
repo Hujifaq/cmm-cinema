@@ -26,7 +26,7 @@ else
         @for (var i = 0; i < Model.Count; i++)
         {
             var s = Model[i];
-            <li data-disc-item data-title="@s.Title" data-category="@s.Category" data-date="@s.Date" data-excerpt="@s.Excerpt" data-url="@s.Url" data-art="@s.ArtUrl"><img src="@s.ArtUrl" alt="" /></li>
+            <li data-disc-item data-title="@s.Title" data-category="@s.Category" data-date="@s.Date" data-excerpt="@s.Excerpt" data-url="@s.Url" data-art="@s.ArtUrl"><img src="@s.ArtUrl" crossorigin="anonymous" alt="" /></li>
         }
     </ol>
 

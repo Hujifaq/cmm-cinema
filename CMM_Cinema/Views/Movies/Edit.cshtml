@@ -1,4 +1,5 @@
 @model MovieForm
+@{ Context.RequireAssets("admin-movies"); }
 @{
     Layout = "_HeroLayout";
     var isNew = Context.Request.Path.Value?.EndsWith("/New", StringComparison.OrdinalIgnoreCase) == true;

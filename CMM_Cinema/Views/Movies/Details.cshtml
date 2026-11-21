@@ -1,4 +1,5 @@
 @model Movie
+@{ Context.RequireAssets("movie-detail"); }
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = $"{Model.Title} - CMM Cinema";

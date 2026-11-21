@@ -3,10 +3,15 @@
   if (!hero || !window.gsap) return;
 
   const gsap = window.gsap;
-  const SplitText = window.SplitText;
-  if (SplitText) gsap.registerPlugin(SplitText);
   const media = gsap.matchMedia();
-  const images = [...hero.querySelectorAll("img")];
+  const images = [
+    ...hero.querySelectorAll("img"),
+    ...[...hero.querySelectorAll(".hero-line image")].map(node => {
+      const image = new Image();
+      image.src = node.href.baseVal;
+      return image;
+    })
+  ];
   let disposed = false;
 
   if (!document.hidden && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -18,37 +23,63 @@
     document.fonts.ready
   ]);
 
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
   const splitRow = (row, context) => {
     const text = row.querySelector("text");
-    const svg = text.ownerSVGElement;
-    const layer = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
-    layer.setAttribute("x", "0");
-    layer.setAttribute("y", String(text.y.baseVal[0].value - 200));
-    layer.setAttribute("width", String(svg.viewBox.baseVal.width));
-    layer.setAttribute("height", "260");
-    layer.classList.add("overflow-visible");
-
-    const fit = document.createElement("div");
-    fit.className = "hero-title__split absolute left-1/2 top-0 w-max whitespace-nowrap text-[200px] leading-none font-black tracking-[-12px] text-cinema-cream";
-    const word = document.createElement("span");
-    word.className = "inline-block";
-    word.textContent = text.textContent;
-    const baseline = document.createElement("span");
-    baseline.className = "inline-block h-0 w-0";
-    fit.append(word, baseline);
-    layer.append(fit);
+    const letters = [...text.textContent];
+    const layer = document.createElementNS(SVG_NS, "g");
     row.append(layer);
-    // Register cleanup before splitting so failed initialization also restores
-    // the original SVG, as do pagehide and reduced-motion preference changes.
     context.add(() => () => layer.remove());
 
-    const split = SplitText.create(word, { type: "chars", aria: "none", charsClass: "hero-title__char" });
-    const svgScale = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
-    const width = word.getBoundingClientRect().width / svgScale;
-    const baselineY = (baseline.getBoundingClientRect().top - fit.getBoundingClientRect().top) / svgScale;
-    fit.style.transform = `translate(-50%, ${200 - baselineY}px) scaleX(${text.textLength.baseVal.value / width})`;
+    const baseline = text.y.baseVal[0].value;
+    const targetWidth = text.textLength.baseVal.value;
+    const cells = letters.map(letter => {
+      const glyph = text.cloneNode(false);
+      ["x", "y", "textLength", "lengthAdjust", "text-anchor"].forEach(name => glyph.removeAttribute(name));
+      glyph.setAttribute("x", "0");
+      glyph.setAttribute("y", "0");
+      glyph.textContent = letter;
+      const inner = document.createElementNS(SVG_NS, "g");
+      inner.setAttribute("class", "hero-title__char");
+      inner.append(glyph);
+      const outer = document.createElementNS(SVG_NS, "g");
+      outer.append(inner);
+      layer.append(outer);
+      return { outer, inner, advance: glyph.getComputedTextLength() };
+    });
+
+    const natural = cells.reduce((sum, cell) => sum + cell.advance, 0);
+    const scale = natural ? targetWidth / natural : 1;
+    let x = text.x.baseVal[0].value - targetWidth / 2;
+    const chars = cells.map(cell => {
+      cell.outer.setAttribute("transform", `translate(${x} ${baseline}) scale(${scale} 1)`);
+      x += cell.advance * scale;
+      return cell.inner;
+    });
+
     gsap.set(text, { visibility: "hidden" });
-    return split;
+    return { chars };
+  };
+
+  const fitMasksToHero = context => {
+    const bounds = hero.getBoundingClientRect();
+    hero.querySelectorAll(".hero-line svg").forEach(svg => {
+      const matrix = svg.getScreenCTM();
+      if (!matrix) return;
+      const inverse = matrix.inverse();
+      const topLeft = new DOMPoint(bounds.left, bounds.top).matrixTransform(inverse);
+      const bottomRight = new DOMPoint(bounds.right, bounds.bottom).matrixTransform(inverse);
+      const pad = 4;
+      svg.querySelectorAll("mask").forEach(mask => {
+        const original = ["x", "y", "width", "height"].map(name => [name, mask.getAttribute(name)]);
+        context.add(() => () => original.forEach(([name, value]) => mask.setAttribute(name, value)));
+        mask.setAttribute("x", String(topLeft.x - pad));
+        mask.setAttribute("y", String(topLeft.y - pad));
+        mask.setAttribute("width", String(bottomRight.x - topLeft.x + pad * 2));
+        mask.setAttribute("height", String(bottomRight.y - topLeft.y + pad * 2));
+      });
+    });
   };
 
   const start = () => {
@@ -70,6 +101,7 @@
       let stopPhysics = () => {};
 
       const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
+      fitMasksToHero(context);
 
       // The large crossing consists of two complete, independent tubes.
       // Rear draws upward; front starts separately and draws down, then right.
@@ -119,26 +151,19 @@
           .set(artwork, { opacity: 1, attr: { mask: "none" } }, delay + duration);
       });
 
-      if (SplitText) {
-        [[cmmRows, 0.18], [cinemaRows, 0.32]].forEach(([rows, start]) => {
-          const layers = [...rows].map(row => splitRow(row, context));
-          layers[0].chars.forEach((_, index) => {
-            // Tween each fill/outline pair together, staggering by letter rather
-            // than by layer so the foreground outline never drifts from its fill.
-            const pair = layers.map(layer => layer.chars[index]);
-            const at = start + index * 0.065;
-            intro
-              .from(pair, { scale: 0.1, transformOrigin: "50% 75%", duration: 1.15, ease: "elastic.out(1, 0.45)" }, at)
-              .from(pair, { opacity: 0, duration: 0.18, ease: "power1.out" }, at);
-          });
+      [[cmmRows, 0.18], [cinemaRows, 0.32]].forEach(([rows, start]) => {
+        const layers = [...rows].map(row => splitRow(row, context));
+        layers[0].chars.forEach((_, index) => {
+          // Tween each fill/outline pair together, staggering by letter rather
+          // than by layer so the foreground outline never drifts from its fill.
+          const pair = layers.map(layer => layer.chars[index]);
+          const at = start + index * 0.065;
+          intro
+            .from(pair, { scale: 0.1, transformOrigin: "50% 75%", duration: 1.15, ease: "elastic.out(1, 0.45)" }, at)
+            .from(pair, { opacity: 0, duration: 0.18, ease: "power1.out" }, at);
         });
-      } else {
-        // Keep the original whole-word entrance if the optional plugin fails.
-        intro
-          .from(cmmRows, { scale: 0.45, opacity: 0, svgOrigin: "395 72.5", duration: 1.2, ease: "elastic.out(1, 0.5)" }, 0.18)
-          .from(cinemaRows, { scale: 0.45, opacity: 0, svgOrigin: "395 237.5", duration: 1.2, ease: "elastic.out(1, 0.5)" }, 0.32);
-      }
-      
+      });
+
       const propsStart = Math.max(0, intro.duration() - 1);
       if (window.CinemaHeroPhysics) {
         gsap.set(props, { visibility: "hidden" });

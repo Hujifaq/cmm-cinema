@@ -155,10 +155,12 @@ test('reduced motion bypasses tweens; arrow keys and Tab dismissal remain usable
   assert.equal(ui.document.activeElement, ui.rows[0]);
   ui.nav.emit('keydown', { target: ui.rows[0], key: 'End', preventDefault() {} });
   assert.equal(ui.document.activeElement, ui.rows[3]);
-  ui.document.activeElement = null;
-  ui.nav.emit('focusout');
-  await Promise.resolve();
-  assert.equal(ui.panel.hidden, true);
+  ui.nav.emit('focusout', { target: ui.rows[3], relatedTarget: ui.rows[0] });
+  assert.equal(ui.panel.hidden, false, 'moving focus between menu rows keeps the menu open');
+  ui.nav.emit('focusout', { target: ui.rows[3], relatedTarget: null });
+  assert.equal(ui.panel.hidden, false, 'a focus change with no destination is left to the outside-click handler');
+  ui.nav.emit('focusout', { target: ui.rows[3], relatedTarget: { outsideTheNav: true } });
+  assert.equal(ui.panel.hidden, true, 'tabbing out of the nav closes the menu');
 });
 
 test('hidden pages finish motion without losing state; pagehide releases listeners', () => {

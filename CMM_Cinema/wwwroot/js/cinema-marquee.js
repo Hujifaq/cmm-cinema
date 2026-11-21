@@ -3,6 +3,7 @@
 
   document.querySelectorAll('[data-marquee]').forEach(marquee => {
     const toggle = marquee.querySelector('[data-marquee-toggle]');
+    if (!toggle) return;
     const pauseIcon = toggle.querySelector('[data-marquee-pause-icon]');
     const playIcon = toggle.querySelector('[data-marquee-play-icon]');
     toggle.hidden = false;

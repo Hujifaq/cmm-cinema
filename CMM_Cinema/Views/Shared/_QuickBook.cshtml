@@ -1,5 +1,6 @@
 @model IReadOnlyList<Movie>
 @using CMM_Cinema.Services
+@{ Context.RequireAssets("quick-book"); }
 @{
     // Real data: now-showing movies, the booking service's cinemas and its next seven days (Bangkok time).
     // Choosing all three opens that movie's Showtimes page already filtered to the cinema and date.

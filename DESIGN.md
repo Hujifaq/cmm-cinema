@@ -57,6 +57,19 @@ headings/paragraphs and `border-0 bg-transparent p-0` on bare buttons yourself.
   (`var tabClass = "...";`).
 - Every behaviour script starts with a guard: element missing / no GSAP /
   reduced motion → bail out and leave the page fully usable.
+- Page-specific scripts and styles load only where they are used. The view or
+  partial that contains a behaviour's hook calls
+  `@{ Context.RequireAssets("swiper", "news"); }`, and `_HeroLayout` wraps the
+  matching tags in `@if (Context.RequiresAsset("..."))`, keeping their original
+  order. `tests/page-assets.test.cjs` fails if a view has a hook without
+  requesting its asset. Site-wide pieces (nav, search, GSAP, Lenis, page
+  transitions, marquee, goo buttons) stay unconditional.
+- Reference local files with `asp-append-version="true"` (or
+  `IFileVersionProvider.AddFileVersionToPath` where no tag helper applies, such
+  as SVG `<image href>`). Outside Development, `UseVersionedAssetCaching` serves
+  a `?v=` URL whose version matches the file's hash as cacheable for a year, so
+  returning visitors make no requests for it; unversioned URLs are revalidated
+  on every view.
 
 ---
 
@@ -220,10 +233,17 @@ On poster hover, a dark frosted panel (`backdrop-blur-xl`, gradient from §3.3,
 
 ### 6.4 Clay tube artwork (hero)
 
-The background lines in the hero are shaded SVG "clay tubes" (generated
-geometry in `_ClayLineLargeGeometry` / `_ClayLineSmallGeometry`, sources in
+The background lines in the hero are shaded SVG "clay tubes" (sources in
 `wwwroot/images/hero`). They are generated — regenerate from the scripts rather
-than hand-editing paths.
+than hand-editing paths. Each tube layer is a standalone SVG file
+(`clay-line-large-rear/front.svg`, `clay-line-small-rear/front.svg`) drawn with
+SVG `<image>` inside the masked hero SVG, so Safari rasterizes each tube once and
+only re-composites the mask while it draws. Never inline the tube geometry back
+into the page: its hundreds of gradient paths re-rasterize on every mask frame
+and run at about 4fps in Safari. While the tubes draw in, `hero.js` shrinks each
+reveal mask's region to the visible hero, because Safari allocates a mask buffer
+the size of the mask region and the tubes are several times larger than the
+hero.
 
 ---
 
@@ -370,6 +390,10 @@ still. Pages arriving this way get `html[data-page-arrived]`.
    `elastic.out(1, 0.45)`, 1.15s, staggered 0.065s per letter (CMM at 0.18s,
    CINEMA at 0.32s). The cream fill and the cream outline layer on top are
    tweened together so they stay registered.
+   Each letter is its own SVG `<text>` (built in `hero.js`, scaled to the original
+   `textLength`); do not use `foreignObject` or SplitText here — Safari mispaints
+   transformed HTML inside `foreignObject`, which stacks the letters on top of
+   each other.
 3. Props (glasses, star, clapperboard, popcorn) are **thrown in** by the physics
    engine about 1s before the timeline ends.
 
@@ -391,7 +415,9 @@ reduced motion.
 
 Black strip above the nav, white 13–14px semibold text separated by `✦`.
 Scrolls left infinitely (40s, linear — the only linear animation). Pauses on
-hover and via a toggle. Reduced motion: static wrapped text.
+hover. `cinema-marquee.js` wires a pause/play button only when the markup
+contains `[data-marquee-toggle]`; the shared partial currently has none.
+Reduced motion: static wrapped text.
 
 ### 8.10 Promo carousel + magnetic arrows — `cinema-promos.js`, `cinema-magnetic.js`
 

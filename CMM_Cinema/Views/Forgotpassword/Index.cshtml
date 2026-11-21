@@ -1,5 +1,6 @@
 @model ForgotPasswordViewModel
 @inject Microsoft.Extensions.Options.IOptions<CMM_Cinema.Services.TurnstileOptions> Turnstile
+@{ Context.RequireAssets("forgot-password", "ajax-form"); }
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "Forgot password - CMM Cinema";

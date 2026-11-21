@@ -1,5 +1,6 @@
 @model string
 @inject Microsoft.Extensions.Options.IOptions<CMM_Cinema.Services.TurnstileOptions> Turnstile
+@{ Context.RequireAssets("ajax-form"); }
 @{
     var askForEmail = ViewData["AskForEmail"] is true;
     var errors = ViewData.ModelState.Values.SelectMany(entry => entry.Errors).Select(error => error.ErrorMessage).Distinct().ToList();
