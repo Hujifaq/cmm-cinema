@@ -38,6 +38,7 @@ else
     builder.Services.AddSingleton<IBookingService, DemoBookingService>();
 
 builder.Services.AddSingleton<TicketQrService>();
+builder.Services.AddScoped<TicketBuilder>();
 
 builder.Services.AddCinemaAuth(builder.Configuration);
 

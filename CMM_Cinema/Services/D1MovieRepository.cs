@@ -12,16 +12,19 @@ public sealed class D1MovieRepository(D1Client d1, IMemoryCache cache) : IMovieR
     private static readonly TimeSpan CacheLifetime = TimeSpan.FromSeconds(60);
 
     public async Task<IReadOnlyList<Movie>> GetByStatusAsync(MovieStatus status, CancellationToken cancellationToken = default) =>
-        (await LoadAsync(cancellationToken)).Where(movie => movie.Status == status).ToArray();
+        (await ListedAsync(cancellationToken)).Where(movie => movie.Status == status).ToArray();
 
     public async Task<Movie?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
+        (await ListedAsync(cancellationToken)).FirstOrDefault(movie => string.Equals(movie.Slug, slug, StringComparison.OrdinalIgnoreCase));
+
+    public async Task<Movie?> GetBySlugIncludingArchivedAsync(string slug, CancellationToken cancellationToken = default) =>
         (await LoadAsync(cancellationToken)).FirstOrDefault(movie => string.Equals(movie.Slug, slug, StringComparison.OrdinalIgnoreCase));
 
     public async Task<IReadOnlyList<Movie>> SearchAsync(string query, int limit, CancellationToken cancellationToken = default)
     {
         var term = query.Trim();
         if (term.Length == 0) return [];
-        return (await LoadAsync(cancellationToken))
+        return (await ListedAsync(cancellationToken))
             .Where(movie => movie.SearchText.Contains(term, StringComparison.OrdinalIgnoreCase))
             .OrderBy(movie => movie.Title.StartsWith(term, StringComparison.OrdinalIgnoreCase) ? 0 : movie.Title.Contains(term, StringComparison.OrdinalIgnoreCase) ? 1 : 2)
             .ThenBy(movie => movie.Status)
@@ -87,6 +90,9 @@ public sealed class D1MovieRepository(D1Client d1, IMemoryCache cache) : IMovieR
 
     private static string? ReleaseDate(MovieForm form) => form.ReleaseDate?.ToString("yyyy-MM-dd");
 
+    private async Task<IEnumerable<Movie>> ListedAsync(CancellationToken cancellationToken) =>
+        (await LoadAsync(cancellationToken)).Where(movie => !movie.IsArchived);
+
     private async Task<IReadOnlyList<Movie>> LoadAsync(CancellationToken cancellationToken) =>
         (await cache.GetOrCreateAsync(CacheKey, entry =>
         {
@@ -97,8 +103,8 @@ public sealed class D1MovieRepository(D1Client d1, IMemoryCache cache) : IMovieR
     private async Task<IReadOnlyList<Movie>> FetchAsync(CancellationToken cancellationToken)
     {
         var movieRows = await d1.QueryAsync(
-            "SELECT id, slug, title, genre, duration_minutes, rating, language, synopsis, overview, status, release_date, poster_url, poster_theme, poster_title, trailer_url " +
-            "FROM movies WHERE is_archived = 0 ORDER BY id", cancellationToken: cancellationToken);
+            "SELECT id, slug, title, genre, duration_minutes, rating, language, synopsis, overview, status, release_date, poster_url, poster_theme, poster_title, trailer_url, is_archived " +
+            "FROM movies ORDER BY id", cancellationToken: cancellationToken);
         var castRows = await d1.QueryAsync(
             "SELECT movie_id, name, role, photo_url FROM cast_members ORDER BY movie_id, sort_order, id", cancellationToken: cancellationToken);
 
@@ -127,7 +133,8 @@ public sealed class D1MovieRepository(D1Client d1, IMemoryCache cache) : IMovieR
                 Text(row, "poster_theme") ?? "ink-orbit",
                 Text(row, "poster_title"),
                 castByMovie.GetValueOrDefault(id, []),
-                Text(row, "trailer_url"));
+                Text(row, "trailer_url"),
+                row.TryGetProperty("is_archived", out var archived) && archived.ValueKind == JsonValueKind.Number && archived.GetInt32() == 1);
         }).ToArray();
     }
 

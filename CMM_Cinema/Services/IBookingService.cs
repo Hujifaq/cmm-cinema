@@ -22,6 +22,11 @@ public interface IBookingService
     Task<BookingHold?> GetBookingByTicketTokenAsync(string ticketToken, CancellationToken cancellationToken = default);
     Task<string?> EnsureTicketTokenAsync(int ownerId, Guid bookingId, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<BookingHold>> GetAllConfirmedBookingsAsync(CancellationToken cancellationToken = default);
+    Task<BookingHold?> GetConfirmedBookingAsync(Guid bookingId, CancellationToken cancellationToken = default);
+    Task<HoldResult> ChangeConfirmedBookingAsync(Guid bookingId, int showtimeId, IEnumerable<string> seatIds, CancellationToken cancellationToken = default);
+    Task<bool> CancelConfirmedBookingAsync(Guid bookingId, CancellationToken cancellationToken = default);
+
     // One draft per user. Returns null when the showtime is unknown or unavailable.
     Task<BookingDraft?> StartDraftAsync(int ownerId, int showtimeId, CancellationToken cancellationToken = default);
     Task<BookingDraft?> SaveDraftSeatsAsync(int ownerId, int showtimeId, IEnumerable<string> seatIds, CancellationToken cancellationToken = default);

@@ -129,7 +129,14 @@
                                 @foreach (var show in group)
                                 {
                                     var time = show.Time.ToString("HH:mm", culture);
-                                    if (show.IsAvailable)
+                                    if (show.HasStarted)
+                                    {
+                                        <button class="showtime-button" type="button" disabled aria-label="@time, already started">
+                                            <span class="text-lg leading-none sm:text-xl">@time</span>
+                                            <small>STARTED</small>
+                                        </button>
+                                    }
+                                    else if (show.IsAvailable)
                                     {
                                         <a class="showtime-button" asp-action="SeatSelection" asp-route-showtimeId="@show.Id" aria-label="@cinema.Name, @show.Format @show.Language, @time">
                                             <span class="text-lg leading-none sm:text-xl">@time</span>

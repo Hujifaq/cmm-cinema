@@ -9,6 +9,7 @@ public static class BookingRules
     public const int DaysAhead = 7;
     public static readonly TimeSpan HoldLength = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan DraftLength = TimeSpan.FromMinutes(20);
+    public const string ShowtimeStartedError = "This screening has already started. Please pick another showtime.";
 
     private const string Rows = "ABCDEF";
     private const int SeatsPerRow = 16;
@@ -77,6 +78,15 @@ public static class BookingRules
 
         bool Taken(string id) => PresoldSeats.Contains(id) || isTaken(id);
     }
+
+    public static IReadOnlyList<Seat> ReleaseSeats(IReadOnlyList<Seat> seatMap, BookingHold booking, int showtimeId)
+    {
+        if (booking.ShowtimeId != showtimeId) return seatMap;
+        var own = booking.Seats.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return seatMap.Select(seat => own.Contains(seat.Id) ? seat with { State = SeatState.Available } : seat).ToArray();
+    }
+
+    public const string ChangeShowtimeError = "Pick an upcoming screening of the same movie.";
 
     // 128 random bits as 22 URL-safe characters, so a ticket URL cannot be guessed from its reference or another ticket.
     public static string NewTicketToken() =>

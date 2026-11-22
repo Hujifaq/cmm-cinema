@@ -614,6 +614,20 @@ Deleting archives the movie, so existing bookings stay valid. `/Movies/New` and
 Cast sections, white 16px-radius fields and add/remove cast rows (`admin-movies.js`).
 Visitors and customers never see these controls, and the actions refuse them.
 
+### 8.14c Admin ticket management — `admin-tickets.js`
+
+Admins can book like customers (through a linked booking account), so their own
+tickets show on My Tickets with a 40px ink pencil circle in the card's top right.
+My Tickets adds a third tab, **All Tickets**, for admins only: one white 28px-radius
+list (it rises in as a single card) with a row per ticket showing booking code, an
+Upcoming/Watched chip, movie, showtime, seats, customer and an ink "Edit" pill, plus
+a pill search field that filters rows as you type. `/Admin/Tickets/{id}` is a paper
+page of white panels: ticket summary with customer details, a "Move to" pill select
+of the movie's upcoming screenings (GET, "Show seats"), a seat grid of 44px pill
+checkboxes (logo navy = this ticket, white = free, ink/10 struck-through = taken)
+with "Save changes", and a brick "Cancel ticket" button that opens the same paper
+confirmation dialog as movie delete ("Keep it" focused first).
+
 ### 8.15 My Tickets — `my-tickets.js`
 
 - Tabs: each tab has an ink fill that **grows as a circle from its centre**

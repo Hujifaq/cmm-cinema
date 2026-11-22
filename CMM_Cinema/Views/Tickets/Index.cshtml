@@ -1,5 +1,6 @@
 @model MyTicketsViewModel
 @{ Context.RequireAssets("my-tickets"); }
+@{ if (Model.AllTickets is not null) Context.RequireAssets("admin-tickets"); }
 @{
     Layout = "_HeroLayout";
     ViewData["Title"] = "My Tickets - CMM Cinema";
@@ -11,12 +12,23 @@
         (Key: "upcoming", Label: "Upcoming Tickets", Tickets: Model.Upcoming, Empty: "No upcoming tickets", Hint: "Tickets you book will show up here."),
         (Key: "past", Label: "Past Tickets", Tickets: Model.Past, Empty: "No past tickets", Hint: "Movies you have watched will show up here."),
     };
+    var notice = TempData["AdminNotice"] as string;
+    var culture = System.Globalization.CultureInfo.InvariantCulture;
+    var pillClass = "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-cinema-ink px-5 text-sm font-bold text-cinema-cream no-underline transition-colors duration-300 hover:bg-cinema-logo focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none";
 }
 
 <section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="my-tickets-title" data-tickets-page>
     @await Html.PartialAsync("_GooFilter")
     <div class="mx-auto max-w-6xl px-5 md:px-12">
+        @if (Model.AllTickets is not null)
+        {
+            <p class="m-0 mb-5 inline-flex items-center rounded-full bg-cinema-ink px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-cinema-cream">Logged in as ADMIN</p>
+        }
         <h1 class="m-0 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl lg:text-7xl" id="my-tickets-title" data-reveal-chars>My Tickets</h1>
+        @if (notice is not null)
+        {
+            <p class="m-0 mt-4 text-sm font-semibold" role="status">@notice</p>
+        }
 
         <div class="relative mt-8 flex flex-wrap gap-3" role="tablist" aria-label="Ticket status" data-tickets-tabs>
             @foreach (var panel in panels)
@@ -26,6 +38,14 @@
                     <span class="tickets-tab__fill absolute inset-0 -z-10 rounded-full bg-cinema-ink" aria-hidden="true"></span>
                     @panel.Label
                     <span class="@countClass" data-tickets-count>@panel.Tickets.Count</span>
+                </button>
+            }
+            @if (Model.AllTickets is { } all)
+            {
+                <button class="@tabClass" type="button" role="tab" id="tab-all" aria-selected="false" aria-controls="panel-all" tabindex="-1" data-tickets-tab="all">
+                    <span class="tickets-tab__fill absolute inset-0 -z-10 rounded-full bg-cinema-ink" aria-hidden="true"></span>
+                    All Tickets
+                    <span class="@countClass" data-tickets-count>@all.Count</span>
                 </button>
             }
         </div>
@@ -50,6 +70,68 @@
                     {
                         @await Html.PartialAsync("_TicketCard", ticket)
                     }
+                }
+            </div>
+        }
+
+        @if (Model.AllTickets is { } allTickets)
+        {
+            <div class="mt-8 grid gap-5 md:mt-10 [&[hidden]]:hidden" role="tabpanel" id="panel-all" aria-labelledby="tab-all" tabindex="0" data-tickets-panel="all" hidden>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="m-0 text-sm text-cinema-ink/60">Every customer's confirmed tickets. Open one to move it, change its seats or cancel it.</p>
+                    <label class="relative block w-full sm:max-w-xs">
+                        <span class="sr-only">Find a ticket</span>
+                        <input class="min-h-11 w-full rounded-full border border-solid border-cinema-ink/20 bg-white px-5 font-sans text-sm text-cinema-ink placeholder:text-cinema-ink/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="search" placeholder="Code, movie, name or email" autocomplete="off" data-admin-ticket-filter />
+                    </label>
+                </div>
+
+                @if (allTickets.Count == 0)
+                {
+                    <div class="grid place-items-center gap-3 rounded-[28px] border-2 border-dashed border-cinema-ink/15 bg-cinema-ink/[0.04] px-6 py-16 text-center" data-ticket-card>
+                        <p class="m-0 text-lg font-extrabold">No tickets yet</p>
+                        <p class="m-0 text-sm text-cinema-ink/60">Confirmed bookings from every account will show up here.</p>
+                    </div>
+                }
+                else
+                {
+                    <ul class="m-0 list-none divide-y divide-cinema-ink/10 overflow-hidden rounded-[28px] border border-solid border-cinema-ink/15 bg-white p-0" aria-label="All tickets" data-ticket-card>
+                        @foreach (var row in allTickets)
+                        {
+                            var ticket = row.Ticket;
+                            var search = $"{ticket.BookingCode} {ticket.Movie.Title} {row.Owner.Name} {row.Owner.Email} {string.Join(" ", ticket.Seats)} {ticket.Cinema}";
+                            <li class="grid gap-3 px-5 py-4 sm:px-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md:items-center md:gap-5" data-admin-ticket-row data-search="@search.ToLowerInvariant()">
+                                <div class="min-w-0">
+                                    <p class="m-0 flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">
+                                        <span class="font-mono tracking-[0.15em]">@ticket.BookingCode</span>
+                                        @if (ticket.IsPast)
+                                        {
+                                            <span class="rounded-full border border-solid border-cinema-ink/40 px-2.5 py-1 text-[10px] font-semibold leading-none tracking-normal text-cinema-ink/70 normal-case">Watched</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="rounded-full bg-cinema-logo px-2.5 py-1 text-[10px] leading-none tracking-normal text-white shadow-clay-pill normal-case">Upcoming</span>
+                                        }
+                                    </p>
+                                    <p class="m-0 mt-1.5 truncate text-lg font-black uppercase leading-tight tracking-tight">@ticket.Movie.Title</p>
+                                    <p class="m-0 mt-0.5 text-sm text-cinema-ink/70">@ticket.Showtime.ToString("ddd d MMM · HH:mm", culture) · @ticket.Cinema · @ticket.Hall</p>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">@(ticket.Seats.Count == 1 ? "Seat" : "Seats")</p>
+                                    <p class="m-0 mt-1 break-words text-base font-extrabold">@string.Join(", ", ticket.Seats)</p>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="m-0 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">Customer</p>
+                                    <p class="m-0 mt-1 truncate text-sm font-bold">@row.Owner.Name</p>
+                                    <p class="m-0 truncate text-sm text-cinema-ink/60">@row.Owner.DisplayEmail</p>
+                                </div>
+                                <a class="@pillClass justify-self-start md:justify-self-end" href="@row.EditUrl" aria-label="Edit ticket @ticket.BookingCode for @row.Owner.Name">
+                                    <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m13.5 3.5 3 3L7 16H4v-3l9.5-9.5Z" /></svg>
+                                    Edit
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    <p class="m-0 rounded-[28px] border-2 border-dashed border-cinema-ink/15 bg-cinema-ink/[0.04] px-6 py-10 text-center text-sm font-semibold text-cinema-ink/60" role="status" hidden data-admin-ticket-empty>No tickets match your search.</p>
                 }
             </div>
         }

@@ -20,7 +20,8 @@ const hooks = {
   signup: [/data-signup-page/],
   'forgot-password': [/data-forgot-password-page/, /data-reset-password-page/],
   'ajax-form': [/data-ajax-form/],
-  'admin-movies': [/data-delete-dialog/, /data-cast-list/, /data-edit-toggle/]
+  'admin-movies': [/data-delete-dialog/, /data-cast-list/, /data-edit-toggle/],
+  'admin-tickets': [/data-admin-ticket-filter/, /data-admin-ticket-dialog/]
 };
 
 const views = (function walk(dir) {

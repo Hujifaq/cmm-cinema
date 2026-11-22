@@ -43,7 +43,7 @@ public sealed class DemoBookingService : IBookingService
         lock (gate)
         {
             RemoveExpired();
-            if (!showtimesById.TryGetValue(showtimeId, out var showtime) || !showtime.IsAvailable)
+            if (!showtimesById.TryGetValue(showtimeId, out var showtime) || !showtime.IsBookable)
                 return Task.FromResult(new HoldResult(null, "This screening is unavailable."));
             if (!BookingRules.TryValidateSelection(SeatMap(showtimeId), seatIds, out var seats, out var error))
                 return Task.FromResult(new HoldResult(null, error));
@@ -71,6 +71,8 @@ public sealed class DemoBookingService : IBookingService
             RemoveExpired();
             if (FindOwned(ownerId, bookingId) is not { } booking)
                 return Task.FromResult(new ConfirmResult(false, "Booking has expired or is unavailable."));
+            if (booking.Status == BookingStatus.Held && showtimesById.TryGetValue(booking.ShowtimeId, out var showtime) && showtime.HasStarted)
+                return Task.FromResult(new ConfirmResult(false, BookingRules.ShowtimeStartedError));
 
             // Held seats are already blocked for everyone else, so confirming only changes the status. Repeating it is safe.
             bookings[bookingId] = booking with { Status = BookingStatus.Confirmed, TicketToken = booking.TicketToken ?? BookingRules.NewTicketToken() };
@@ -122,6 +124,54 @@ public sealed class DemoBookingService : IBookingService
         }
     }
 
+    public Task<IReadOnlyList<BookingHold>> GetAllConfirmedBookingsAsync(CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            IReadOnlyList<BookingHold> confirmed = bookings.Values.Where(booking => booking.Status == BookingStatus.Confirmed).ToArray();
+            return Task.FromResult(confirmed);
+        }
+    }
+
+    public Task<BookingHold?> GetConfirmedBookingAsync(Guid bookingId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult(bookings.TryGetValue(bookingId, out var booking) && booking.Status == BookingStatus.Confirmed ? booking : null);
+        }
+    }
+
+    public Task<HoldResult> ChangeConfirmedBookingAsync(Guid bookingId, int showtimeId, IEnumerable<string> seatIds, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            RemoveExpired();
+            if (!bookings.TryGetValue(bookingId, out var booking) || booking.Status != BookingStatus.Confirmed)
+                return Task.FromResult(new HoldResult(null, "This ticket no longer exists."));
+            if (!showtimesById.TryGetValue(showtimeId, out var target) || !target.IsBookable
+                || !showtimesById.TryGetValue(booking.ShowtimeId, out var current)
+                || !string.Equals(current.MovieSlug, target.MovieSlug, StringComparison.OrdinalIgnoreCase))
+                return Task.FromResult(new HoldResult(null, BookingRules.ChangeShowtimeError));
+
+            var seatMap = BookingRules.ReleaseSeats(SeatMap(showtimeId), booking, showtimeId);
+            if (!BookingRules.TryValidateSelection(seatMap, seatIds, out var seats, out var error))
+                return Task.FromResult(new HoldResult(null, error));
+
+            var changed = booking with { ShowtimeId = showtimeId, SeatItems = seats };
+            bookings[bookingId] = changed;
+            return Task.FromResult(new HoldResult(changed, ""));
+        }
+    }
+
+    public Task<bool> CancelConfirmedBookingAsync(Guid bookingId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult(bookings.TryGetValue(bookingId, out var booking) && booking.Status == BookingStatus.Confirmed
+                && bookings.Remove(bookingId));
+        }
+    }
+
     public Task<BookingDraft?> StartDraftAsync(int ownerId, int showtimeId, CancellationToken cancellationToken = default)
     {
         lock (gate)
@@ -152,7 +202,7 @@ public sealed class DemoBookingService : IBookingService
 
     private BookingDraft? StoreDraft(int ownerId, int showtimeId, IEnumerable<string> seatIds)
     {
-        if (!showtimesById.TryGetValue(showtimeId, out var showtime) || !showtime.IsAvailable) return null;
+        if (!showtimesById.TryGetValue(showtimeId, out var showtime) || !showtime.IsBookable) return null;
         var draft = new BookingDraft(ownerId, showtimeId, BookingRules.CleanDraftSeats(SeatMap(showtimeId), seatIds),
             DateTimeOffset.UtcNow + BookingRules.DraftLength);
         drafts[ownerId] = draft;

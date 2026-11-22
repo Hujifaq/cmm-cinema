@@ -22,7 +22,12 @@ public record Showtime(
     TimeOnly Time,
     string Format,
     string Language,
-    bool IsAvailable);
+    bool IsAvailable)
+{
+    public DateTime StartsAt => Date.ToDateTime(Time);
+    public bool HasStarted => CinemaTime.Now >= StartsAt;
+    public bool IsBookable => IsAvailable && !HasStarted;
+}
 
 public enum SeatCategory { Normal, Premium, Vip }
 

@@ -47,7 +47,7 @@ public sealed class D1BookingService(D1Client d1, IMemoryCache cache) : IBooking
 
     public async Task<HoldResult> HoldSeatsAsync(int ownerId, int showtimeId, IEnumerable<string> seatIds, CancellationToken cancellationToken = default)
     {
-        if (await GetShowtimeAsync(showtimeId, cancellationToken) is not { IsAvailable: true })
+        if (await GetShowtimeAsync(showtimeId, cancellationToken) is not { IsBookable: true })
             return new HoldResult(null, "This screening is unavailable.");
 
         await ReleaseExpiredHoldsAsync(showtimeId, cancellationToken);
@@ -86,6 +86,10 @@ public sealed class D1BookingService(D1Client d1, IMemoryCache cache) : IBooking
 
     public async Task<ConfirmResult> ConfirmBookingAsync(int ownerId, Guid bookingId, CancellationToken cancellationToken = default)
     {
+        if (await GetBookingAsync(ownerId, bookingId, cancellationToken) is { Status: BookingStatus.Held } held
+            && await GetShowtimeAsync(held.ShowtimeId, cancellationToken) is { HasStarted: true })
+            return new ConfirmResult(false, BookingRules.ShowtimeStartedError);
+
         var now = D1Time.Now();
         var updated = await d1.QueryAsync(
             "UPDATE bookings SET status = 'confirmed', confirmed_at = ?, ticket_token = COALESCE(ticket_token, ?) " +
@@ -130,9 +134,97 @@ public sealed class D1BookingService(D1Client d1, IMemoryCache cache) : IBooking
         return rows.Count == 0 ? null : Text(rows[0], "ticket_token");
     }
 
+    public async Task<IReadOnlyList<BookingHold>> GetAllConfirmedBookingsAsync(CancellationToken cancellationToken = default) =>
+        MapBookings(await d1.QueryAsync(
+            $"SELECT {BookingColumns} FROM bookings b JOIN booking_seats s ON s.booking_id = b.id " +
+            "WHERE b.status = 'confirmed' ORDER BY b.created_at DESC, s.position",
+            cancellationToken: cancellationToken));
+
+    public async Task<BookingHold?> GetConfirmedBookingAsync(Guid bookingId, CancellationToken cancellationToken = default) =>
+        MapBookings(await d1.QueryAsync(
+            $"SELECT {BookingColumns} FROM bookings b JOIN booking_seats s ON s.booking_id = b.id " +
+            "WHERE b.id = ? AND b.status = 'confirmed' ORDER BY s.position",
+            [Id(bookingId)], cancellationToken)).FirstOrDefault();
+
+    // New seats go in under a placeholder hold first, so the booking never gives up its seats until the new ones are secured.
+    public async Task<HoldResult> ChangeConfirmedBookingAsync(Guid bookingId, int showtimeId, IEnumerable<string> seatIds, CancellationToken cancellationToken = default)
+    {
+        if (await GetConfirmedBookingAsync(bookingId, cancellationToken) is not { } booking)
+            return new HoldResult(null, "This ticket no longer exists.");
+        var current = await GetShowtimeAsync(booking.ShowtimeId, cancellationToken);
+        if (await GetShowtimeAsync(showtimeId, cancellationToken) is not { IsBookable: true } target
+            || current is null || !string.Equals(current.MovieSlug, target.MovieSlug, StringComparison.OrdinalIgnoreCase))
+            return new HoldResult(null, BookingRules.ChangeShowtimeError);
+
+        await ReleaseExpiredHoldsAsync(showtimeId, cancellationToken);
+        seatMaps.Remove(showtimeId);
+        var seatMap = BookingRules.ReleaseSeats(await SeatMapAsync(showtimeId, cancellationToken), booking, showtimeId);
+        if (!BookingRules.TryValidateSelection(seatMap, seatIds, out var seats, out var error))
+            return new HoldResult(null, error);
+
+        var sameShowtime = booking.ShowtimeId == showtimeId;
+        var chosen = seats.Select(seat => seat.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var kept = sameShowtime ? booking.Seats.Where(chosen.Contains).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
+        var added = seats.Where(seat => !kept.Contains(seat.Id)).ToArray();
+        var removed = booking.Seats.Where(id => !kept.Contains(id)).ToArray();
+        var id = Id(bookingId);
+
+        if (added.Length > 0)
+        {
+            var placeholder = Id(Guid.NewGuid());
+            var now = DateTimeOffset.UtcNow;
+            await d1.QueryAsync(
+                "INSERT INTO bookings (id, user_id, showtime_id, status, expires_at, created_at) VALUES (?, ?, ?, 'held', ?, ?)",
+                [placeholder, booking.OwnerId, showtimeId, D1Time.Format(now + TimeSpan.FromMinutes(1)), D1Time.Format(now)], cancellationToken);
+            var values = string.Join(", ", added.Select(_ => "(?, ?, ?, ?, ?, ?, ?)"));
+            var parameters = added.SelectMany(seat => new object?[]
+                { placeholder, showtimeId, seat.Id, 0, seat.Category.ToString(), (int)seat.Price, seat.Capacity }).ToArray();
+            var inserted = await d1.QueryAsync(
+                $"INSERT INTO booking_seats (booking_id, showtime_id, seat_id, position, category, price, capacity) VALUES {values} " +
+                "ON CONFLICT DO NOTHING RETURNING seat_id", parameters, cancellationToken);
+            if (inserted.Count != added.Length)
+            {
+                await DeleteBookingAsync("id = ?", [placeholder], cancellationToken);
+                return new HoldResult(null, "One or more seats are no longer available. Please choose again.");
+            }
+
+            await RemoveSeatsAsync(id, removed, cancellationToken);
+            await d1.QueryAsync("UPDATE booking_seats SET booking_id = ? WHERE booking_id = ?", [id, placeholder], cancellationToken);
+            await d1.QueryAsync("DELETE FROM bookings WHERE id = ?", [placeholder], cancellationToken);
+        }
+        else
+        {
+            await RemoveSeatsAsync(id, removed, cancellationToken);
+        }
+
+        var order = string.Join(" ", seats.Select(_ => "WHEN ? THEN ?"));
+        await d1.QueryAsync(
+            $"UPDATE booking_seats SET position = CASE seat_id {order} ELSE position END WHERE booking_id = ?",
+            [.. seats.SelectMany((seat, position) => new object?[] { seat.Id, position }), id], cancellationToken);
+        await d1.QueryAsync("UPDATE bookings SET showtime_id = ? WHERE id = ?", [showtimeId, id], cancellationToken);
+        seatMaps.Clear();
+
+        return new HoldResult(booking with { ShowtimeId = showtimeId, SeatItems = seats }, "");
+    }
+
+    public async Task<bool> CancelConfirmedBookingAsync(Guid bookingId, CancellationToken cancellationToken = default)
+    {
+        if (await GetConfirmedBookingAsync(bookingId, cancellationToken) is null) return false;
+        await DeleteBookingAsync("id = ? AND status = 'confirmed'", [Id(bookingId)], cancellationToken);
+        return true;
+    }
+
+    private async Task RemoveSeatsAsync(string bookingId, IReadOnlyList<string> seatIds, CancellationToken cancellationToken)
+    {
+        if (seatIds.Count == 0) return;
+        await d1.QueryAsync(
+            $"DELETE FROM booking_seats WHERE booking_id = ? AND seat_id IN ({string.Join(", ", seatIds.Select(_ => "?"))})",
+            [bookingId, .. seatIds], cancellationToken);
+    }
+
     public async Task<BookingDraft?> StartDraftAsync(int ownerId, int showtimeId, CancellationToken cancellationToken = default)
     {
-        if (await GetShowtimeAsync(showtimeId, cancellationToken) is not { IsAvailable: true }) return null;
+        if (await GetShowtimeAsync(showtimeId, cancellationToken) is not { IsBookable: true }) return null;
         await PurgeExpiredIfDueAsync(cancellationToken);
 
         // One upsert both starts the session and returns the picks kept from an unexpired session on the same showtime.
@@ -155,7 +247,7 @@ public sealed class D1BookingService(D1Client d1, IMemoryCache cache) : IBooking
 
     public async Task<BookingDraft?> SaveDraftSeatsAsync(int ownerId, int showtimeId, IEnumerable<string> seatIds, CancellationToken cancellationToken = default)
     {
-        if (await GetShowtimeAsync(showtimeId, cancellationToken) is not { IsAvailable: true }) return null;
+        if (await GetShowtimeAsync(showtimeId, cancellationToken) is not { IsBookable: true }) return null;
         var kept = BookingRules.CleanDraftSeats(await SeatMapAsync(showtimeId, cancellationToken), seatIds);
         var expiresAt = DateTimeOffset.UtcNow + BookingRules.DraftLength;
         await WriteDraftAsync(ownerId, showtimeId, kept, expiresAt, cancellationToken);

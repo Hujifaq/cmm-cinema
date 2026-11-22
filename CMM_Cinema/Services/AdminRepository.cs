@@ -27,6 +27,17 @@ public sealed class AdminRepository(D1Client d1)
             "UPDATE admins SET failed_logins = 0, lockout_until = NULL, updated_at = ? WHERE id = ? AND (failed_logins > 0 OR lockout_until IS NOT NULL)",
             [D1Time.Now(), id], cancellationToken);
 
+    public async Task<int?> GetBookingUserIdAsync(int adminId, CancellationToken cancellationToken = default)
+    {
+        var rows = await d1.QueryAsync("SELECT user_id FROM admins WHERE id = ?", [adminId], cancellationToken);
+        return rows.Count > 0 && rows[0].TryGetProperty("user_id", out var value) && value.ValueKind == JsonValueKind.Number
+            ? value.GetInt32()
+            : null;
+    }
+
+    public async Task SetBookingUserIdAsync(int adminId, int userId, CancellationToken cancellationToken = default) =>
+        await d1.QueryAsync("UPDATE admins SET user_id = ?, updated_at = ? WHERE id = ?", [userId, D1Time.Now(), adminId], cancellationToken);
+
     private static Admin? Single(IReadOnlyList<JsonElement> rows) => rows.Count == 0 ? null : Map(rows[0]);
 
     private static Admin Map(JsonElement row) => new(

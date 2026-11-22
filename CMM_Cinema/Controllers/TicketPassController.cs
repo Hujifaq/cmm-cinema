@@ -20,7 +20,7 @@ namespace CMM_Cinema.Controllers
 
             if (await booking.GetBookingByTicketTokenAsync(token, cancellationToken) is not { } hold
                 || await booking.GetShowtimeAsync(hold.ShowtimeId, cancellationToken) is not { } showtime
-                || await movies.GetBySlugAsync(showtime.MovieSlug, cancellationToken) is not { } movie)
+                || await movies.GetBySlugIncludingArchivedAsync(showtime.MovieSlug, cancellationToken) is not { } movie)
             {
                 Response.StatusCode = StatusCodes.Status404NotFound;
                 return View("NotFound");

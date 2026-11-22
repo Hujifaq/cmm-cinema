@@ -28,6 +28,20 @@ public sealed class UserRepository(D1Client d1)
             .Select(row => Text(row, "provider") ?? "")
             .ToArray();
 
+    public async Task<IReadOnlyDictionary<int, UserContact>> GetContactsAsync(IEnumerable<int> ids, CancellationToken cancellationToken = default)
+    {
+        var contacts = new Dictionary<int, UserContact>();
+        foreach (var chunk in ids.Distinct().Chunk(90))
+        {
+            var rows = await d1.QueryAsync(
+                $"SELECT id, name, email FROM users WHERE id IN ({string.Join(", ", chunk.Select(_ => "?"))})",
+                chunk.Cast<object?>().ToArray(), cancellationToken);
+            foreach (var row in rows)
+                contacts[row.GetProperty("id").GetInt32()] = new UserContact(Text(row, "name") ?? "", Text(row, "email") ?? "");
+        }
+        return contacts;
+    }
+
     // Returns null when the email is already taken, instead of throwing on the UNIQUE constraint.
     public async Task<User?> CreateAsync(string email, string name, string? passwordHash, bool emailVerified, CancellationToken cancellationToken = default)
     {

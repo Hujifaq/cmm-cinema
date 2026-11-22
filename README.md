@@ -40,11 +40,17 @@ bookings and each user's seat-picking session are stored in D1
 (`D1BookingService`). Without them the app falls back to `DemoBookingService`,
 which keeps everything in memory and loses it on restart.
 
+Admins can book too: the first time an admin books or opens My Tickets, the app creates a linked customer
+account for them (`admin-{id}@cmm-cinema.invalid`, no password) and stores its id in `admins.user_id`.
+Admins also get an All Tickets tab on My Tickets and an editor at `/Admin/Tickets/{bookingId}` to move,
+re-seat or cancel any confirmed ticket.
+
 Create the booking tables once per database, from `CMM_Cinema`:
 
 ```sh
 npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0006_bookings.sql
 npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0007_ticket_tokens.sql
+npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0008_admin_booking_accounts.sql
 ```
 
 ### Ticket QR codes

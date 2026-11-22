@@ -21,7 +21,8 @@ public record Movie(
     string PosterTheme,
     string? PosterTitle,
     IReadOnlyList<CastMember> Cast,
-    string? TrailerUrl = null)
+    string? TrailerUrl = null,
+    bool IsArchived = false)
 {
     public string Runtime => $"{DurationMinutes / 60}h {DurationMinutes % 60:00}m";
     public string Url => $"/Movies/{Slug}";
