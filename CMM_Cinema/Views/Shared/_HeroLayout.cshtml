@@ -126,6 +126,10 @@
     {
         <script src="~/js/forgot-password.js" asp-append-version="true" defer></script>
     }
+    @if (Context.RequiresAsset("profile"))
+    {
+        <script src="~/js/profile.js" asp-append-version="true" defer></script>
+    }
     @if (Context.RequiresAsset("ajax-form"))
     {
         <script src="~/js/ajax-form.js" asp-append-version="true" defer></script>
@@ -133,6 +137,10 @@
     @if (Context.RequiresAsset("admin-movies"))
     {
         <script src="~/js/admin-movies.js" asp-append-version="true" defer></script>
+    }
+    @if (Context.RequiresAsset("admin-news"))
+    {
+        <script src="~/js/admin-news.js" asp-append-version="true" defer></script>
     }
     @if (Context.RequiresAsset("admin-tickets"))
     {

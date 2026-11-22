@@ -1,61 +1,300 @@
 @model ProfileViewModel
-@{ Context.RequireAssets("forgot-password"); }
+@{ Context.RequireAssets("profile", "ajax-form"); }
 @{
     Layout = "_HeroLayout";
-    ViewData["Title"] = "Your profile - CMM Cinema";
-    var rowClass = "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-0 border-t border-solid border-cinema-ink/10 py-4";
+    ViewData["Title"] = "My profile - CMM Cinema";
+
+    var supportEmail = "support@cmm-cinema.com";
+    var supportPhone = "+66 2 123 4567";
+
+    var tabClass = "relative z-10 inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border border-solid border-cinema-ink px-5 font-sans text-sm font-bold leading-none transition-colors duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none aria-selected:text-cinema-cream aria-[selected=false]:bg-transparent aria-[selected=false]:text-cinema-ink aria-[selected=false]:hover:bg-cinema-ink/[0.06]";
+    var cardClass = "rounded-[28px] bg-white p-6 shadow-clay ring-1 ring-cinema-ink/5 sm:p-8";
+    var cardTitleClass = "m-0 text-xl font-extrabold leading-tight tracking-tight sm:text-2xl";
+    var cardLeadClass = "mb-0 mt-1.5 text-sm leading-relaxed text-cinema-ink/60";
+    var rowClass = "grid gap-2 sm:grid-cols-[11rem_minmax(0,1fr)] sm:items-center sm:gap-4";
+    var labelClass = "text-sm font-bold text-cinema-ink";
+    var inputClass = "block min-h-12 w-full min-w-0 rounded-2xl border border-solid border-cinema-ink/15 bg-cinema-paper px-4 py-3 font-sans text-base text-cinema-ink transition-colors duration-200 placeholder:text-cinema-ink/40 focus-visible:border-cinema-ink focus-visible:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink read-only:text-cinema-ink/60";
+    var statusClass = "m-0 text-sm leading-relaxed text-cinema-ink/70 data-[tone=error]:font-medium data-[tone=error]:text-cinema-brick data-[tone=success]:font-medium";
+    var textLinkClass = "cursor-pointer border-0 border-b-2 border-solid border-cinema-ink bg-transparent p-0 pb-0.5 font-sans text-sm font-bold text-cinema-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink";
+
+    var notice = TempData["ProfileNotice"] as string;
+    var error = TempData["ProfileError"] as string;
+
+    var tabs = new[] { ("profile", "Profile"), ("faq", "FAQ"), ("contact", "Contact us") };
+    var notifications = new[]
+    {
+        ("Releases", "Movie releases and upcoming events", Model.Profile.Releases),
+        ("Offers", "Special offers and discounts", Model.Profile.Offers),
+        ("Bookings", "Booking confirmations", Model.Profile.Bookings),
+        ("News", "News and updates from CMM Cinema", Model.Profile.News)
+    };
+
+    string Hour(int hour) => new TimeOnly(hour, 0).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+    var cinemaNames = string.Join(" and ", BookingRules.Cinemas.Select(cinema => cinema.Name));
+    var sessionTimes = string.Join(", ", BookingRules.StartHours.Select(Hour));
+    var faqs = new (string Question, string Answer)[]
+    {
+        ("How do I book tickets?", "Open a movie from Now Showing and choose Showtimes, or use Quick Book in the bottom-right corner. Pick a cinema, date and session, choose your seats, then pay."),
+        ("Where can I find my tickets?", "Every booking appears in My Tickets with its booking code, seats and a QR code."),
+        ("Do I need to print my ticket?", "No. Show the QR code on your phone at the entrance. If you prefer paper, the ticket page prints cleanly."),
+        ("Can I change or cancel a booking?", "Contact us with your booking code. Our team can move you to another session, change your seats or cancel the booking."),
+        ("Which cinemas and formats do you have?", $"Movies play at {cinemaNames} in {string.Join(" and ", BookingRules.Formats)}, with sessions at {sessionTimes}."),
+        ("I forgot my password. What now?", "Choose Forgot password? on the sign-in page. We'll email you a reset link that works once and expires after 30 minutes."),
+        ("How do I change which emails I get?", "Use Notification preferences on the Profile tab. Each switch saves as soon as you flip it.")
+    };
+}
+
+@functions {
+    private Microsoft.AspNetCore.Html.IHtmlContent GooButton(string label, string type = "submit", string? form = null, string accent = "bg-cinema-ink")
+    {
+        var formAttribute = form is null ? "" : $" form=\"{form}\"";
+        return Html.Raw($"""
+            <button class="group relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-7 py-3 font-sans text-sm font-bold text-cinema-cream shadow-sm disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="{type}"{formAttribute} data-goo-button>
+                <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
+                    <span class="absolute inset-0 rounded-full bg-cinema-ink"></span>
+                    <span class="absolute inset-0 overflow-hidden rounded-full"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full {accent}" data-goo-fill></span></span>
+                    <span class="absolute left-0 top-0 size-9 rounded-full {accent}" data-goo-blob></span>
+                </span>
+                <span class="relative" data-goo-label>{System.Net.WebUtility.HtmlEncode(label)}</span>
+            </button>
+            """);
+    }
 }
 
 @section TopBanner {
     @await Html.PartialAsync("_CinemaMarquee")
 }
 
-<section class="flex min-h-[calc(100svh_-_36px)] items-center justify-center bg-cinema-paper px-5 pb-14 pt-28 font-sans text-cinema-ink scheme-light md:pb-20 md:pt-36" aria-labelledby="profile-title" data-forgot-password-page>
+<section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink scheme-light md:pb-24 md:pt-40" aria-labelledby="profile-title" data-profile-page>
     @await Html.PartialAsync("_GooFilter")
-    <div class="w-full max-w-[480px] rounded-[28px] bg-cinema-paper p-6 shadow-clay ring-1 ring-cinema-ink/10 sm:p-10" data-reset-card>
-        <header class="mb-6 text-center">
-            <span class="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-cinema-ink text-2xl font-extrabold text-cinema-cream" aria-hidden="true" data-reveal-up>@Model.Initial</span>
-            <h1 class="m-0 break-words text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl" id="profile-title" data-reveal-chars>@Model.Name</h1>
-            <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/60" data-reveal-up>@Model.Subtitle</p>
+    <div class="mx-auto max-w-[960px] px-5 md:px-12">
+        @await Html.PartialAsync("_Breadcrumb", new (string, string?)[] { ("Home", "/"), ("My profile", null) })
+
+        <header>
+            <h1 class="m-0 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl lg:text-7xl" id="profile-title" data-reveal-chars>My profile</h1>
+            <p class="mb-0 mt-4 text-base leading-relaxed text-cinema-ink/60 md:text-lg" data-reveal-up>Manage your account details, security and preferences.</p>
         </header>
 
-        <dl class="m-0 text-sm" data-reveal-up>
-            <div class="@rowClass">
-                <dt class="font-bold">@Model.IdentifierLabel</dt>
-                <dd class="m-0 break-all text-cinema-ink/70">@Model.Identifier</dd>
-            </div>
-            @if (Model.EmailVerified is { } emailVerified)
+        <div class="mt-8 flex flex-wrap gap-3" role="tablist" aria-label="Profile sections" data-profile-tabs>
+            @foreach (var (key, label) in tabs)
             {
-                <div class="@rowClass">
-                    <dt class="font-bold">Email status</dt>
-                    <dd class="m-0">
-                        @if (emailVerified)
-                        {
-                            <span class="inline-flex items-center rounded-full bg-cinema-cyan/15 px-3 py-1 text-xs font-bold text-cinema-ink">Confirmed</span>
-                        }
-                        else
-                        {
-                            <span class="inline-flex items-center rounded-full bg-cinema-ink/[0.06] px-3 py-1 text-xs font-bold text-cinema-ink/70">Not confirmed</span>
-                        }
-                    </dd>
-                </div>
+                var selected = key == "profile";
+                <button class="@tabClass" type="button" role="tab" id="profile-tab-@key" aria-selected="@(selected ? "true" : "false")" aria-controls="profile-panel-@key" tabindex="@(selected ? 0 : -1)" data-profile-tab="@key">
+                    <span class="tickets-tab__fill absolute inset-0 -z-10 rounded-full bg-cinema-ink" aria-hidden="true"></span>
+                    @label
+                </button>
             }
-            <div class="@rowClass border-b">
-                <dt class="font-bold">Sign-in methods</dt>
-                <dd class="m-0 text-cinema-ink/70">@string.Join(" · ", Model.Methods)</dd>
-            </div>
-        </dl>
+        </div>
 
-        <div class="mt-8 grid gap-3" data-reveal-up>
-            <a class="inline-flex min-h-[44px] w-full items-center justify-center rounded-2xl border border-solid border-cinema-ink/10 bg-white px-5 py-2.5 text-sm font-bold text-cinema-ink no-underline shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" href="/MyTickets">My tickets</a>
-            <button class="group relative isolate inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-xl border-0 bg-cinema-ink px-6 py-3 font-sans text-sm font-bold text-cinema-cream shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" type="submit" form="cinema-logout-form" data-goo-button>
-                <span class="pointer-events-none absolute inset-0 -z-1 [filter:url(#goo-filter)]" aria-hidden="true">
-                    <span class="absolute inset-0 rounded-xl bg-cinema-ink"></span>
-                    <span class="absolute inset-0 overflow-hidden rounded-xl"><span class="absolute left-0 top-0 aspect-square w-[250%] rounded-full bg-cinema-brick" data-goo-fill></span></span>
-                    <span class="absolute left-0 top-0 size-9 rounded-full bg-cinema-brick" data-goo-blob></span>
-                </span>
-                <span class="relative" data-goo-label>Sign out</span>
-            </button>
+        @if (notice is not null || error is not null)
+        {
+            <p class="mb-0 mt-6 rounded-2xl px-5 py-4 text-sm font-medium @(error is not null ? "bg-cinema-brick/10 text-cinema-brick" : "bg-cinema-cyan/15 text-cinema-ink")" role="status">@(error ?? notice)</p>
+        }
+
+        @* Profile *@
+        <div class="mt-8 grid gap-6 md:mt-10 [&[hidden]]:hidden" role="tabpanel" id="profile-panel-profile" aria-labelledby="profile-tab-profile" tabindex="-1" data-profile-panel="profile">
+            <section class="@cardClass" aria-labelledby="details-title" data-profile-card>
+                <h2 class="@cardTitleClass" id="details-title">Personal details</h2>
+                <p class="@cardLeadClass">@(Model.IsAdmin ? "Admin accounts are managed by the CMM Cinema team." : "Keep your information up to date.")</p>
+
+                @if (Model.IsAdmin)
+                {
+                    <div class="mt-6 grid gap-4">
+                        <div class="@rowClass">
+                            <label class="@labelClass" for="profile-username">Username</label>
+                            <input class="@inputClass" id="profile-username" type="text" value="@Model.Identifier" readonly />
+                        </div>
+                        <div class="@rowClass">
+                            <span class="@labelClass">Sign-in method</span>
+                            <span class="text-sm text-cinema-ink/70">@string.Join(" · ", Model.Methods)</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <form class="mt-6 grid gap-4" asp-controller="Profile" asp-action="Details" method="post" aria-label="Personal details" data-ajax-form>
+                        <div class="@rowClass">
+                            <label class="@labelClass" for="profile-name">Full name</label>
+                            <input class="@inputClass" id="profile-name" name="Name" type="text" value="@Model.Name" autocomplete="name" maxlength="100" required />
+                        </div>
+                        <div class="@rowClass">
+                            <label class="@labelClass" for="profile-email">Email address</label>
+                            <div class="min-w-0">
+                                <div class="relative">
+                                    <input class="@inputClass pr-32" id="profile-email" type="email" value="@Model.Identifier" readonly aria-describedby="profile-email-hint" />
+                                    @if (Model.EmailVerified is { } verified)
+                                    {
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-[11px] font-bold leading-none @(verified ? "bg-cinema-logo text-white shadow-clay-pill" : "border border-solid border-cinema-ink/40 text-cinema-ink/70")">@(verified ? "Confirmed" : "Not confirmed")</span>
+                                    }
+                                </div>
+                                <p class="mb-0 mt-2 px-1 text-xs leading-relaxed text-cinema-ink/50" id="profile-email-hint">You sign in with @string.Join(" or ", Model.Methods). To change your email, <button class="cursor-pointer border-0 bg-transparent p-0 font-sans text-xs font-bold text-cinema-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" data-profile-show="contact">contact us</button>.</p>
+                            </div>
+                        </div>
+                        <div class="@rowClass">
+                            <label class="@labelClass" for="profile-phone">Phone number <span class="font-normal text-cinema-ink/50">(optional)</span></label>
+                            <input class="@inputClass" id="profile-phone" name="Phone" type="tel" value="@Model.Profile.Phone" autocomplete="tel" inputmode="tel" maxlength="20" pattern="\+?[0-9 ()\-]{7,20}" placeholder="+66 81 234 5678" />
+                        </div>
+                        <div class="mt-2 flex flex-wrap items-center gap-x-5 gap-y-3">
+                            @GooButton("Save changes")
+                            <p class="@statusClass" role="status" data-form-status hidden></p>
+                        </div>
+                    </form>
+                }
+            </section>
+
+            @if (!Model.IsAdmin)
+            {
+                <section class="@cardClass" aria-labelledby="password-title" data-profile-card>
+                    <h2 class="@cardTitleClass" id="password-title">Change password</h2>
+                    <p class="@cardLeadClass">Choose a strong password to keep your account secure.</p>
+
+                    @if (Model.HasPassword)
+                    {
+                        <form class="mt-6 grid gap-4" asp-controller="Profile" asp-action="Password" method="post" aria-label="Change password" data-ajax-form data-profile-password>
+                            @foreach (var (name, label, autocomplete) in new[] { ("CurrentPassword", "Current password", "current-password"), ("NewPassword", "New password", "new-password"), ("ConfirmPassword", "Confirm new password", "new-password") })
+                            {
+                                var id = $"profile-{name.ToLowerInvariant()}";
+                                <div class="@rowClass">
+                                    <label class="@labelClass" for="@id">@label</label>
+                                    <div class="min-w-0">
+                                        <div class="relative">
+                                            <input class="@inputClass pr-14" id="@id" name="@name" type="password" autocomplete="@autocomplete" required minlength="@(name == "CurrentPassword" ? 1 : 8)" maxlength="128" aria-describedby="@(name == "NewPassword" ? "profile-password-hint" : null)" data-password-input />
+                                            <button class="group absolute right-1 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-cinema-ink/60 transition-colors duration-200 hover:bg-cinema-ink/[0.06] hover:text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-cinema-ink" type="button" aria-label="Show @label.ToLowerInvariant()" aria-controls="@id" aria-pressed="false" data-password-toggle>
+                                                <svg class="size-5 group-aria-pressed:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                                                <svg class="hidden size-5 group-aria-pressed:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.6 3.5M6.6 6.6C3.8 8.3 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /><path d="m3 3 18 18" /></svg>
+                                            </button>
+                                        </div>
+                                        @if (name == "NewPassword")
+                                        {
+                                            <p class="mb-0 mt-2 px-1 text-xs text-cinema-ink/50" id="profile-password-hint">At least 8 characters.</p>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            <div class="mt-2 flex flex-wrap items-center gap-x-5 gap-y-3">
+                                @GooButton("Update password")
+                                <p class="@statusClass" role="status" data-form-status hidden></p>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="mb-0 mt-6 rounded-2xl bg-cinema-ink/[0.04] px-5 py-4 text-sm leading-relaxed text-cinema-ink/70">You sign in with Google, so there is no password to change. To add one, use <a class="font-bold text-cinema-ink underline underline-offset-2" asp-controller="Forgotpassword" asp-action="Index">Forgot password</a>.</p>
+                    }
+                </section>
+
+                <section class="@cardClass" aria-labelledby="notifications-title" data-profile-card>
+                    <h2 class="@cardTitleClass" id="notifications-title">Notification preferences</h2>
+                    <p class="@cardLeadClass">Choose what you'd like to hear about.</p>
+
+                    <form class="mt-4" asp-controller="Profile" asp-action="Notifications" method="post" aria-label="Notification preferences" data-profile-notifications>
+                        <ul class="m-0 list-none p-0">
+                            @foreach (var (name, label, on) in notifications)
+                            {
+                                <li class="border-0 border-t border-solid border-cinema-ink/10 first:border-t-0">
+                                    <label class="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-2">
+                                        <span class="text-sm font-medium leading-snug">@label</span>
+                                        <input class="peer sr-only" type="checkbox" role="switch" name="@name" value="true" checked="@on" />
+                                        <span class="relative h-8 w-14 shrink-0 rounded-full bg-cinema-ink/15 shadow-[inset_0_1px_3px_rgb(7_28_30/0.18)] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] after:absolute after:left-1 after:top-1 after:size-6 after:rounded-full after:bg-white after:shadow-[0_2px_6px_rgb(7_28_30/0.25)] after:transition-transform after:duration-500 after:ease-[cubic-bezier(0.34,1.56,0.64,1)] peer-checked:bg-cinema-ink peer-checked:after:translate-x-6 peer-checked:after:bg-cinema-cream peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-cinema-ink motion-reduce:transition-none motion-reduce:after:transition-none" aria-hidden="true"></span>
+                                    </label>
+                                </li>
+                            }
+                        </ul>
+                        <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-3">
+                            <div data-profile-notifications-submit>@GooButton("Save preferences")</div>
+                            <p class="@statusClass" role="status" data-form-status hidden></p>
+                        </div>
+                    </form>
+                </section>
+            }
+
+            <div class="flex justify-end" data-profile-card>
+                @GooButton("Sign out", form: "cinema-logout-form", accent: "bg-cinema-brick")
+            </div>
+        </div>
+
+        @* FAQ *@
+        <div class="mt-8 grid gap-6 md:mt-10 [&[hidden]]:hidden" role="tabpanel" id="profile-panel-faq" aria-labelledby="profile-tab-faq" tabindex="-1" data-profile-panel="faq" hidden>
+            <section class="@cardClass" aria-labelledby="faq-title" data-profile-card>
+                <h2 class="@cardTitleClass" id="faq-title">Frequently asked questions</h2>
+                <p class="@cardLeadClass">Quick answers about bookings, tickets and your account.</p>
+
+                <div class="mt-4">
+                    @foreach (var (question, answer) in faqs)
+                    {
+                        <details class="group border-0 border-t border-solid border-cinema-ink/10 first:border-t-0" data-faq>
+                            <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-2xl py-3 text-base font-bold leading-snug focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink [&::-webkit-details-marker]:hidden">
+                                @question
+                                <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-cinema-ink/[0.06] transition-[background-color,color,rotate] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] [details[open]:not([data-closing])_&]:rotate-45 [details[open]:not([data-closing])_&]:bg-cinema-ink [details[open]:not([data-closing])_&]:text-cinema-cream motion-reduce:transition-none" aria-hidden="true">
+                                    <svg class="size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" focusable="false"><path d="M8 3v10M3 8h10" /></svg>
+                                </span>
+                            </summary>
+                            <div class="overflow-hidden" data-faq-body>
+                                <p class="m-0 max-w-[60ch] pb-5 pr-12 text-sm leading-relaxed text-cinema-ink/70 md:text-base">@answer</p>
+                            </div>
+                        </details>
+                    }
+                </div>
+            </section>
+
+            <section class="flex flex-col items-start justify-between gap-4 rounded-[28px] bg-cinema-ink p-6 text-cinema-cream sm:flex-row sm:items-center sm:p-8" aria-labelledby="faq-more-title" data-profile-card>
+                <div>
+                    <h2 class="m-0 text-xl font-extrabold leading-tight tracking-tight" id="faq-more-title">Still need help?</h2>
+                    <p class="mb-0 mt-1.5 text-sm leading-relaxed text-cinema-cream/65">Our team is happy to help with anything else.</p>
+                </div>
+                <button class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-cream px-6 font-sans text-sm font-bold text-cinema-ink transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cream" type="button" data-profile-show="contact">Contact us</button>
+            </section>
+        </div>
+
+        @* Contact us *@
+        <div class="mt-8 grid gap-6 md:mt-10 [&[hidden]]:hidden" role="tabpanel" id="profile-panel-contact" aria-labelledby="profile-tab-contact" tabindex="-1" data-profile-panel="contact" hidden>
+            <section class="@cardClass" aria-labelledby="contact-title" data-profile-card>
+                <h2 class="@cardTitleClass" id="contact-title">Contact us</h2>
+                <p class="@cardLeadClass">Questions about a booking, your tickets or your account? Get in touch. Have your booking code ready if it's about a ticket.</p>
+
+                <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                    <a class="group flex min-h-11 items-center gap-4 rounded-2xl bg-cinema-paper p-5 text-cinema-ink no-underline ring-1 ring-cinema-ink/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" href="mailto:@supportEmail">
+                        <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-cinema-ink text-cinema-cream" aria-hidden="true">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m4 7 8 6 8-6" /></svg>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">Email us</span>
+                            <span class="mt-1 block break-all text-base font-extrabold">@supportEmail</span>
+                        </span>
+                    </a>
+                    <a class="group flex min-h-11 items-center gap-4 rounded-2xl bg-cinema-paper p-5 text-cinema-ink no-underline ring-1 ring-cinema-ink/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" href="tel:@(supportPhone.Replace(" ", ""))">
+                        <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-cinema-ink text-cinema-cream" aria-hidden="true">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 4h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 6.1 6.1l1.4-2.3L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4Z" /></svg>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">Call us</span>
+                            <span class="mt-1 block text-base font-extrabold">@supportPhone</span>
+                        </span>
+                    </a>
+                </div>
+            </section>
+
+            <section class="@cardClass" aria-labelledby="cinemas-title" data-profile-card>
+                <h2 class="@cardTitleClass" id="cinemas-title">Our cinemas</h2>
+                <p class="@cardLeadClass">Sessions run daily from @Hour(BookingRules.StartHours.Min()) to @Hour(BookingRules.StartHours.Max()).</p>
+                <ul class="m-0 mt-6 grid list-none gap-4 p-0 sm:grid-cols-2">
+                    @foreach (var cinema in BookingRules.Cinemas)
+                    {
+                        <li class="flex items-center justify-between gap-4 rounded-2xl bg-cinema-paper p-5 ring-1 ring-cinema-ink/10">
+                            <span class="text-lg font-black uppercase leading-none tracking-tight">@cinema.Name</span>
+                            <span class="flex flex-wrap justify-end gap-1.5">
+                                @foreach (var format in BookingRules.Formats)
+                                {
+                                    <span class="rounded-full border border-solid border-cinema-ink/40 px-3 py-1.5 text-[11px] font-bold leading-none">@format</span>
+                                }
+                            </span>
+                        </li>
+                    }
+                </ul>
+                <div class="mt-6">
+                    <a class="@textLinkClass" href="/Booking/Showtimes">See showtimes</a>
+                </div>
+            </section>
         </div>
     </div>
 </section>

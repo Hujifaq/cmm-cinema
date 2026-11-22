@@ -21,7 +21,7 @@
         {
             <a class="inline-flex min-h-11 items-center gap-2 rounded-full bg-cinema-ink px-5 text-sm font-bold text-cinema-cream no-underline transition-colors duration-300 hover:bg-cinema-logo focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" href="@addHref">
                 <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>
-                Add movie
+                @(ViewData["AddLabel"] ?? "Add movie")
             </a>
         }
         @if (notice is not null)

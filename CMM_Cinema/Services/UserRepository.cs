@@ -88,6 +88,36 @@ public sealed class UserRepository(D1Client d1)
     public async Task RotateSecurityStampAsync(int id, CancellationToken cancellationToken = default) =>
         await d1.QueryAsync("UPDATE users SET security_stamp = ?, updated_at = ? WHERE id = ?", [NewSecurityStamp(), Now(), id], cancellationToken);
 
+    public async Task<UserProfile> GetProfileAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var rows = await d1.QueryAsync(
+            "SELECT phone, notify_releases, notify_offers, notify_bookings, notify_news FROM user_profiles WHERE user_id = ?",
+            [userId], cancellationToken);
+        if (rows.Count == 0) return UserProfile.Default;
+        var row = rows[0];
+        return new UserProfile(Text(row, "phone"), Flag(row, "notify_releases"), Flag(row, "notify_offers"), Flag(row, "notify_bookings"), Flag(row, "notify_news"));
+    }
+
+    public async Task UpdateDetailsAsync(int id, string name, string? phone, CancellationToken cancellationToken = default)
+    {
+        var now = Now();
+        await d1.QueryAsync("UPDATE users SET name = ?, updated_at = ? WHERE id = ?", [name, now, id], cancellationToken);
+        await d1.QueryAsync(
+            "INSERT INTO user_profiles (user_id, phone, updated_at) VALUES (?, ?, ?) " +
+            "ON CONFLICT (user_id) DO UPDATE SET phone = excluded.phone, updated_at = excluded.updated_at",
+            [id, phone, now], cancellationToken);
+    }
+
+    public async Task UpdateNotificationsAsync(int id, NotificationForm prefs, CancellationToken cancellationToken = default) =>
+        await d1.QueryAsync(
+            "INSERT INTO user_profiles (user_id, notify_releases, notify_offers, notify_bookings, notify_news, updated_at) VALUES (?, ?, ?, ?, ?, ?) " +
+            "ON CONFLICT (user_id) DO UPDATE SET notify_releases = excluded.notify_releases, notify_offers = excluded.notify_offers, " +
+            "notify_bookings = excluded.notify_bookings, notify_news = excluded.notify_news, updated_at = excluded.updated_at",
+            [id, prefs.Releases ? 1 : 0, prefs.Offers ? 1 : 0, prefs.Bookings ? 1 : 0, prefs.News ? 1 : 0, Now()], cancellationToken);
+
+    private static bool Flag(JsonElement row, string column) =>
+        row.TryGetProperty(column, out var value) && value.ValueKind == JsonValueKind.Number && value.GetInt32() == 1;
+
     private static User? Single(IReadOnlyList<JsonElement> rows) => rows.Count == 0 ? null : Map(rows[0]);
 
     private static User Map(JsonElement row) => new(

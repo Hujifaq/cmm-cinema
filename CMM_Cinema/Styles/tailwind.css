@@ -261,12 +261,18 @@
     animation: movie-detail-unhide 0s 3s forwards;
   }
 }
+@media (prefers-reduced-motion: no-preference) {
+  [data-profile-page]:not([data-revealed]) :is([data-reveal-chars], [data-reveal-up], [data-profile-tab], [data-profile-card]) {
+    visibility: hidden;
+    animation: movie-detail-unhide 0s 3s forwards;
+  }
+}
 /* My tickets: each tab's ink fill grows as a circle from its centre when selected and shrinks back when not. */
 .tickets-tab__fill {
   clip-path: circle(0% at 50% 50%);
   transition: clip-path 600ms cubic-bezier(0.65, 0, 0.35, 1);
 }
-[data-tickets-tab][aria-selected="true"] .tickets-tab__fill {
+:is([data-tickets-tab], [data-profile-tab])[aria-selected="true"] .tickets-tab__fill {
   clip-path: circle(75% at 50% 50%);
   transition-duration: 850ms;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);

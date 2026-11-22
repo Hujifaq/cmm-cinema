@@ -51,6 +51,7 @@ Create the booking tables once per database, from `CMM_Cinema`:
 npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0006_bookings.sql
 npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0007_ticket_tokens.sql
 npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0008_admin_booking_accounts.sql
+npx wrangler d1 execute <database-name> --remote --file=Data/migrations/0009_user_profiles.sql
 ```
 
 ### Ticket QR codes

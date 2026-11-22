@@ -25,7 +25,10 @@
         });
         const data = response.headers.get('content-type')?.includes('json') ? await response.json() : null;
         if (response.ok && data?.redirect) return window.location.assign(data.redirect);
-        if (response.ok && data?.message) show(data.message, 'success');
+        if (response.ok && data?.message) {
+          show(data.message, 'success');
+          form.dispatchEvent(new CustomEvent('ajax-form:success', { detail: data }));
+        }
         else show(data?.errors?.join(' ') || (response.status === 429
           ? 'Too many attempts. Please wait a few minutes and try again.'
           : 'Something went wrong. Please refresh the page and try again.'), 'error');
