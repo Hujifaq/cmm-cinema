@@ -599,7 +599,8 @@ elastically. Missing field → trigger shakes (`x: -8, 7, -5, 3, 0`).
 
 Admin login (`/Admin`) signs in with the same cookie as customers, so the navbar
 shows Profile instead of Login / Register and the visitor lands on the home page.
-The profile page shows the admin username and sign-in method, with no email rows.
+The profile page shows the admin username and sign-in method read-only, with no
+email, password or notification settings (see 8.23).
 
 ### 8.14b Admin movie management
 
@@ -1220,6 +1221,60 @@ and Confirmation. VIP pairs are held, released and marked sold atomically.
 Demo inventory contains 96 single seats and eight VIP pairs (112 admissions).
 Backend regression checks run with `tests/BookingPricing`; frontend selection
 checks live in `CMM_Cinema/tests/seat-selection.test.cjs`.
+
+### 8.23 My profile — `profile.js`
+
+`/Profile` is a 960px paper content page with the breadcrumb, a black uppercase
+"My profile" title and a one-line lede. Three pill tabs, **Profile**, **FAQ** and
+**Contact us**, reuse the My Tickets ink fill that grows as a circle from the
+centre (`.tickets-tab__fill`). Arrow keys move between tabs, and `#faq` /
+`#contact` in the URL open those tabs directly. Every section is a white
+28px-radius `shadow-clay` card with an extrabold sentence-case title and a muted
+lede. Form rows put the label in an 11rem column beside the field from 640px and
+stack on phones. Fields are 48px paper-filled 16px-radius inputs with a thin ink
+border that turns white with an ink outline on focus.
+
+- **Profile:** Personal details (full name, read-only email with a Confirmed /
+  Not confirmed chip, optional phone), Change password (current, new, confirm,
+  each with an eye toggle that swaps to a struck-through eye), and Notification
+  preferences (four switches: 56×32px track, ink when on, with a cream knob that
+  slides on the springy curve). Switches save on change, with a "Saving…" status
+  line; without JavaScript a Save preferences button submits the form. Details
+  and password forms post with `ajax-form.js` and show their result inline. A
+  brick-filled goo Sign out pill sits bottom right. Google-only accounts see a note
+  pointing to Forgot password instead of the password form. Admins see a
+  read-only username and no password or notification cards.
+- **FAQ:** one card of `<details>` rows. A plus in a pale circle turns into an ink
+  ×, rotating 45° on the springy curve. With GSAP, answers open by growing
+  height (0.55s `power3.out`) and close in 0.35s, one at a time. Below it, an ink
+  "Still need help?" band links to the Contact tab.
+- **Contact us:** email and phone tiles (paper, ink icon circle, clay lift on
+  hover) and an Our cinemas card listing `BookingRules.Cinemas` with format chips.
+
+Entrance: title characters rise through masks, the lede fades up, tabs pop in
+with `back.out(1.8)`, and the open panel's cards rise from `y: 40` while their
+corners settle from 44px. Switching tabs rises the new panel's cards (0.7s,
+stagger 0.08). Reduced motion and the 3s reveal guard apply.
+
+### 8.24 News management — `admin-news.js`
+
+Admins get a "Manage news" underlined link beside "Read story" on `/News`, leading to
+`/Admin/News`: the "Logged in as ADMIN" bar with an "Add story" pill, then one white
+28px-radius clay card per story. Each card shows its landscape cover (16:9, 16px radius,
+`object-position: 50% 20%`, the same crop the site uses), a status chip (logo-navy
+Published, cyan-tint Scheduled for a future date, outlined Draft), category and date,
+the linked movie, and View / Edit (ink) / Delete (brick) pills. Delete opens the same
+paper confirmation dialog as movies, with "Keep it" focused first.
+
+`/Admin/News/New` and `/Admin/News/{id}/Edit` share one paper form shaped like the movie
+form: Cover image, Story, Details. The cover is an https link to a **landscape** movie
+poster or still. A 16:9 preview beside the field shows exactly how it will be cropped,
+and a note under it reports its size. A portrait or square image (width under 1.4 ×
+height) blocks saving in the browser, and the server measures a new link too and
+refuses it with the same message; if the host can't be reached the server lets it
+through. Publish date is a Bangkok calendar day: today publishes at once, a future day
+hides the story until Bangkok midnight, and untouched dates keep their original time.
+Unticking Published keeps the story as a draft. Stories are deleted for good.
 
 ---
 

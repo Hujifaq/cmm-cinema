@@ -1,0 +1,124 @@
+@model NewsFormViewModel
+@{
+    Context.RequireAssets("admin-news");
+    Layout = "_HeroLayout";
+    var form = Model.Form;
+    ViewData["Title"] = (Model.IsNew ? "Add story" : $"Edit {form.Title}") + " - CMM Cinema";
+    var inputClass = "block min-h-11 w-full min-w-0 rounded-2xl border border-solid border-cinema-ink/15 bg-white px-4 py-2.5 font-sans text-base text-cinema-ink shadow-sm placeholder:text-cinema-ink/40 focus:outline-none focus-visible:border-cinema-ink";
+    var labelClass = "mb-2 block text-[11px] font-bold uppercase tracking-widest text-cinema-ink/70";
+    var hintClass = "m-0 mt-1.5 text-xs text-cinema-ink/60";
+    var summary = ViewData.ModelState.Where(entry => entry.Value!.Errors.Count > 0).SelectMany(entry => entry.Value!.Errors).Select(error => error.ErrorMessage).Distinct().ToList();
+    var coverError = ViewData.ModelState.TryGetValue(nameof(NewsForm.LandscapeUrl), out var cover) && cover.Errors.Count > 0 ? cover.Errors[0].ErrorMessage : null;
+}
+
+@functions {
+    private Microsoft.AspNetCore.Html.IHtmlContent FieldError(string key) =>
+        ViewData.ModelState.TryGetValue(key, out var entry) && entry.Errors.Count > 0
+            ? Html.Raw($"<span class=\"m-0 mt-1.5 block text-xs font-semibold text-cinema-brick\">{System.Net.WebUtility.HtmlEncode(entry.Errors[0].ErrorMessage)}</span>")
+            : Microsoft.AspNetCore.Html.HtmlString.Empty;
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+<section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="news-form-title">
+    @await Html.PartialAsync("_AdminBar")
+    <div class="mx-auto max-w-3xl px-5 md:px-8">
+        <h1 class="m-0 text-4xl font-black uppercase leading-[0.9] tracking-tighter sm:text-5xl" id="news-form-title">@(Model.IsNew ? "Add story" : "Edit story")</h1>
+
+        <form class="mt-8 grid gap-8" method="post">
+            @if (summary.Count > 0)
+            {
+                <div class="rounded-2xl bg-cinema-brick/10 p-4 text-sm font-semibold text-cinema-brick" role="alert">
+                    <p class="m-0">Please fix the following before saving:</p>
+                    <ul class="m-0 mt-1 list-disc pl-5">
+                        @foreach (var message in summary) { <li>@message</li> }
+                    </ul>
+                </div>
+            }
+
+            <fieldset class="m-0 grid gap-5 border-0 p-0">
+                <legend class="mb-1 p-0 text-2xl font-black uppercase tracking-tighter">Cover image</legend>
+                <div>
+                    <label class="@labelClass" for="LandscapeUrl">Landscape image link</label>
+                    <input class="@inputClass" id="LandscapeUrl" name="LandscapeUrl" type="url" value="@form.LandscapeUrl" maxlength="500" placeholder="https://..." required aria-describedby="cover-note" data-cover-input />
+                    <p class="@hintClass">A full https:// link to a landscape movie poster or still, 16:9 and at least 1280 × 720.</p>
+                </div>
+                <div>
+                    <p class="@labelClass">How it will look</p>
+                    <div class="aspect-video w-full max-w-xl overflow-hidden rounded-2xl bg-cinema-ink/10" data-cover-frame>
+                        <img class="size-full object-cover object-[50%_20%]" src="@form.LandscapeUrl" alt="" width="1200" height="675" data-cover-image hidden="@string.IsNullOrEmpty(form.LandscapeUrl)" />
+                    </div>
+                    <p class="m-0 mt-2 text-xs font-semibold text-cinema-ink/60 data-[tone=error]:text-cinema-brick" id="cover-note" role="status" data-cover-note data-tone="@(coverError is null ? null : "error")">@(coverError ?? (string.IsNullOrEmpty(form.LandscapeUrl) ? "Paste a link to see the cover here." : ""))</p>
+                </div>
+            </fieldset>
+
+            <fieldset class="m-0 grid gap-5 border-0 p-0">
+                <legend class="mb-1 p-0 text-2xl font-black uppercase tracking-tighter">Story</legend>
+                <div>
+                    <label class="@labelClass" for="Title">Title</label>
+                    <input class="@inputClass" id="Title" name="Title" value="@form.Title" maxlength="160" required />
+                    @FieldError("Title")
+                </div>
+                <div>
+                    <label class="@labelClass" for="Excerpt">Short summary</label>
+                    <textarea class="@inputClass min-h-24 rounded-3xl" id="Excerpt" name="Excerpt" maxlength="300" required>@form.Excerpt</textarea>
+                    <p class="@hintClass">One or two sentences, shown on the home page and the News gallery.</p>
+                    @FieldError("Excerpt")
+                </div>
+                <div>
+                    <label class="@labelClass" for="Body">Full story</label>
+                    <textarea class="@inputClass min-h-56 rounded-3xl" id="Body" name="Body" maxlength="10000">@form.Body</textarea>
+                    <p class="@hintClass">A blank line starts a new paragraph. A short line ending with a colon, like "Why it matters:", becomes a heading.</p>
+                </div>
+            </fieldset>
+
+            <fieldset class="m-0 grid gap-5 border-0 p-0">
+                <legend class="mb-1 p-0 text-2xl font-black uppercase tracking-tighter">Details</legend>
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <label class="@labelClass" for="Category">Category</label>
+                        <input class="@inputClass" id="Category" name="Category" value="@form.Category" maxlength="40" list="news-categories" required />
+                        <datalist id="news-categories">@foreach (var category in NewsForm.Categories) { <option value="@category"></option> }</datalist>
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="MovieId">Movie</label>
+                        <select class="@inputClass" id="MovieId" name="MovieId">
+                            <option value="">No movie</option>
+                            @foreach (var movie in Model.Movies)
+                            {
+                                <option value="@movie.Id" selected="@(form.MovieId == movie.Id)">@movie.Title</option>
+                            }
+                        </select>
+                        <p class="@hintClass">Adds a Book button and uses the movie's poster on the 3D discs.</p>
+                        @FieldError("MovieId")
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="PublishedOn">Publish date</label>
+                        <input class="@inputClass" id="PublishedOn" name="PublishedOn" type="date" value="@(form.PublishedOn?.ToString("yyyy-MM-dd"))" />
+                        <p class="@hintClass">A future date keeps the story hidden until then.</p>
+                    </div>
+                    <div>
+                        <label class="@labelClass" for="Slug">Web address</label>
+                        <input class="@inputClass" id="Slug" name="Slug" value="@form.Slug" maxlength="120" placeholder="Leave empty to build it from the title" />
+                        <p class="@hintClass">Shown as /News/<span class="font-semibold">address</span>. Changing it breaks old links.</p>
+                        @FieldError("Slug")
+                    </div>
+                </div>
+                <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-bold">
+                    <input type="hidden" name="IsPublished" value="false" />
+                    <input class="size-5 cursor-pointer accent-cinema-ink" type="checkbox" name="IsPublished" value="true" checked="@form.IsPublished" />
+                    Published (untick to keep it as a draft)
+                </label>
+            </fieldset>
+
+            <div class="flex flex-wrap gap-3">
+                <button class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border-0 bg-cinema-ink px-8 text-sm font-bold text-cinema-cream transition-colors duration-300 hover:bg-cinema-logo focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink motion-reduce:transition-none" type="submit">@(Model.IsNew ? "Add story" : "Save changes")</button>
+                <a class="inline-flex min-h-12 items-center justify-center rounded-full border border-solid border-cinema-ink/20 px-8 text-sm font-bold text-cinema-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" href="/Admin/News">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@await Html.PartialAsync("_AccountFooter")

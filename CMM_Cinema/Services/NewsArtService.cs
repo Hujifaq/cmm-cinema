@@ -22,6 +22,27 @@ public sealed class NewsArtService(IHttpClientFactory httpClients, IMemoryCache 
         return inFlight.GetOrAdd(key, _ => FetchAndCacheAsync(key, story.PosterUrl));
     }
 
+    public void Forget(string slug) => cache.Remove($"news-art:{slug}");
+
+    public async Task<(int Width, int Height)?> MeasureAsync(string url, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return null;
+            using var response = await httpClients.CreateClient("news-art").GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            if (!response.IsSuccessStatusCode || response.Content.Headers.ContentLength > MaxCoverBytes) return null;
+
+            await using var source = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var info = await Image.IdentifyAsync(source, cancellationToken);
+            return (info.Width, info.Height);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or UnknownImageFormatException or InvalidImageContentException)
+        {
+            logger.LogWarning(ex, "Could not measure news cover {Url}", url);
+            return null;
+        }
+    }
+
     private async Task<byte[]?> FetchAndCacheAsync(string key, string url)
     {
         try

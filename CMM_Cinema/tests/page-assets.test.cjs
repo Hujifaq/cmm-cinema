@@ -19,8 +19,10 @@ const hooks = {
   'my-tickets': [/data-tickets-page/],
   signup: [/data-signup-page/],
   'forgot-password': [/data-forgot-password-page/, /data-reset-password-page/],
+  profile: [/data-profile-page/],
   'ajax-form': [/data-ajax-form/],
   'admin-movies': [/data-delete-dialog/, /data-cast-list/, /data-edit-toggle/],
+  'admin-news': [/data-admin-story-delete-dialog/, /data-cover-input/],
   'admin-tickets': [/data-admin-ticket-filter/, /data-admin-ticket-dialog/]
 };
 

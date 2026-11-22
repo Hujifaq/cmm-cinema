@@ -15,7 +15,7 @@
 
 @if (first is null)
 {
-    <section class="disc-news" aria-labelledby="news-title"><header class="disc-news__info"><h1 class="disc-news__kicker" id="news-title">News &amp; Updates</h1><h2 class="disc-news__title">No news yet</h2></header></section>
+    <section class="disc-news" aria-labelledby="news-title"><header class="disc-news__info"><h1 class="disc-news__kicker" id="news-title">News &amp; Updates</h1><h2 class="disc-news__title">No news yet</h2>@if (User.IsInRole(AuthClaims.AdminRole)) { <p><a href="/Admin/News">Manage news</a></p> }</header></section>
 }
 else
 {
@@ -47,7 +47,13 @@ else
                 <span>Read story</span>
                 <svg viewBox="0 0 120 10" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6.5 C28 3.5 58 7.5 86 4.8 S112 4.6 118 4" /></svg>
             </a>
-            
+            @if (User.IsInRole(AuthClaims.AdminRole))
+            {
+                <a class="disc-news__read" href="/Admin/News">
+                    <span>Manage news</span>
+                    <svg viewBox="0 0 120 10" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6.5 C28 3.5 58 7.5 86 4.8 S112 4.6 118 4" /></svg>
+                </a>
+            }
         </div>
         
     </footer>
