@@ -134,6 +134,10 @@
     {
         <script src="~/js/admin-movies.js" asp-append-version="true" defer></script>
     }
+    @if (Context.RequiresAsset("admin-tickets"))
+    {
+        <script src="~/js/admin-tickets.js" asp-append-version="true" defer></script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

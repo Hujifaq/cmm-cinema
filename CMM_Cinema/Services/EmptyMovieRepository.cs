@@ -11,6 +11,9 @@ public sealed class EmptyMovieRepository : IMovieRepository
     public Task<Movie?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
         Task.FromResult<Movie?>(null);
 
+    public Task<Movie?> GetBySlugIncludingArchivedAsync(string slug, CancellationToken cancellationToken = default) =>
+        Task.FromResult<Movie?>(null);
+
     public Task<IReadOnlyList<Movie>> SearchAsync(string query, int limit, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<Movie>>([]);
 

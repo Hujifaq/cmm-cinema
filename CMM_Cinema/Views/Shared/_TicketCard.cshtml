@@ -29,4 +29,10 @@
         </div>
         @await Html.PartialAsync("_GooButton", (Label: "View ticket", Href: Model.Url, Accent: Model.IsPast ? "bg-cinema-sky" : "bg-cinema-cyan"), new ViewDataDictionary(ViewData) { ["GooClass"] = "shrink-0 px-6 font-sans", ["GooLabel"] = $"View ticket for {Model.Movie.Title}" })
     </div>
+    @if (Model.BookingId is { } bookingId && User.IsInRole(CMM_Cinema.Services.AuthClaims.AdminRole))
+    {
+        <a class="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full bg-cinema-ink text-cinema-cream shadow-md no-underline transition-transform duration-300 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink motion-reduce:transition-none print:hidden" href="/Admin/Tickets/@bookingId.ToString("D")" aria-label="Edit ticket @Model.BookingCode" title="Edit ticket">
+            <svg class="size-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m13.5 3.5 3 3L7 16H4v-3l9.5-9.5Z" /></svg>
+        </a>
+    }
 </article>

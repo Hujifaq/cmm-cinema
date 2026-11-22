@@ -7,10 +7,11 @@ namespace CMM_Cinema.Controllers
 {
     // Showtimes -> SeatSelection (draft session, SaveSeats) -> Reserve -> Summary -> Confirm -> Confirmation
     // Browsing showtimes is public; choosing seats onwards needs an account, and every booking belongs to its owner.
-    [Authorize(Policy = AuthSetup.CustomerPolicy)]
-    public class BookingController(IMovieRepository movies, IBookingService booking) : Controller
+    [Authorize]
+    public class BookingController(IMovieRepository movies, IBookingService booking, BookingOwners owners) : Controller
     {
-        private int UserId => AuthClaims.UserId(User) ?? throw new InvalidOperationException("Booking actions require a signed-in user.");
+        private async Task<int> OwnerIdAsync(CancellationToken cancellationToken) =>
+            await owners.ResolveAsync(User, cancellationToken) ?? throw new InvalidOperationException("Booking actions require a signed-in account.");
 
         [HttpGet]
         [AllowAnonymous]
@@ -44,14 +45,15 @@ namespace CMM_Cinema.Controllers
         [HttpGet]
         public async Task<IActionResult> SeatSelection(int showtimeId, CancellationToken cancellationToken)
         {
+            var ownerId = await OwnerIdAsync(cancellationToken);
             var showtime = await booking.GetShowtimeAsync(showtimeId, cancellationToken);
             if (showtime is null) return NotFound();
-            if (!showtime.IsAvailable) return RedirectToAction(nameof(Showtimes), new { movie = showtime.MovieSlug });
+            if (!showtime.IsBookable) return RedirectToAction(nameof(Showtimes), new { movie = showtime.MovieSlug });
 
             var movie = await movies.GetBySlugAsync(showtime.MovieSlug, cancellationToken);
             if (movie is null) return NotFound();
 
-            if (await booking.StartDraftAsync(UserId, showtimeId, cancellationToken) is not { } draft)
+            if (await booking.StartDraftAsync(ownerId, showtimeId, cancellationToken) is not { } draft)
                 return RedirectToAction(nameof(Showtimes), new { movie = showtime.MovieSlug });
 
             return View(new SeatSelectionViewModel(movie, BookingRules.GetCinema(showtime.CinemaId)!, showtime,
@@ -61,21 +63,23 @@ namespace CMM_Cinema.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveSeats(int showtimeId, string[]? seatIds, CancellationToken cancellationToken)
         {
-            if (await booking.SaveDraftSeatsAsync(UserId, showtimeId, seatIds ?? [], cancellationToken) is not { } draft) return NotFound();
+            var ownerId = await OwnerIdAsync(cancellationToken);
+            if (await booking.SaveDraftSeatsAsync(ownerId, showtimeId, seatIds ?? [], cancellationToken) is not { } draft) return NotFound();
             return Json(new { seats = draft.SeatIds, expiresAt = draft.ExpiresAt.ToUnixTimeSeconds() });
         }
 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Reserve(int showtimeId, string[]? seatIds, CancellationToken cancellationToken)
         {
-            var result = await booking.HoldSeatsAsync(UserId, showtimeId, seatIds ?? [], cancellationToken);
+            var ownerId = await OwnerIdAsync(cancellationToken);
+            var result = await booking.HoldSeatsAsync(ownerId, showtimeId, seatIds ?? [], cancellationToken);
             if (result.Booking is not { } hold)
             {
-                await booking.SaveDraftSeatsAsync(UserId, showtimeId, seatIds ?? [], cancellationToken);
+                await booking.SaveDraftSeatsAsync(ownerId, showtimeId, seatIds ?? [], cancellationToken);
                 TempData["SeatError"] = result.Error;
                 return RedirectToAction(nameof(SeatSelection), new { showtimeId });
             }
-            await booking.ClearDraftAsync(UserId, cancellationToken);
+            await booking.ClearDraftAsync(ownerId, cancellationToken);
             return RedirectToAction(nameof(Summary), new { bookingId = hold.Id });
         }
 
@@ -85,6 +89,7 @@ namespace CMM_Cinema.Controllers
             var details = await FindDetailsAsync(bookingId, cancellationToken);
             if (details is null) return RedirectToAction(nameof(Showtimes));
             if (details.Booking.Status != BookingStatus.Held) return RedirectToAction(nameof(Confirmation), new { bookingId });
+            if (details.Movie.IsArchived) return await DropArchivedHoldAsync(details, cancellationToken);
             ViewData["BookingError"] = TempData["BookingError"];
             return View(details);
         }
@@ -98,14 +103,17 @@ namespace CMM_Cinema.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(Guid bookingId, CancellationToken cancellationToken)
         {
-            var result = await booking.ConfirmBookingAsync(UserId, bookingId, cancellationToken);
+            var ownerId = await OwnerIdAsync(cancellationToken);
+            if (await FindDetailsAsync(bookingId, cancellationToken) is { Booking.Status: BookingStatus.Held, Movie.IsArchived: true } archived)
+                return await DropArchivedHoldAsync(archived, cancellationToken);
+            var result = await booking.ConfirmBookingAsync(ownerId, bookingId, cancellationToken);
             if (result.Succeeded)
             {
                 TempData["Celebrate"] = true;
                 return RedirectToAction(nameof(Confirmation), new { bookingId });
             }
 
-            if (await booking.GetBookingAsync(UserId, bookingId, cancellationToken) is null) return RedirectToAction(nameof(Showtimes));
+            if (await booking.GetBookingAsync(ownerId, bookingId, cancellationToken) is null) return RedirectToAction(nameof(Showtimes));
             TempData["BookingError"] = result.Error;
             return RedirectToAction(nameof(Summary), new { bookingId });
         }
@@ -128,20 +136,28 @@ namespace CMM_Cinema.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(Guid bookingId, CancellationToken cancellationToken)
         {
-            var showtime = await booking.GetBookingAsync(UserId, bookingId, cancellationToken) is { } hold
+            var ownerId = await OwnerIdAsync(cancellationToken);
+            var showtime = await booking.GetBookingAsync(ownerId, bookingId, cancellationToken) is { } hold
                 ? await booking.GetShowtimeAsync(hold.ShowtimeId, cancellationToken)
                 : null;
-            await booking.CancelHoldAsync(UserId, bookingId, cancellationToken);
-            await booking.ClearDraftAsync(UserId, cancellationToken);
+            await booking.CancelHoldAsync(ownerId, bookingId, cancellationToken);
+            await booking.ClearDraftAsync(ownerId, cancellationToken);
             return RedirectToAction(nameof(Showtimes), new { movie = showtime?.MovieSlug });
         }
 
         private async Task<BookingDetailsViewModel?> FindDetailsAsync(Guid bookingId, CancellationToken cancellationToken)
         {
-            if (await booking.GetBookingAsync(UserId, bookingId, cancellationToken) is not { } hold) return null;
+            var ownerId = await OwnerIdAsync(cancellationToken);
+            if (await booking.GetBookingAsync(ownerId, bookingId, cancellationToken) is not { } hold) return null;
             if (await booking.GetShowtimeAsync(hold.ShowtimeId, cancellationToken) is not { } showtime) return null;
-            if (await movies.GetBySlugAsync(showtime.MovieSlug, cancellationToken) is not { } movie) return null;
+            if (await movies.GetBySlugIncludingArchivedAsync(showtime.MovieSlug, cancellationToken) is not { } movie) return null;
             return new BookingDetailsViewModel(hold, movie, BookingRules.GetCinema(showtime.CinemaId)!, showtime);
+        }
+
+        private async Task<IActionResult> DropArchivedHoldAsync(BookingDetailsViewModel details, CancellationToken cancellationToken)
+        {
+            await booking.CancelHoldAsync(details.Booking.OwnerId, details.Booking.Id, cancellationToken);
+            return RedirectToAction(nameof(Showtimes));
         }
     }
 }

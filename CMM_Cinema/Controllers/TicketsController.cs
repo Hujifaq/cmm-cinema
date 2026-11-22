@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CMM_Cinema.Controllers
 {
     [Authorize]
-    public class TicketsController(IBookingService booking, IMovieRepository movies, TicketQrService qr) : Controller
+    public class TicketsController(IBookingService booking, BookingOwners owners, TicketBuilder builder, UserRepository users, TicketQrService qr) : Controller
     {
 
         [HttpGet("MyTickets")]
@@ -17,7 +17,8 @@ namespace CMM_Cinema.Controllers
 
             return View(new MyTicketsViewModel(
                 tickets.Where(ticket => ticket.Showtime >= now).OrderBy(ticket => ticket.Showtime).ToArray(),
-                tickets.Where(ticket => ticket.Showtime < now).OrderByDescending(ticket => ticket.Showtime).ToArray()));
+                tickets.Where(ticket => ticket.Showtime < now).OrderByDescending(ticket => ticket.Showtime).ToArray(),
+                AuthClaims.IsAdmin(User) ? await GetAllTicketsAsync(now, cancellationToken) : null));
         }
 
         [HttpGet("MyTickets/{code}/{slug?}")]
@@ -44,24 +45,23 @@ namespace CMM_Cinema.Controllers
             return File(qr.Png(qr.TicketUrl(Request, token)), "image/png", $"cmm-ticket-{ticket.BookingCode}.png");
         }
 
-        // Admins have no customer id, so they see no tickets. A VIP pair lists both of its seats.
-        // Bookings confirmed before ticket tokens existed are given one here, so every ticket has a working QR code.
-        private async Task<List<Ticket>> GetTicketsAsync(CancellationToken cancellationToken)
+        private async Task<List<Ticket>> GetTicketsAsync(CancellationToken cancellationToken) =>
+            await owners.ResolveAsync(User, cancellationToken) is { } ownerId
+                ? await builder.BuildAllAsync(await booking.GetConfirmedBookingsAsync(ownerId, cancellationToken), cancellationToken)
+                : [];
+
+        private async Task<IReadOnlyList<AdminTicketRow>> GetAllTicketsAsync(DateTime now, CancellationToken cancellationToken)
         {
-            var tickets = new List<Ticket>();
-            if (AuthClaims.UserId(User) is not { } userId) return tickets;
+            var holds = await booking.GetAllConfirmedBookingsAsync(cancellationToken);
+            var contacts = await users.GetContactsAsync(holds.Select(hold => hold.OwnerId), cancellationToken);
+            var ownerByBooking = holds.ToDictionary(hold => hold.Id, hold => contacts.GetValueOrDefault(hold.OwnerId) ?? new UserContact("Deleted account", ""));
+            var tickets = await builder.BuildAllAsync(holds, cancellationToken);
 
-            foreach (var hold in await booking.GetConfirmedBookingsAsync(userId, cancellationToken))
-            {
-                if (await booking.GetShowtimeAsync(hold.ShowtimeId, cancellationToken) is not { } showtime) continue;
-                if (await movies.GetBySlugAsync(showtime.MovieSlug, cancellationToken) is not { } movie) continue;
-
-                var token = hold.TicketToken ?? await booking.EnsureTicketTokenAsync(userId, hold.Id, cancellationToken);
-                tickets.Add(new Ticket(hold.Reference, movie, BookingRules.GetCinema(showtime.CinemaId)?.Name ?? "CMM Cinema",
-                    BookingRules.HallFor(showtime), showtime.Date.ToDateTime(showtime.Time), showtime.Format,
-                    BookingRules.TicketSeatLabels(hold), token));
-            }
-            return tickets;
+            return tickets
+                .OrderBy(ticket => ticket.Showtime < now)
+                .ThenBy(ticket => ticket.Showtime < now ? -ticket.Showtime.Ticks : ticket.Showtime.Ticks)
+                .Select(ticket => new AdminTicketRow(ticket, ownerByBooking[ticket.BookingId!.Value]))
+                .ToArray();
         }
     }
 }
