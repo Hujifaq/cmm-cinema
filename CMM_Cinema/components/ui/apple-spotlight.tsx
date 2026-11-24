@@ -182,7 +182,7 @@ const SearchResultsContainer = ({ searchResults, pending, onHover, onSelect }: S
       className="px-2 border-white/15 border-t flex flex-col max-h-96 overflow-y-auto w-full py-2"
     >
       <span className="sr-only" role="status">{pending && !searchResults.length ? 'Searching' : `${searchResults.length} results found`}</span>
-      {!searchResults.length && <p className="px-4 py-5 text-sm text-white/50">{pending ? 'Searching…' : 'No movies or promotions found. Try a title, a genre, “student” or “late”.'}</p>}
+      {!searchResults.length && <p className="px-4 py-5 text-sm text-white/50">{pending ? 'Searching…' : 'No movies or promotions found. Try a title, a genre, “student” or “combo”.'}</p>}
       {searchResults.map((result, index) => {
         return (
           <motion.div
