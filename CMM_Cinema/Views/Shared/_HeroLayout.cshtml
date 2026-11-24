@@ -88,11 +88,6 @@
     <script src="~/js/gooey-nav.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-nav.js" asp-append-version="true" defer></script>
     <script src="~/js/cinema-nav-actions.js" asp-append-version="true" defer></script>
-    <script src="~/js/cinema-search.bundle.js" asp-append-version="true" defer></script>
-    @if (Context.RequiresAsset("section-title"))
-    {
-        <script src="~/js/now-showing-title.bundle.js" asp-append-version="true" defer></script>
-    }
     <script src="~/js/cinema-marquee.js" asp-append-version="true" defer></script>
     @if (Context.RequiresAsset("swiper"))
     {
@@ -160,6 +155,14 @@
     {
         <script src="~/js/admin-tickets.js" asp-append-version="true" defer></script>
     }
+    @* The two React bundles are the heaviest scripts (~350–430 KB each). Deferred scripts run in document order,
+       so they go last: the page's own carousels, promos and forms start without waiting for React to boot.
+       They still download in parallel with everything else. *@
+    @if (Context.RequiresAsset("section-title"))
+    {
+        <script src="~/js/now-showing-title.bundle.js" asp-append-version="true" defer></script>
+    }
+    <script src="~/js/cinema-search.bundle.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

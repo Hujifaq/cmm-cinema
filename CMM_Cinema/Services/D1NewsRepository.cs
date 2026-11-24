@@ -6,7 +6,8 @@ using Microsoft.Extensions.Caching.Memory;
 namespace CMM_Cinema.Services;
 
 
-public sealed class D1NewsRepository(D1Client d1, IMemoryCache cache, MockNewsRepository placeholders) : INewsRepository
+// Only published stories from the D1 `news` table reach the site; there is no generated filler.
+public sealed class D1NewsRepository(D1Client d1, IMemoryCache cache) : INewsRepository
 {
     private const string CacheKey = "d1-news";
     private const int MaxStories = 12;
@@ -14,23 +15,11 @@ public sealed class D1NewsRepository(D1Client d1, IMemoryCache cache, MockNewsRe
 
     public bool CanEdit => true;
 
-    public async Task<IReadOnlyList<NewsStory>> GetStoriesAsync(CancellationToken cancellationToken = default)
-    {
-        var stored = await LoadAsync(cancellationToken);
-        if (stored.Count >= MaxStories) return stored.Take(MaxStories).ToArray();
+    public Task<IReadOnlyList<NewsStory>> GetStoriesAsync(CancellationToken cancellationToken = default) => LoadAsync(cancellationToken);
 
-        
-        var covered = stored.Select(story => story.MovieSlug).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var filler = (await placeholders.GetStoriesAsync(cancellationToken)).Where(story => story.MovieSlug is null || !covered.Contains(story.MovieSlug));
-        return stored.Concat(filler).Take(MaxStories).ToArray();
-    }
-
-    private async Task<IReadOnlyList<NewsStory>> LoadAsync(CancellationToken cancellationToken) =>
-        (await cache.GetOrCreateAsync(CacheKey, entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = CacheLifetime;
-            return FetchAsync(cancellationToken);
-        }))!;
+    // Refresh-ahead: after the first load no visitor waits on D1; see RefreshAheadCache.
+    private Task<IReadOnlyList<NewsStory>> LoadAsync(CancellationToken cancellationToken) =>
+        cache.GetOrRefreshAsync(CacheKey, CacheLifetime, TimeSpan.FromDays(1), FetchAsync);
 
     private async Task<IReadOnlyList<NewsStory>> FetchAsync(CancellationToken cancellationToken)
     {

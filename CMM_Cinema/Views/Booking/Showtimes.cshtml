@@ -22,7 +22,7 @@
     <div class="grid min-w-0 items-center gap-8 md:grid-cols-[200px_minmax(0,1fr)] lg:grid-cols-[minmax(240px,0.8fr)_minmax(0,2fr)] lg:gap-12">
         <a class="booking-poster w-full max-w-[200px] justify-self-center md:max-w-none" href="@movie.Url" aria-label="About @movie.Title">
             <div class="booking-poster-sheet">
-                @await Html.PartialAsync("_MoviePoster", movie)
+                @await Html.PartialAsync("_MoviePoster", movie, new ViewDataDictionary(ViewData) { ["PosterLoading"] = "eager" })
             </div>
         </a>
 

@@ -107,8 +107,9 @@
                     </div>
                 </div>
                 <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-bold">
-                    <input type="hidden" name="IsPublished" value="false" />
+                    @* The checkbox must come first: MVC binds a bool from the first posted value, so a ticked box posts "true,false". *@
                     <input class="size-5 cursor-pointer accent-cinema-ink" type="checkbox" name="IsPublished" value="true" checked="@form.IsPublished" />
+                    <input type="hidden" name="IsPublished" value="false" />
                     Published (untick to keep it as a draft)
                 </label>
             </fieldset>

@@ -1,5 +1,19 @@
 (() => {
   'use strict';
+
+  // Carousel posters are lazy, but slides hidden past the carousel's clipped edge only start loading once swiped
+  // into view, so they pop in mid-swipe. When a carousel nears the viewport, load all of its posters up front.
+  if ('IntersectionObserver' in window) {
+    const preload = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        preload.unobserve(entry.target);
+        entry.target.querySelectorAll('img[loading="lazy"]').forEach(img => { img.loading = 'eager'; });
+      });
+    }, { rootMargin: '600px 0px' });
+    document.querySelectorAll('[data-movie-swiper]').forEach(root => preload.observe(root));
+  }
+
   if (!window.Swiper) return;
 
   const colors = ['#fde047', '#f9a8d4', '#86efac', '#7dd3fc', '#fdba74', '#c4b5fd'];
