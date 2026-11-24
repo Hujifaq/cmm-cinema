@@ -24,7 +24,7 @@
 
         @if (!canEdit)
         {
-            <p class="mb-0 mt-8 rounded-2xl bg-cinema-ink/[0.04] px-5 py-4 text-sm leading-relaxed text-cinema-ink/70">News can only be edited once the Cloudflare D1 database is configured. The site is showing generated placeholder stories.</p>
+            <p class="mb-0 mt-8 rounded-2xl bg-cinema-ink/[0.04] px-5 py-4 text-sm leading-relaxed text-cinema-ink/70">News can only be edited once the Cloudflare D1 database is configured. Until then the site shows no news.</p>
         }
         else if (Model.Count == 0)
         {
@@ -36,7 +36,7 @@
         }
         else
         {
-            <p class="mb-0 mt-4 text-sm leading-relaxed text-cinema-ink/60">@Model.Count @(Model.Count == 1 ? "story" : "stories")@(visible < 12 ? ". Until 12 stories are live, the site fills the gaps with generated placeholders." : ".")</p>
+            <p class="mb-0 mt-4 text-sm leading-relaxed text-cinema-ink/60">@Model.Count @(Model.Count == 1 ? "story" : "stories"), @visible live on the site. Drafts and scheduled stories stay hidden; the site shows the 12 newest live stories.</p>
 
             <ul class="m-0 mt-8 grid list-none gap-4 p-0">
                 @foreach (var row in Model)

@@ -93,20 +93,20 @@ public sealed class D1MovieRepository(D1Client d1, IMemoryCache cache) : IMovieR
     private async Task<IEnumerable<Movie>> ListedAsync(CancellationToken cancellationToken) =>
         (await LoadAsync(cancellationToken)).Where(movie => !movie.IsArchived);
 
-    private async Task<IReadOnlyList<Movie>> LoadAsync(CancellationToken cancellationToken) =>
-        (await cache.GetOrCreateAsync(CacheKey, entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = CacheLifetime;
-            return FetchAsync(cancellationToken);
-        }))!;
+    // Refresh-ahead: after the first load no visitor waits on D1; see RefreshAheadCache.
+    private Task<IReadOnlyList<Movie>> LoadAsync(CancellationToken cancellationToken) =>
+        cache.GetOrRefreshAsync(CacheKey, CacheLifetime, TimeSpan.FromDays(1), FetchAsync);
 
     private async Task<IReadOnlyList<Movie>> FetchAsync(CancellationToken cancellationToken)
     {
-        var movieRows = await d1.QueryAsync(
+        // Two independent HTTPS round trips to D1: run them side by side.
+        var movieQuery = d1.QueryAsync(
             "SELECT id, slug, title, genre, duration_minutes, rating, language, synopsis, overview, status, release_date, poster_url, poster_theme, poster_title, trailer_url, is_archived " +
             "FROM movies ORDER BY id", cancellationToken: cancellationToken);
-        var castRows = await d1.QueryAsync(
+        var castQuery = d1.QueryAsync(
             "SELECT movie_id, name, role, photo_url FROM cast_members ORDER BY movie_id, sort_order, id", cancellationToken: cancellationToken);
+        var movieRows = await movieQuery;
+        var castRows = await castQuery;
 
         var castByMovie = castRows
             .GroupBy(row => row.GetProperty("movie_id").GetInt32())

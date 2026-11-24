@@ -22,14 +22,12 @@ public sealed class AuthCookieEvents(UserRepository users, AdminRepository admin
             return;
         }
 
-        var currentStamp = await cache.GetOrCreateAsync(isAdmin ? AdminCacheKey(userId) : CacheKey(userId), async entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = StampCacheLifetime;
-            var cancellationToken = context.HttpContext.RequestAborted;
-            return isAdmin
+        // Refresh-ahead, so a signed-in visitor isn't held up by a D1 lookup once a minute.
+        // Password changes and resets call ForgetStamp, which forces the next check to read the database.
+        var currentStamp = await cache.GetOrRefreshAsync(isAdmin ? AdminCacheKey(userId) : CacheKey(userId), StampCacheLifetime, TimeSpan.FromMinutes(30),
+            async cancellationToken => isAdmin
                 ? (await admins.FindByIdAsync(userId, cancellationToken))?.SecurityStamp
-                : (await users.FindByIdAsync(userId, cancellationToken))?.SecurityStamp;
-        });
+                : (await users.FindByIdAsync(userId, cancellationToken))?.SecurityStamp);
 
         if (!string.Equals(currentStamp, cookieStamp, StringComparison.Ordinal))
             await RejectAsync(context);

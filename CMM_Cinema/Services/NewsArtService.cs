@@ -80,16 +80,20 @@ public sealed class NewsArtService(IHttpClientFactory httpClients, IMemoryCache 
     }
 }
 
-// Prepares every cover shortly after start-up, so the first visitor does not wait for a large poster to download.
+// Right after start-up, loads the movie and news caches and prepares every news cover,
+// so the first visitors don't wait on D1 or on a large poster download.
 public sealed class NewsArtWarmup(IServiceScopeFactory scopes, NewsArtService art, ILogger<NewsArtWarmup> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
+            await Task.Yield();
             using var scope = scopes.CreateScope();
-            var stories = await scope.ServiceProvider.GetRequiredService<INewsRepository>().GetStoriesAsync(stoppingToken);
+            var movies = scope.ServiceProvider.GetRequiredService<IMovieRepository>().GetByStatusAsync(MovieStatus.NowShowing, stoppingToken);
+            var news = scope.ServiceProvider.GetRequiredService<INewsRepository>().GetStoriesAsync(stoppingToken);
+            await movies;
+            var stories = await news;
             foreach (var batch in stories.Chunk(3))
                 await Task.WhenAll(batch.Select(story => art.GetAsync(story)));
         }

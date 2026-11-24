@@ -13,12 +13,14 @@
         ["sky-stripes"] = ("bg-cinema-sky", "text-cinema-ink", "border-cinema-ink text-cinema-ink", "absolute inset-x-0 top-0 h-[56%] bg-[repeating-linear-gradient(120deg,var(--color-cinema-ink)_0_14px,transparent_14px_32px)]"),
     };
     var theme = themes.GetValueOrDefault(Model.PosterTheme, themes["ink-orbit"]);
+    // Lazy by default (lists, carousels). Pages whose main poster sits above the fold pass PosterLoading = "eager".
+    var loading = ViewData["PosterLoading"] as string ?? "lazy";
 }
 
 <div class="relative size-full @theme.Bg @ViewData["PosterClass"]">
     @if (!string.IsNullOrEmpty(Model.PosterUrl))
     {
-        <img class="absolute inset-0 size-full object-cover" src="@Model.PosterUrl" alt="" loading="lazy" draggable="false" />
+        <img class="absolute inset-0 size-full object-cover" src="@Model.PosterUrl" alt="" loading="@loading" decoding="async" draggable="false" />
         <span class="absolute left-3 top-3 rounded-full border border-white/60 bg-black/40 px-2 py-0.5 text-[10px] font-bold leading-none text-white backdrop-blur-sm">@Model.Rating</span>
     }
     else
