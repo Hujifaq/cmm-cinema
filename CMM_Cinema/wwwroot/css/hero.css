@@ -4,18 +4,6 @@
   background: var(--cinema-hero-gradient);
 }
 
-/* A static film texture sits above the sky and tubes, below lettering and props. */
-.cinema-hero::after {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='1.9 0 0 0 -0.45 1.9 0 0 0 -0.45 1.9 0 0 0 -0.45 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
-  mix-blend-mode: soft-light;
-  opacity: 0.24;
-}
 
 .hero-line--large {
   width: max(180cqw, 165cqh);
@@ -40,15 +28,24 @@
   top: 30.4%;
 }
 
+/* Unhinted, geometric glyph outlines stay crisp at every scale, including
+   mid-tween, and keep the fill and outline layers in exact register. */
+.hero-title svg {
+  text-rendering: geometricPrecision;
+  shape-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .hero-title text {
   font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
 }
 
 .hero-title--outline text {
   stroke-width: var(--hero-outline-width);
+  stroke-linejoin: round;
   paint-order: stroke;
 }
-
 .hero-prop--glasses { width: 20%; left: 15.2%; top: 24%; }
 .hero-prop--star { width: 20%; left: 62.7%; top: 13.2%; }
 .hero-prop--clapper { width: 16%; left: 7.4%; top: 58.4%; }
@@ -147,7 +144,6 @@
 }
 /* On dense screens, shrink the tile so each grain lands near one device pixel. */
 @media (min-resolution: 2dppx) {
-  .cinema-hero::after,
   .auth-poster-grain { background-size: 120px 120px; }
 }
 .auth-soda-bubbles {

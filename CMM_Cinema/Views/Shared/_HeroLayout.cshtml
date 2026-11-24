@@ -1,3 +1,4 @@
+@{ var showFooter = ViewData["HideFooter"] is not true; }
 <!DOCTYPE html>
 <html lang="en" class="m-0 min-w-[280px] bg-cinema-deep p-0 scheme-dark">
 <head>
@@ -50,6 +51,10 @@
     <link rel="stylesheet" href="~/css/hero.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/cinema-nav.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/page-transition.css" asp-append-version="true" />
+    @if (showFooter)
+    {
+        <link rel="stylesheet" href="~/css/cinema-footer.css" asp-append-version="true" />
+    }
     @if (Context.RequiresAsset("promos"))
     {
         <link rel="stylesheet" href="~/css/promo-ribbon.css" asp-append-version="true" />
@@ -60,12 +65,21 @@
     @await RenderSectionAsync("TopBanner", required: false)
     @await Html.PartialAsync("_CinemaNav")
     <main class="m-0 p-0">@RenderBody()</main>
+    @if (showFooter)
+    {
+        @await Html.PartialAsync("_CinemaFooter")
+    }
     <div id="cinema-search-root" nonce="@Context.GetNonce()"></div>
     <script src="~/lib/lenis/lenis.min.js" asp-append-version="true" defer></script>
     <script src="~/js/smooth-scroll.js" asp-append-version="true" defer></script>
     <script src="~/lib/gsap/gsap.min.js" asp-append-version="true" defer></script>
     <script src="~/lib/gsap/SplitText.min.js" asp-append-version="true" defer></script>
     <script src="~/js/page-transition.js" asp-append-version="true" defer></script>
+    @if (showFooter)
+    {
+        <script src="~/lib/gsap/ScrollTrigger.min.js" asp-append-version="true" defer></script>
+        <script src="~/js/cinema-footer.js" asp-append-version="true" defer></script>
+    }
     @if (Context.RequiresAsset("hero"))
     {
         <script src="~/js/hero-physics.js" asp-append-version="true" defer></script>

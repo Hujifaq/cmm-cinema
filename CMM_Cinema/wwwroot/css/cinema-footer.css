@@ -1,0 +1,135 @@
+/* Site footer: a rounded card on the paper page dressed like the home hero:
+   its teal gradient, its small clay ribbon, the star and the popcorn, with cream type.
+   The artwork files are the hero's own (cached from Home). Placement is in
+   container units of the card, so the composition scales with it. Layers move
+   with transforms only; the prop bob runs only while the footer is on screen
+   (data-footer-visible from cinema-footer.js). */
+
+.cinema-footer__card {
+  container-type: inline-size;
+  background: var(--cinema-hero-gradient);
+}
+/* From 1024px the card and copyright line fill the screen together. */
+@media (min-width: 1024px) {
+  .cinema-footer__card { min-height: calc(100svh - 4.5rem); }
+}
+
+/* Clay ribbon (rear and front halves stacked, at the hero's soft opacity) and
+   the star. Each is centred on its left/top point with negative margins (--w
+   is its width), leaving transforms free for GSAP. */
+.cinema-footer__clay,
+.cinema-footer__prop {
+  width: var(--w);
+  margin-left: calc(var(--w) * -0.5);
+  margin-top: calc(var(--w) * var(--ratio, 1) * -0.5);
+}
+.cinema-footer__clay { opacity: 0.62; }
+.cinema-footer__clay img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+/* The loop is cropped by the card: it comes in from the right and bottom edges. */
+.cinema-footer__clay--small { --w: 58cqw; --ratio: 1.02; aspect-ratio: 1060 / 1081; left: 92%; top: 96%; }
+.cinema-footer__prop--star { --w: 11cqw; left: 54%; top: 76%; }
+
+/* Popcorn: the nearest layer. It sits outside the card in the footer's
+   bottom-right corner, over the card, the loop and the copyright line, with a
+   soft contact shadow for depth. */
+.cinema-footer__popcorn {
+  right: max(-1vw, -12px);
+  bottom: 0;
+  width: clamp(170px, 21vw, 400px);
+}
+/* Its scroll travel must not grow the page or scroll it sideways. */
+.cinema-footer { overflow: clip; }
+.cinema-footer__popcorn img { filter: drop-shadow(0 28px 36px rgb(2 12 13 / 0.45)); }
+
+/* The stacked phone/tablet layout is tall and narrow: the ribbon and star
+   tucked into the empty band under the links. */
+@media (max-width: 1023px) {
+  .cinema-footer__clay--small { --w: 120cqw; left: 92%; top: 90%; }
+  .cinema-footer__prop--star { --w: 28cqw; left: 26%; top: 89%; }
+  .cinema-footer__popcorn { width: clamp(130px, 34vw, 260px); bottom: 4.5rem; }
+}
+
+/* A slow float, like the hero props at rest. */
+@media (prefers-reduced-motion: no-preference) {
+  .cinema-footer__prop img,
+  .cinema-footer__popcorn img {
+    animation: cinema-footer-bob 5.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+    animation-play-state: paused;
+  }
+  .cinema-footer__popcorn img { animation-duration: 6.5s; animation-delay: -2s; }
+  .cinema-footer[data-footer-visible] :is(.cinema-footer__prop, .cinema-footer__popcorn) img { animation-play-state: running; }
+}
+@keyframes cinema-footer-bob {
+  from { transform: translate3d(0, -4%, 0) rotate(-3deg); }
+  to { transform: translate3d(0, 4%, 0) rotate(3deg); }
+}
+
+/* Logo: C mark with "CMM / CINEMA" in cream, like the hero title, the site's black-weight logotype. */
+.cinema-footer__logo text {
+  fill: var(--color-cinema-cream);
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-size: 128px;
+  font-weight: 900;
+}
+
+.cinema-footer__link {
+  display: inline-block;
+  border-radius: 4px;
+  color: inherit;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.cinema-footer__link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+/* Rolling label: each letter of the first row slides up and out while its
+   twin below slides up into place, staggered letter by letter. */
+.cinema-footer__roll {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  line-height: 1.15;
+}
+.cinema-footer__roll-row { display: block; }
+.cinema-footer__roll-row > span { display: inline-block; white-space: pre; }
+.cinema-footer__roll-row--next {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cinema-footer__roll-row { white-space: nowrap; }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .cinema-footer__roll-row > span {
+    transition: transform 560ms cubic-bezier(0.65, 0, 0.35, 1) calc(var(--i) * 18ms);
+  }
+  .cinema-footer__link:is(:hover, :focus-visible) .cinema-footer__roll-row > span {
+    transform: translateY(-100%);
+  }
+}
+/* Touch screens keep one row, which may wrap freely. */
+@media not ((hover: hover) and (pointer: fine)) {
+  .cinema-footer__roll { overflow: visible; }
+  .cinema-footer__roll-row--next { display: none; }
+}
+
+/* Reveal guard (DESIGN.md 7.4): hidden until the script has set its start
+   states, with a 3s safety unhide if scripts never run. */
+@media (prefers-reduced-motion: no-preference) {
+  .cinema-footer:not([data-footer-revealed]) [data-footer-reveal] {
+    visibility: hidden;
+    animation: cinema-footer-unhide 0s 3s forwards;
+  }
+}
+@keyframes cinema-footer-unhide { to { visibility: visible; } }

@@ -1,5 +1,5 @@
 @model Movie
-<article class="relative" data-movie-card>
+<article class="relative min-w-0" data-movie-card>
     <a class="block rounded-2xl text-inherit no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-ink" href="@Model.Url">
         <div class="movie-poster relative aspect-[2/3] overflow-hidden rounded-2xl" data-movie-poster>
             <div class="movie-poster__inner relative size-full">
@@ -19,7 +19,8 @@
             </div>
         </div>
         <p class="m-0 mt-3 text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">@Model.Runtime</p>
-        <h3 class="m-0 mt-1 text-lg font-extrabold leading-tight"><span class="relative inline-block whitespace-nowrap"><span class="relative z-10">@Model.Title</span>@await Html.PartialAsync("_AnnotationHighlight")</span></h3>
+        @* Long names stay on one line and end in an ellipsis; the marker tracks the visible text. *@
+        <h3 class="m-0 mt-1 min-w-0 text-base font-extrabold leading-tight sm:text-lg" title="@Model.Title"><span class="relative inline-block max-w-full align-top"><span class="relative z-10 block truncate">@Model.Title</span>@await Html.PartialAsync("_AnnotationHighlight")</span></h3>
         <div class="mt-2 flex gap-2 text-[11px] font-semibold leading-none">
             <span class="rounded-full bg-cinema-ink px-3 py-1.5 text-cinema-cream">@Model.Genre</span>
             <span class="rounded-full border border-cinema-ink px-3 py-1.5">@Model.Rating</span>

@@ -2,6 +2,8 @@
 @{
     Layout = "_HeroLayout";
     ViewData["NewsPage"] = true;
+    // The disc gallery fills the screen and has its own controls footer.
+    ViewData["HideFooter"] = true;
     ViewData["Title"] = "News - CMM Cinema";
     var first = Model.Count > 0 ? Model[0] : null;
 }

@@ -1,0 +1,103 @@
+@*
+    Site footer: a rounded card on the paper page with the home hero's clay artwork
+    and cream type, then a copyright line underneath.
+    Rendered by _HeroLayout on every page unless ViewData["HideFooter"] is true.
+    Motion (scroll reveal, clay parallax, live clock) is in cinema-footer.js.
+*@
+@inject Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider FileVersions
+@functions {
+    // Two stacked rows of single letters: on hover each letter of the first row
+    // slides up and out while its twin in the second row slides up into place,
+    // staggered by --i. Screen readers get the plain label instead.
+    private static Microsoft.AspNetCore.Html.IHtmlContent RollingLabel(string label)
+    {
+        var encoder = System.Text.Encodings.Web.HtmlEncoder.Default;
+        var letters = new System.Text.StringBuilder();
+        for (var i = 0; i < label.Length; i++)
+        {
+            letters.Append("<span style=\"--i:").Append(i).Append("\">")
+                   .Append(encoder.Encode(label[i].ToString())).Append("</span>");
+        }
+        var row = letters.ToString();
+        return new Microsoft.AspNetCore.Html.HtmlString(
+            "<span class=\"sr-only\">" + encoder.Encode(label) + "</span>" +
+            "<span class=\"cinema-footer__roll\" aria-hidden=\"true\">" +
+            "<span class=\"cinema-footer__roll-row\">" + row + "</span>" +
+            "<span class=\"cinema-footer__roll-row cinema-footer__roll-row--next\">" + row + "</span>" +
+            "</span>");
+    }
+}
+@{
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var logoMark = FileVersions.AddFileVersionToPath(Context.Request.PathBase, "/images/favicon-192.png");
+    var pages = new (string Label, string Href)[]
+    {
+        ("Home", "/"), ("Movies", "/Movies"), ("News", "/News"), ("Tickets", "/Tickets"),
+        ("Book a seat", "/Booking/Showtimes"),
+        signedIn ? ("Profile", "/Profile") : ("Login / Register", "/LoginRegister")
+    };
+    // Placeholder profile URLs: replace with the cinema's real accounts.
+    var socials = new (string Label, string Href)[] { ("Instagram", "https://www.instagram.com/"), ("Facebook", "https://www.facebook.com/") };
+    var eyebrow = "m-0 mb-5 text-[10px] font-bold uppercase tracking-widest text-cinema-cream/70";
+}
+<footer class="cinema-footer relative m-0 bg-cinema-paper p-2 font-sans md:p-3 print:hidden" aria-labelledby="cinema-footer-title" data-cinema-footer>
+    <div class="cinema-footer__card relative isolate overflow-hidden rounded-[24px] text-cinema-cream md:rounded-[28px]" data-footer-card>
+        @* Clay artwork, as in the home hero: its small clay ribbon (rear and front halves
+           stacked) over its teal gradient, with its star prop. The files are shared with the
+           hero, so a visitor coming from Home already has them cached. Motion is in
+           cinema-footer.js; the props bob in cinema-footer.css. *@
+        <div class="cinema-footer__art pointer-events-none absolute inset-0 -z-1" aria-hidden="true">
+            <div class="cinema-footer__clay cinema-footer__clay--small absolute" data-footer-clay>
+                <img src="~/images/hero/clay-line-small-rear.svg" asp-append-version="true" width="1060" height="1081" alt="" loading="lazy" decoding="async" draggable="false" />
+                <img src="~/images/hero/clay-line-small-front.svg" asp-append-version="true" width="1060" height="1081" alt="" loading="lazy" decoding="async" draggable="false" />
+            </div>
+            <div class="cinema-footer__prop cinema-footer__prop--star absolute" data-footer-prop>
+                <img class="block h-auto w-full select-none" src="~/images/hero/star.webp" asp-append-version="true" width="290" height="292" alt="" loading="lazy" decoding="async" draggable="false" />
+            </div>
+        </div>
+
+        <div class="relative grid gap-12 px-6 pb-40 pt-12 lg:pb-16 md:px-[4.5%] md:pt-[5.5%] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:gap-8 lg:pt-36">
+            <h2 class="sr-only" id="cinema-footer-title">CMM Cinema</h2>
+            @* One large C mark stands in for the C of both words: it spans the two rows,
+               "MM" above "INEMA". *@
+            <a class="block w-[min(100%,40rem)] rounded-md focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-cinema-cream" href="/" aria-label="CMM Cinema home" data-footer-reveal>
+                <svg class="cinema-footer__logo block h-auto w-full" viewBox="0 0 716 260" aria-hidden="true" focusable="false">
+                    <image href="@logoMark" x="0" y="24" width="228" height="228" />
+                    <text x="234" y="128" textLength="242" lengthAdjust="spacingAndGlyphs">MM</text>
+                    <text x="234" y="248" textLength="478" lengthAdjust="spacingAndGlyphs">INEMA</text>
+                </svg>
+            </a>
+
+            <div class="grid grid-cols-2 gap-x-6 gap-y-10 text-sm font-bold leading-none md:text-base">
+                <nav aria-labelledby="footer-explore" data-footer-reveal>
+                    <p class="@eyebrow" id="footer-explore">Explore</p>
+                    <ul class="m-0 flex list-none flex-col gap-4 p-0">
+                        @foreach (var (label, href) in pages)
+                        {
+                            <li><a class="cinema-footer__link" href="@href">@RollingLabel(label)</a></li>
+                        }
+                    </ul>
+                </nav>
+                <nav aria-labelledby="footer-follow" data-footer-reveal>
+                    <p class="@eyebrow" id="footer-follow">Follow</p>
+                    <ul class="m-0 flex list-none flex-col gap-4 p-0">
+                        @foreach (var (label, href) in socials)
+                        {
+                            <li><a class="cinema-footer__link" href="@href" target="_blank" rel="noopener noreferrer">@RollingLabel(label)<span class="sr-only"> (opens in a new tab)</span></a></li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-3 pb-3 pt-5 text-[11px] font-bold uppercase leading-none tracking-[0.2em] text-cinema-ink/70 md:px-[4.5%] md:pb-4 md:pt-6" data-footer-reveal>
+        <p class="m-0">&copy; @DateTime.Now.Year CMM Cinema. All rights reserved.</p>
+    </div>
+
+    @* The popcorn sits outside the card, over everything in the footer's bottom-right
+       corner, so it reads as the nearest layer. *@
+    <div class="cinema-footer__popcorn pointer-events-none absolute z-10" aria-hidden="true" data-footer-popcorn>
+        <img class="block h-auto w-full select-none" src="~/images/hero/popcorn.webp" asp-append-version="true" width="592" height="610" alt="" loading="lazy" decoding="async" draggable="false" />
+    </div>
+</footer>
