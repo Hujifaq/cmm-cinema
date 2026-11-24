@@ -7,7 +7,6 @@ namespace CMM_Cinema.Models
         string Name,
         string IdentifierLabel,
         string Identifier,
-        bool? EmailVerified,
         IReadOnlyList<string> Methods,
         bool HasPassword,
         UserProfile Profile);

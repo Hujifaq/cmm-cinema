@@ -121,11 +121,7 @@
                             <label class="@labelClass" for="profile-email">Email address</label>
                             <div class="min-w-0">
                                 <div class="relative">
-                                    <input class="@inputClass pr-32" id="profile-email" type="email" value="@Model.Identifier" readonly aria-describedby="profile-email-hint" />
-                                    @if (Model.EmailVerified is { } verified)
-                                    {
-                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-[11px] font-bold leading-none @(verified ? "bg-cinema-logo text-white shadow-clay-pill" : "border border-solid border-cinema-ink/40 text-cinema-ink/70")">@(verified ? "Confirmed" : "Not confirmed")</span>
-                                    }
+                                    <input class="@inputClass" id="profile-email" type="email" value="@Model.Identifier" readonly aria-describedby="profile-email-hint" />
                                 </div>
                                 <p class="mb-0 mt-2 px-1 text-xs leading-relaxed text-cinema-ink/50" id="profile-email-hint">You sign in with @string.Join(" or ", Model.Methods). To change your email, <button class="cursor-pointer border-0 bg-transparent p-0 font-sans text-xs font-bold text-cinema-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" data-profile-show="contact">contact us</button>.</p>
                             </div>

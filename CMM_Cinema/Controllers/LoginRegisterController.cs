@@ -13,15 +13,11 @@ namespace CMM_Cinema.Controllers
     public class LoginRegisterController(
         UserRepository users,
         PasswordHasher hasher,
-        EmailTokenService tokens,
-        IEmailSender email,
-        EmailThrottle emailThrottle,
         TurnstileValidator turnstile,
         IAuthenticationSchemeProvider schemes,
         IOptions<AppOptions> app,
         ILogger<LoginRegisterController> logger) : AuthFormController(turnstile, app)
     {
-        private static readonly TimeSpan VerifyLinkLifetime = TimeSpan.FromHours(24);
         private const int MaxFailedLogins = 5;
         private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
 
@@ -110,13 +106,6 @@ namespace CMM_Cinema.Controllers
 
             await users.ResetFailedLoginsAsync(user.Id, cancellationToken);
 
-            
-            if (!user.EmailVerified)
-            {
-                await SendVerificationAsync(user, cancellationToken);
-                return GoToCheckEmail(user.Email, resent: true);
-            }
-
             if (hasher.NeedsRehash(passwordHash))
                 await users.UpdatePasswordHashAsync(user.Id, hasher.Hash(model.Password), signOutEverywhere: false, cancellationToken);
 
@@ -146,82 +135,19 @@ namespace CMM_Cinema.Controllers
             if (!await PassesTurnstileAsync("register", cancellationToken))
                 return RegisterForm(model);
 
-            // Hashing before the lookup keeps new and existing emails close in timing.
+            // No email confirmation step: a new account is signed in straight away.
             var passwordHash = hasher.Hash(model.Password);
-            var user = await users.CreateAsync(model.Email, model.Name, passwordHash, emailVerified: false, cancellationToken);
-
+            var user = await users.CreateAsync(model.Email, model.Name, passwordHash, emailVerified: true, cancellationToken);
             if (user is null)
             {
-                var existing = await users.FindByEmailAsync(model.Email, cancellationToken);
-                if (existing is not null && emailThrottle.TryAcquire("signup-attempt", existing.Email, EmailsPerWindow, EmailWindow))
-                    await email.SendAsync(existing.Email, AuthEmails.SignUpAttempt(existing.Name, Link("/LoginRegister")), cancellationToken);
                 logger.LogInformation("Sign-up attempted for an existing account");
-            }
-            else
-            {
-                await SendVerificationAsync(user, cancellationToken);
-                logger.LogInformation("Account {UserId} registered", user.Id);
+                ModelState.AddModelError(nameof(RegisterViewModel.Email), "An account with this email already exists. Sign in instead.");
+                return RegisterForm(model);
             }
 
-            return GoToCheckEmail(model.Email, resent: false);
-        }
-
-        [HttpGet]
-        public IActionResult CheckEmail()
-        {
-            if (TempData["CheckEmail"] is not string address)
-                return RedirectToAction(nameof(Index));
-            ViewData["Resent"] = TempData["CheckEmailResent"] is true;
-            return View(model: address);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [EnableRateLimiting(AuthRateLimits.EmailSending)]
-        public async Task<IActionResult> ResendVerification(ResendVerificationViewModel model, CancellationToken cancellationToken)
-        {
-            if (!ModelState.IsValid || !await PassesTurnstileAsync("resend", cancellationToken))
-                return FormErrors(() => View(nameof(VerifyEmail), new VerifyEmailViewModel { Email = model.Email }));
-
-            var user = await users.FindByEmailAsync(model.Email, cancellationToken);
-            if (user is { EmailVerified: false, HasPassword: true })
-                await SendVerificationAsync(user, cancellationToken);
-
-            return GoToCheckEmail(model.Email, resent: true);
-        }
-
-        // Opening the link only checks it; mail scanners prefetch links, so the token is used up by the button's POST.
-        [HttpGet]
-        public async Task<IActionResult> VerifyEmail(string? token, CancellationToken cancellationToken)
-        {
-            Response.Headers.CacheControl = "no-store";
-            var isValid = await tokens.PeekAsync(token, EmailTokenPurpose.Verify, cancellationToken) is not null;
-            return View(new VerifyEmailViewModel { Token = isValid ? token! : string.Empty, IsValid = isValid });
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [ActionName(nameof(VerifyEmail))]
-        public async Task<IActionResult> ConfirmEmail(string? token, CancellationToken cancellationToken)
-        {
-            if (await tokens.ConsumeAsync(token, EmailTokenPurpose.Verify, cancellationToken) is not { } userId)
-                return View(nameof(VerifyEmail), new VerifyEmailViewModel());
-
-            await users.MarkEmailVerifiedAsync(userId, cancellationToken);
-            logger.LogInformation("Account {UserId} verified its email", userId);
-            TempData["AuthNotice"] = "Your email is confirmed. You can sign in now.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        private async Task SendVerificationAsync(Models.User user, CancellationToken cancellationToken)
-        {
-            if (!emailThrottle.TryAcquire("verify", user.Email, EmailsPerWindow, EmailWindow))
-            {
-                logger.LogInformation("Verification email for account {UserId} skipped: hourly limit reached", user.Id);
-                return;
-            }
-            var token = await tokens.CreateAsync(user.Id, EmailTokenPurpose.Verify, VerifyLinkLifetime, cancellationToken);
-            await email.SendAsync(user.Email, AuthEmails.VerifyEmail(user.Name, Link($"/LoginRegister/VerifyEmail?token={Uri.EscapeDataString(token)}")), cancellationToken);
+            logger.LogInformation("Account {UserId} registered", user.Id);
+            await SignInAsync(user);
+            return WantsJson ? Json(new { redirect = "/" }) : LocalRedirect("/");
         }
 
         private async Task SignInAsync(Models.User user)
@@ -259,15 +185,5 @@ namespace CMM_Cinema.Controllers
             model.Password = model.ConfirmPassword = string.Empty;
             return View(nameof(Index), new AuthPageViewModel { Mode = "register", Register = model });
         });
-
-        private IActionResult GoToCheckEmail(string address, bool resent)
-        {
-            TempData["CheckEmail"] = UserRepository.NormalizeEmail(address);
-            TempData["CheckEmailResent"] = resent;
-            return WantsJson
-                ? Json(new { redirect = Url.Action(nameof(CheckEmail)) })
-                : RedirectToAction(nameof(CheckEmail));
-        }
-
     }
 }
