@@ -16,7 +16,9 @@ interface Gsap {
   quickTo(target: Element, property: string, values: Record<string, unknown>): (value: number) => void;
 }
 declare global { interface Window { gsap?: Gsap } }
-interface Offer extends SearchResult { id: number; slide: HTMLElement; section: HTMLElement }
+interface Offer extends SearchResult { id: number; card: HTMLElement; section: HTMLElement }
+// The home carousel (promo-ribbon.js) exposes its instance on the ribbon element once it boots.
+interface PromoRibbon extends HTMLElement { _carousel?: { goTo(index: number): void } }
 interface MovieMatch { title: string; url: string; description: string; keywords: string; posterHtml: string }
 interface MovieResult extends SearchResult { posterHtml: string }
 const toMovieResult = (movie: MovieMatch): MovieResult => ({ icon: <Film />, link: movie.url, label: movie.title, description: movie.description, keywords: movie.keywords, posterHtml: movie.posterHtml });
@@ -70,11 +72,12 @@ function PosterCursor({ posters }: { posters: Map<string, string> }) {
     dangerouslySetInnerHTML={{ __html: link ? posters.get(link) ?? '' : '' }} />;
 }
 const normalize = (node: Element | null) => (node?.textContent || '').replace(/\s+/g, ' ').trim();
-const offers: Offer[] = [...document.querySelectorAll<HTMLElement>('[data-cinema-promos] .promo-slide')].map((slide, id) => ({
-  id, icon: <Ticket />, link: `#cinema-promotion-${id}`, slide, section: slide.closest<HTMLElement>('[data-cinema-promos]')!,
-  label: normalize(slide.querySelector('h3')),
-  description: normalize(slide.querySelector('[data-promo-offer]')),
-  keywords: `${normalize(slide)} promotions`.toLocaleLowerCase()
+// Clones the carousel adds for its endless loop are skipped so each promotion is listed once.
+const offers: Offer[] = [...document.querySelectorAll<HTMLElement>('[data-promo-section] [data-card]:not([data-clone])')].map((card, id) => ({
+  id, icon: <Ticket />, link: `#cinema-promotion-${id}`, card, section: card.closest<HTMLElement>('[data-promo-section]')!,
+  label: normalize(card.querySelector('h3')),
+  description: normalize(card.querySelector('[data-promo-offer]')),
+  keywords: `${normalize(card)} promotions`.toLocaleLowerCase()
 }));
 const nav = document.querySelector<HTMLElement>('[data-cinema-nav]')!;
 const top = nav.querySelector<HTMLElement>('[data-nav-top]')!;
@@ -283,8 +286,7 @@ function CinemaSearch() {
     const offer = offers.find(item => item.id === id);
     if (!offer) return;
     requestedOpen.current = false; restoreFocus.current = false; finishClosed();
-    const slider = offer.section.querySelector('[data-promo-swiper]') as HTMLElement & { swiper?: { slideTo(index: number, speed: number): void } };
-    slider?.swiper?.slideTo(id, reduce ? 0 : 700);
+    offer.section.querySelector<PromoRibbon>('[data-promo-ribbon]')?._carousel?.goTo(id);
     offer.section.scrollIntoView({ behavior: reduce ? 'instant' : 'smooth', block: 'center' });
   };
   return mounted ? <div className="cinema-spotlight fixed inset-0 z-50 font-sans text-cinema-cream"

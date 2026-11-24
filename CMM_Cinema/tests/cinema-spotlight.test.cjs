@@ -8,9 +8,14 @@ const tick = (ms = 60) => new Promise(resolve => setTimeout(resolve, ms));
 async function setup(width = 1120, animated = false) {
   const dom = new JSDOM(`<!doctype html><body>
     <header><nav data-cinema-nav><div data-nav-top><button data-nav-search>Search</button><button data-nav-toggle aria-expanded="false">Menu</button></div></nav></header>
-    <main><section data-cinema-promos><div data-promo-swiper></div>
-      <article class="promo-slide"><h3>Midweek magic</h3><p data-promo-offer>Buy one get one free</p>Wednesday cinema</article>
-      <article class="promo-slide"><h3>Student escape</h3><p data-promo-offer>Save 20%</p>Student perks</article>
+    <main><section id="cinema-promotions" data-promo-section>
+      <div data-promo-ribbon><ol>
+        <li data-card><div class="card-media"><img alt="" /></div><div class="sr-only"><span>STUDENT PRIVILEGE</span><h3>Student privilege</h3><p data-promo-offer>STUDENTS SAVE ฿50</p><p>For KMUTT students at the CMM branch only.</p><p>CMM CINEMA / DEMO PROMOTION</p></div></li>
+        <li data-card><div class="card-media"><img alt="" /></div><div class="sr-only"><span>LUCKY DRAW</span><h3>Win an iPhone Duo</h3><p data-promo-offer>WIN AN iPHONE DUO</p><p>Get a chance to win an iPhone Duo with your CMM Cinema visit.</p><p>CMM CINEMA / DEMO PROMOTION</p></div></li>
+        <li data-card><div class="card-media"><img alt="" /></div><div class="sr-only"><span>12.12 SALE</span><h3>12.12 ticket sale</h3><p data-promo-offer>TICKET PRICES REDUCED</p><p>Movie ticket prices come down for 12.12.</p><p>CMM CINEMA / DEMO PROMOTION</p></div></li>
+        <li data-card><div class="card-media"><img alt="" /></div><div class="sr-only"><span>MOVIE COMBO</span><h3>Movie Combo</h3><p data-promo-offer>COMBO ฿199</p><p>Large popcorn, a 32 oz drink and one movie ticket, all for ฿199.</p><p>CMM CINEMA / DEMO PROMOTION</p></div></li>
+        <li data-card data-clone aria-hidden="true"><div class="sr-only"><span>STUDENT PRIVILEGE</span><h3>Student privilege</h3><p data-promo-offer>STUDENTS SAVE ฿50</p></div></li>
+      </ol></div>
     </section></main><div id="cinema-search-root"></div></body>`, { runScripts: 'outside-only', pretendToBeVisual: true, url: 'http://localhost/' });
   const w = dom.window, d = w.document;
   w.matchMedia = query => ({ matches: query.includes('prefers-reduced-motion') ? !animated : query.includes('(hover: hover)'), addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} });
@@ -26,8 +31,8 @@ async function setup(width = 1120, animated = false) {
   w.HTMLElement.prototype.getClientRects = function () { return [{}]; };
   w.HTMLElement.prototype.getBoundingClientRect = function () { return { top: 24, left: 12, width: parseFloat(this.style.width) || 0, height: 64, right: width + 12, bottom: 88 }; };
   d.querySelector('[data-cinema-nav]').getBoundingClientRect = () => ({ top: 24, left: 12, width, height: 78 });
-  const slideCalls = [];
-  d.querySelector('[data-promo-swiper]').swiper = { slideTo: (...args) => slideCalls.push(args) };
+  const goToCalls = [];
+  d.querySelector('[data-promo-ribbon]')._carousel = { goTo: (...args) => goToCalls.push(args) };
   if (animated) w.eval(readFileSync(require.resolve('../wwwroot/lib/gsap/gsap.min.js'), 'utf8'));
   w.eval(bundle);
   await tick();
@@ -40,7 +45,7 @@ async function setup(width = 1120, animated = false) {
     input().dispatchEvent(new w.Event('input', { bubbles: true }));
     await tick();
   };
-  return { dom, w, d, trigger, input, type, slideCalls, requests };
+  return { dom, w, d, trigger, input, type, goToCalls, requests };
 }
 
 test('copied Spotlight opens empty, focuses input, and X or Escape restores navbar and focus', async () => {
@@ -67,12 +72,12 @@ test('cinema data, result links, arrow navigation and selection work with the co
     await ui.type('student');
     const rows = ui.d.querySelectorAll('#cinema-search-results a');
     assert.equal(rows.length, 1);
-    assert.match(rows[0].textContent, /Student escape/);
+    assert.match(rows[0].textContent, /Student privilege/);
     ui.input().dispatchEvent(new ui.w.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     assert.equal(ui.d.activeElement, rows[0]);
     rows[0].click(); await tick();
-    assert.deepEqual(ui.slideCalls, [[1, 0]]);
-    assert.equal(ui.d.querySelector('[data-cinema-promos]').scrolled, true);
+    assert.deepEqual(ui.goToCalls, [[0]]);
+    assert.equal(ui.d.querySelector('[data-promo-section]').scrolled, true);
     assert.equal(ui.d.querySelector('[role="dialog"]'), null);
     assert.equal(ui.d.querySelector('main').inert, undefined);
   } finally { ui.dom.window.close(); }
@@ -88,9 +93,9 @@ test('no matches, Enter selection, and keyboard focus wrapping remain usable', a
     assert.equal(ui.d.activeElement.getAttribute('aria-label'), 'Close search');
     ui.d.dispatchEvent(new ui.w.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
     assert.equal(ui.d.activeElement, ui.input());
-    await ui.type('Wednesday');
+    await ui.type('combo');
     ui.input().dispatchEvent(new ui.w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await tick();
-    assert.deepEqual(ui.slideCalls, [[0, 0]]);
+    assert.deepEqual(ui.goToCalls, [[3]]);
   } finally { ui.dom.window.close(); }
 });
 
@@ -132,7 +137,7 @@ test('source hover uses presence exits and can reenter without waiting for a cus
     assert.ok(promotions);
     promotions.querySelector('a').click(); await tick(200);
     assert.equal(ui.input().value, 'Promotions');
-    assert.equal(ui.d.querySelectorAll('#cinema-search-results a').length, 2);
+    assert.equal(ui.d.querySelectorAll('#cinema-search-results a').length, 4);
   } finally { ui.dom.window.close(); }
 });
 
@@ -174,8 +179,8 @@ test('category shortcuts list movies and promotions through the same search', as
   const labels = () => [...ui.d.querySelectorAll('#cinema-search-results a')].map(link => link.textContent);
   try {
     await ui.type('Promotions'); await tick(200);
-    assert.equal(labels().length, 2);
-    assert.match(labels().join(), /Midweek magic.*Student escape/);
+    assert.equal(labels().length, 4);
+    assert.match(labels().join(), /Student privilege.*Movie Combo/);
     await ui.type('Now showing'); await tick(200);
     assert.deepEqual(labels().map(label => /Neon Harbor/.test(label)), [true]);
     await ui.type('Coming soon'); await tick(200);

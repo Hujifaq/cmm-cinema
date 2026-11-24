@@ -255,6 +255,15 @@
       }
     }
 
+    /* Glide card i into the middle of the screen (used by search); phones jump like center(). */
+    goTo(i) {
+      const c = this.cards[i];
+      if (!c?.base) return;
+      if (this.small) { this.center(i); return; }
+      const to = c.base.left + c.base.width / 2 - this.ww / 2;
+      this.glide = { from: this.current, to, start: performance.now(), dur: reducedMotion.matches ? 1 : 850 };
+    }
+
     /* ---------------- Input ---------------- */
     push(delta) {
       if (this.glide) { this.target = this.current; this.glide = null; }

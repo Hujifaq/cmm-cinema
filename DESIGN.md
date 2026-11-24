@@ -420,12 +420,16 @@ hover. `cinema-marquee.js` wires a pause/play button only when the markup
 contains `[data-marquee-toggle]`; the shared partial currently has none.
 Reduced motion: static wrapped text.
 
-### 8.10 Promo carousel + magnetic arrows — `cinema-promos.js`, `cinema-magnetic.js`
+### 8.10 Promo carousel + magnetic arrows — `promo-ribbon.js`, `cinema-magnetic.js`
 
-Swiper with peeking slides (1.04–1.08 per view), 700ms glide, rewind. Arrow
-buttons are **magnetic**: the cream circle moves 50% toward the cursor and the
-arrow icon 25%, 0.4s `power3.out`; on leave they snap back with
-`elastic.out(1, 0.3)` over 1s. Keyboard navigation is instant.
+Curved 3D ribbon of four 16:9 promo cards (`data-ratio="1672/941"`, the
+artwork's own ratio, so nothing is cropped). Arrow buttons glide one card
+(850ms ease-in-out cubic); drag, swipe and wheel also move it. Picking a promo
+in search glides that card to the middle via `_carousel.goTo(index)` (instant on
+phones). The carousel's clones are skipped by search. Search lists the four
+promos from `[data-promo-section]` cards. Arrow buttons are **magnetic**: the
+cream circle moves 50% toward the cursor and the arrow icon 25%, 0.4s
+`power3.out`; on leave they snap back with `elastic.out(1, 0.3)` over 1s.
 
 ### 8.11 Movie card hover — `tailwind.css` + `now-showing.js`
 
