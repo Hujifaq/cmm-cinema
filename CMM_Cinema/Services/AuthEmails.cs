@@ -4,13 +4,6 @@ namespace CMM_Cinema.Services;
 
 public static class AuthEmails
 {
-    public static EmailContent VerifyEmail(string name, string link) => Build(
-        "Confirm your CMM Cinema email",
-        $"Hi {name},",
-        "Confirm your email to finish creating your CMM Cinema account. This link expires in 24 hours.",
-        ("Confirm email", link),
-        "If you didn't create an account, you can ignore this email.");
-
     public static EmailContent ResetPassword(string name, string link) => Build(
         "Reset your CMM Cinema password",
         $"Hi {name},",
@@ -31,13 +24,6 @@ public static class AuthEmails
         "Your password was just changed and every other session was signed out.",
         ("This wasn't me", resetLink),
         "If you made this change, you don't need to do anything.");
-
-    public static EmailContent SignUpAttempt(string name, string loginLink) => Build(
-        "Someone tried to sign up with your email",
-        $"Hi {name},",
-        "Someone tried to create a CMM Cinema account with this email, but you already have one.",
-        ("Go to sign in", loginLink),
-        "If this was you, sign in or reset your password instead. If not, you can ignore this email.");
 
     private static EmailContent Build(string subject, string greeting, string body, (string Label, string Url) button, string footer)
     {

@@ -15,7 +15,6 @@ namespace CMM_Cinema.Controllers
         UserRepository users,
         AdminRepository admins,
         PasswordHasher hasher,
-        IEmailSender email,
         IMemoryCache cache,
         TurnstileValidator turnstile,
         IOptions<AppOptions> app,
@@ -33,7 +32,7 @@ namespace CMM_Cinema.Controllers
                     return RedirectToAction("Index", "Admin");
                 }
 
-                return View(new ProfileViewModel(true, admin.Username, "Username", admin.Username, null, ["Username and password"], false, UserProfile.Default));
+                return View(new ProfileViewModel(true, admin.Username, "Username", admin.Username, ["Username and password"], false, UserProfile.Default));
             }
 
             if (await CurrentUserAsync(cancellationToken) is not { } user)
@@ -44,7 +43,7 @@ namespace CMM_Cinema.Controllers
             if (user.HasPassword) methods.Add("Email and password");
             if (providers.Contains(AuthClaims.GoogleProvider)) methods.Add("Google");
             var profile = await users.GetProfileAsync(user.Id, cancellationToken);
-            return View(new ProfileViewModel(false, user.Name, "Email", user.Email, user.EmailVerified, methods, user.HasPassword, profile));
+            return View(new ProfileViewModel(false, user.Name, "Email", user.Email, methods, user.HasPassword, profile));
         }
 
         [HttpPost]
@@ -86,7 +85,6 @@ namespace CMM_Cinema.Controllers
             if (await users.FindByIdAsync(user.Id, cancellationToken) is { } updated)
                 await SignInAsync(updated);
 
-            await email.SendAsync(user.Email, AuthEmails.PasswordChanged(user.Name, Link("/Forgotpassword")), cancellationToken);
             logger.LogInformation("Account {UserId} changed its password", user.Id);
             return Saved("Your password was updated. Other devices were signed out.");
         }

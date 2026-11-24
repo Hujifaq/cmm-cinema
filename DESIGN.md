@@ -1235,8 +1235,7 @@ lede. Form rows put the label in an 11rem column beside the field from 640px and
 stack on phones. Fields are 48px paper-filled 16px-radius inputs with a thin ink
 border that turns white with an ink outline on focus.
 
-- **Profile:** Personal details (full name, read-only email with a Confirmed /
-  Not confirmed chip, optional phone), Change password (current, new, confirm,
+- **Profile:** Personal details (full name, read-only email, optional phone), Change password (current, new, confirm,
   each with an eye toggle that swaps to a struck-through eye), and Notification
   preferences (four switches: 56×32px track, ink when on, with a cream knob that
   slides on the springy curve). Switches save on change, with a "Saving…" status
