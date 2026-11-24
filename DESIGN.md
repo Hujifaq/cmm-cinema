@@ -399,10 +399,11 @@ still. Pages arriving this way get `html[data-page-arrived]`.
 
 Composition is art-directed in `hero.css` with breakpoints for phone portrait,
 tablet (≤4:3), ultra-wide (≥2:1) and landscape phones. The hero fills `h-dvh`.
-Its sky and background tubes have subtle static monochrome film grain at 24%
-soft-light opacity. A pointer-transparent pseudo-element sits below the title,
-foreground props and controls; 180px tiles shrink to 120px on dense displays.
-It adds no animation and preserves the existing colors and interactions.
+The hero has no film grain: the sky, tubes, title and props render clean.
+Prop WebPs are rendered from the original high-resolution sources (about 2x
+their largest desktop size), lightly unsharp-masked, at 90% quality. The title
+SVGs use `geometricPrecision` text and shape rendering so the cream fill and
+outline stay crisp and registered.
 
 ### 8.8 Hero prop physics — `hero-physics.js`
 
@@ -838,8 +839,8 @@ start an OAuth flow.
 
 ### 8.20 Forgot password — `forgot-password.js`
 
-`/Forgotpassword` uses `_HeroLayout`, the shared marquee and `_AccountFooter`
-(also used by Login/Register). A single 480px-wide paper card is centered below
+`/Forgotpassword` uses `_HeroLayout`, the shared marquee and the site footer
+(8.25). A single 480px-wide paper card is centered below
 the navbar on a cream viewport, with 28px corners, clay shadow, and a fine ink
 outline. It contains the sentence-case "Forgot your password?" heading, an
 email field, a full-width Send reset link action, and Back to login underneath.
@@ -1060,13 +1061,13 @@ and has visible, static monochrome grain (180px tile, 0.82 base frequency,
 pointer events, leaving typography and controls crisp. The earlier orbit ring, side notches and dashed
 calendar divider are omitted. Below 1024px the movie information spans the card,
 the decorative date stub is hidden, and the cinema control follows the movie details.
-The full-width calendar puts the month and 44px scroll controls
-above the date strip. Date controls use softly rounded clay tiles with a muted
+The full-width calendar puts the month and 44px scroll controls (bold SVG
+arrows, 20px, stroke 2.75, round caps; no hover state) above the date strip. Date controls use softly rounded clay tiles with a muted
 weekday, a large tabular day number and a separate, lightly shaded month footer.
 The footer's fine rule stays clear of its text. The selected tile lifts without
 rotation, keeps the cyan clay fill and shows a small cream circular check badge.
-Fine-pointer hover lifts the other tiles with a sky-colored edge; focus outlines
-and reduced-motion guards remain intact.
+The tiles have no hover effect; focus outlines and reduced-motion guards remain
+intact.
 The date filter keeps its native radio controls and focus outline. The cinema filter
 is a custom dropdown (`booking/custom-select.js`, styles in `showtimes.css`) because the
 OS draws a native select's open list and CSS cannot style or animate it. The native
@@ -1275,6 +1276,67 @@ refuses it with the same message; if the host can't be reached the server lets i
 through. Publish date is a Bangkok calendar day: today publishes at once, a future day
 hides the story until Bangkok midnight, and untouched dates keep their original time.
 Unticking Published keeps the story as a draft. Stories are deleted for good.
+
+### 8.25 Site footer — `_CinemaFooter` + `cinema-footer.js` + `cinema-footer.css`
+
+`_HeroLayout` renders the footer after `<main>` on every page; a view opts out
+with `ViewData["HideFooter"] = true` (the News pages do: the gallery and every
+story). The opt-out also skips its stylesheet, ScrollTrigger and script. It is
+`print:hidden`.
+
+- **Layout (after the approved "dwell" reference):** on `cinema-paper`, an inset
+  rounded card (8px/12px margin, 24px/28px corners). From 1024px it fills the
+  screen minus the copyright line (`min-height: calc(100svh - 4.5rem)`) and its
+  content starts 144px down to clear the floating navbar. Inside, all in
+  `cinema-cream` (like the hero title): the logo top-left, one SVG in which a
+  single large C mark (`favicon-192.png`) spans both rows and stands in for the
+  C of each word, "MM" above "INEMA" in Arial Black; to the right two columns,
+  each under a site eyebrow label (`text-[10px] font-bold uppercase
+  tracking-widest`): Explore (Home, Movies, News, Tickets, Book a seat, Login /
+  Register or Profile) and Follow (Instagram, Facebook). Links are system sans
+  `font-bold`. Below the card, on the paper, only the copyright line in the
+  section-label style (`text-[11px] font-bold uppercase tracking-[0.2em]`).
+  Mobile stacks the logo, then the columns two across.
+- **Background, the home hero's clay look:** the card takes
+  `--cinema-hero-gradient` and the hero's own artwork files, all lazy-loaded
+  `<img>`s (cached from Home): the small clay loop (rear and front SVG halves
+  stacked, 62% opacity), scaled up (58cqw; 120cqw below 1024px) and cropped by
+  the card so it comes in from the right and bottom edges, and the star prop
+  lower middle. Placement is in container units of the card
+  (`container-type: inline-size`); each layer is centred on its left/top point
+  with negative margins from `--w`, so transforms stay free for GSAP. Below 1024px the loop and star sit in the band
+  under the links.
+- **Popcorn, the nearest layer:** outside the card, in the footer's
+  bottom-right corner (`z-10`, `clamp(170px, 21vw, 400px)`; below 1024px
+  `clamp(130px, 34vw, 260px)`, lifted 4.5rem onto the card corner), over the
+  card, the loop and the copyright line, with a soft drop shadow. The footer is
+  `overflow: clip` so its scroll travel never grows the page. The star and
+  popcorn float (`cinema-footer-bob`, 5.5s/6.5s, ±4% and ±3deg, alternate) only
+  while the footer is on screen (`data-footer-visible`).
+- **Scroll reveal (GSAP + ScrollTrigger):** the card rises from `yPercent 6`,
+  `scale 0.94` (origin bottom) to rest, scrubbed from `top bottom` to `top 30%`;
+  the loop and star drift at different speeds across the footer's whole pass
+  (`yPercent`, the loop also turning); the popcorn rises from `yPercent 45`
+  and lands in its corner as the page ends (`top bottom` → `bottom bottom`); the props pop in from
+  `scale 0.4`, `-25deg` with `back.out(1.7)`;
+  the logo, the two columns and the copyright line rise in once at `top 70%`
+  (`y 40`, `autoAlpha`, 0.9s `power3.out`, stagger 0.08). They are hidden by
+  the §7.4 reveal guard until the script sets their start states
+  (`data-footer-revealed`), with the 3s safety unhide. Lenis feeds
+  `ScrollTrigger.update`; a debounced `ResizeObserver` on `<body>` refreshes
+  positions.
+- **Pointer:** with a mouse anywhere over the footer, the artwork leans toward
+  the cursor by depth (loop 16px, star 30px, popcorn 56px; `quickTo` 1.2s
+  `power3.out`).
+- **Link hover (letter roll, CSS):** each label is rendered server-side as two
+  stacked rows of single letters (`RollingLabel` in the partial; screen readers
+  get the plain label). On hover or keyboard focus every letter of the first
+  row slides up out of a clip while its twin slides up into place:
+  `translateY(-100%)`, 560ms `cubic-bezier(0.65, 0, 0.35, 1)`, staggered 18ms
+  per letter. Fine pointers with motion only; touch keeps a single row.
+- **Reduced motion / no GSAP:** static artwork, no float, parallax or reveal;
+  everything visible.
+- Instagram and Facebook links are placeholders to the platforms' home pages.
 
 ---
 
