@@ -1,30 +1,39 @@
+@model IReadOnlyList<Promotion>
+@inject Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider FileVersions
 @{ Context.RequireAssets("promos"); }
 @{
-    var offers = new[] {
-        new { Label = "STUDENT PRIVILEGE", Title = "Student privilege", Description = "For KMUTT students at the CMM branch only. Save ฿50.", Offer = "STUDENTS SAVE ฿50", Image = "student-privilege-promo.webp", Alt = "Teal banner reading CMM Student Privilege, 50 baht off for KMUTT CMM branch students, with popcorn, a clapperboard and a film reel" },
-        new { Label = "LUCKY DRAW", Title = "Win an iPhone Duo", Description = "Get a chance to win an iPhone Duo from CMM Cinema.", Offer = "WIN AN iPHONE DUO", Image = "iphone-duo-promo.webp", Alt = "Red cinema banner reading win an iPhone Duo, with two folding iPhone mockups and popcorn" },
-        new { Label = "12.12 SALE", Title = "12.12 ticket sale", Description = "Movie ticket prices come down for 12.12.", Offer = "TICKET PRICES REDUCED", Image = "sale-12-12-promo.webp", Alt = "Bright orange banner with a large white 12.12 and golden tickets, reading movie ticket price reduction" },
-        new { Label = "MOVIE COMBO", Title = "Movie Combo", Description = "Large popcorn, a 32 oz drink and one movie ticket, all for ฿199.", Offer = "COMBO ฿199", Image = "movie-combo-promo.webp", Alt = "Movie combo banner with large popcorn, a 32 oz drink, a movie ticket, the price 199 baht and cinema seats" }
-    };
+    var isAdmin = User.IsInRole(AuthClaims.AdminRole);
+    var manageClass = "inline-flex min-h-11 items-center justify-center rounded-full bg-cinema-cream px-5 text-sm font-bold text-cinema-ink no-underline transition-colors duration-300 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-cream motion-reduce:transition-none";
     var arrowClass = "promo-arrow relative inline-flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cinema-cream disabled:cursor-default disabled:opacity-30 md:size-14";
 }
 
+@if (Model.Count == 0)
+{
+    @if (isAdmin)
+    {
+        <section id="cinema-promotions" class="relative z-10 bg-black px-5 py-10 font-sans text-cinema-cream md:px-12" aria-label="Cinema promotions">
+            <div class="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4">
+                <p class="m-0 text-sm text-cinema-cream/70">No promotion banners are showing on the home page.</p>
+                <a class="@manageClass" href="/Admin/Promotions">Manage promotions</a>
+            </div>
+        </section>
+    }
+}
+else
+{
 <section id="cinema-promotions" class="cinema-promos relative z-10 overflow-hidden bg-black pb-14 pt-6 font-sans text-cinema-cream md:py-24" aria-label="Cinema promotions" data-promo-section>
     <div class="promo-ribbon" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Cinema promotions. Swipe, drag or use the arrow keys to browse." data-promo-ribbon>
         <ol class="carousel-track" data-track>
-            @for (var i = 0; i < offers.Length; i++)
+            @for (var i = 0; i < Model.Count; i++)
             {
-                var offer = offers[i];
+                var promotion = Model[i];
+                var source = promotion.IsLocal ? FileVersions.AddFileVersionToPath(Context.Request.PathBase, promotion.ImageUrl) : Context.Request.PathBase + promotion.ProxyUrl;
                 <li class="card" data-card data-ratio="1672/941" data-seed="@i" role="group" aria-roledescription="promotion" aria-labelledby="promo-title-@i">
                     <div class="card-media">
-                        <img src="~/images/promos/@offer.Image" asp-append-version="true" width="1400" height="788" alt="@offer.Alt" decoding="async" draggable="false" />
+                        <img src="@source" width="1400" height="788" alt="@promotion.Alt" decoding="async" draggable="false" />
                     </div>
                     <div class="sr-only">
-                        <span>@offer.Label</span>
-                        <h3 id="promo-title-@i">@offer.Title</h3>
-                        <p data-promo-offer>@offer.Offer</p>
-                        <p>@offer.Description</p>
-                        <p>CMM CINEMA / DEMO PROMOTION</p>
+                        <h3 id="promo-title-@i">@promotion.Alt</h3>
                     </div>
                 </li>
             }
@@ -32,7 +41,11 @@
     </div>
 
     <div class="mx-auto max-w-[1440px] px-5 md:px-12">
-        <div class="promo-controls mt-6 flex items-center justify-end gap-5 md:mt-8">
+        <div class="promo-controls mt-6 flex items-center @(isAdmin ? "justify-between" : "justify-end") gap-5 md:mt-8">
+            @if (isAdmin)
+            {
+                <a class="@manageClass" href="/Admin/Promotions">Manage promotions</a>
+            }
             <div class="flex shrink-0 gap-4 md:gap-6">
                 <button class="@arrowClass" type="button" aria-label="Previous promotion" data-promo-prev data-magnetic-arrow>@await Html.PartialAsync("_PromoArrowSurface", false)</button>
                 <button class="@arrowClass" type="button" aria-label="Next promotion" data-promo-next data-magnetic-arrow>@await Html.PartialAsync("_PromoArrowSurface", true)</button>
@@ -40,3 +53,4 @@
         </div>
     </div>
 </section>
+}

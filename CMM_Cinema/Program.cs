@@ -26,6 +26,12 @@ if (builder.Configuration.GetSection("Cloudflare").Get<CloudflareD1Options>()?.I
     builder.Services.AddScoped<INewsRepository, D1NewsRepository>();
 else
     builder.Services.AddSingleton<INewsRepository, EmptyNewsRepository>();
+if (builder.Configuration.GetSection("Cloudflare").Get<CloudflareD1Options>()?.IsConfigured == true)
+    builder.Services.AddScoped<IPromotionRepository, D1PromotionRepository>();
+else
+    builder.Services.AddSingleton<IPromotionRepository, EmptyPromotionRepository>();
+builder.Services.AddHttpClient(PromotionImageService.HttpClientName, client => client.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddSingleton<PromotionImageService>();
 builder.Services.AddHttpClient("news-art", client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddSingleton<NewsArtService>();
 builder.Services.AddHostedService<NewsArtWarmup>();
