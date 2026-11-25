@@ -422,12 +422,20 @@ Reduced motion: static wrapped text.
 
 ### 8.10 Promo carousel + magnetic arrows — `promo-ribbon.js`, `cinema-magnetic.js`
 
-Curved 3D ribbon of four 16:9 promo cards (`data-ratio="1672/941"`, the
-artwork's own ratio, so nothing is cropped). Arrow buttons glide one card
+Curved 3D ribbon of 16:9 promo cards (`data-ratio="1672/941"`, the
+artwork's own ratio, so nothing is cropped). The banners are rows of the D1
+`promotions` table, rendered by `_CinemaPromos` from `IPromotionRepository`
+(the four launch banners are the fallback when D1 is off or unreadable). Admins
+manage them at `/Admin/Promotions` (add, replace the image link, reorder, hide,
+delete; at most 10, 16:9 only) and see a "Manage promotions" pill beside the
+arrows. A banner is image-only: its alt text is the screen-reader and search
+title. https images are served through `/Promotions/{id}/image`, a same-origin
+WebP copy, because the WebGL ribbon cannot read cross-origin pictures. With no
+active banners the carousel is left out. Arrow buttons glide one card
 (850ms ease-in-out cubic); drag, swipe and wheel also move it. Picking a promo
 in search glides that card to the middle via `_carousel.goTo(index)` (instant on
 phones). The carousel's clones are skipped by search. Search lists the four
-promos from `[data-promo-section]` cards. Arrow buttons are **magnetic**: the
+promos from `[data-promo-section]` cards (the card's `h3`, i.e. its alt text). Arrow buttons are **magnetic**: the
 cream circle moves 50% toward the cursor and the arrow icon 25%, 0.4s
 `power3.out`; on leave they snap back with `elastic.out(1, 0.3)` over 1s.
 

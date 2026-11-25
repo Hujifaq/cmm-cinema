@@ -151,6 +151,10 @@
     {
         <script src="~/js/admin-news.js" asp-append-version="true" defer></script>
     }
+    @if (Context.RequiresAsset("admin-promotions"))
+    {
+        <script src="~/js/admin-promotions.js" asp-append-version="true" defer></script>
+    }
     @if (Context.RequiresAsset("admin-tickets"))
     {
         <script src="~/js/admin-tickets.js" asp-append-version="true" defer></script>

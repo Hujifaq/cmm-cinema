@@ -85,7 +85,7 @@
     </div>
 </section>
 
-@await Html.PartialAsync("_CinemaPromos")
+@await Html.PartialAsync("_CinemaPromos", Model.Promotions ?? BuiltInPromotions.All)
 
 @{
     var upcoming = new MovieSectionViewModel("upcoming", "UPCOMING", true, Model.Upcoming);

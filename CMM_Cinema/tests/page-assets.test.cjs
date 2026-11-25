@@ -23,6 +23,7 @@ const hooks = {
   'ajax-form': [/data-ajax-form/],
   'admin-movies': [/data-delete-dialog/, /data-cast-list/, /data-edit-toggle/],
   'admin-news': [/data-admin-story-delete-dialog/, /data-cover-input/],
+  'admin-promotions': [/data-admin-promo-delete-dialog/, /data-promo-input/],
   'admin-tickets': [/data-admin-ticket-filter/, /data-admin-ticket-dialog/]
 };
 

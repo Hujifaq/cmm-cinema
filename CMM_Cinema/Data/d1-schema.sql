@@ -29,3 +29,16 @@ CREATE TABLE IF NOT EXISTS cast_members (
 
 CREATE INDEX IF NOT EXISTS idx_movies_status ON movies(status);
 CREATE INDEX IF NOT EXISTS idx_cast_members_movie ON cast_members(movie_id, sort_order);
+
+-- Home page promotion banners (Models/Promotion.cs). The launch banners are added by migrations/0010_promotions.sql.
+CREATE TABLE IF NOT EXISTS promotions (
+    id         INTEGER PRIMARY KEY,
+    image_url  TEXT    NOT NULL,
+    image_alt  TEXT    NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_active  INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+    created_at TEXT    NOT NULL,
+    updated_at TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_promotions_order ON promotions(is_active, sort_order, id);

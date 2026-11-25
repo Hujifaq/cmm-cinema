@@ -1,0 +1,104 @@
+@model IReadOnlyList<PromotionAdminRow>
+@using CMM_Cinema.Services
+@{
+    Context.RequireAssets("admin-promotions");
+    Layout = "_HeroLayout";
+    ViewData["Title"] = "Manage promotions - CMM Cinema";
+    var canEdit = (bool)(ViewData["CanEdit"] ?? false);
+    var full = Model.Count >= IPromotionRepository.MaxPromotions;
+    ViewData["AddHref"] = canEdit && !full ? "/Admin/Promotions/New" : null;
+    ViewData["AddLabel"] = "Add banner";
+    var live = Model.Count(row => row.IsActive);
+    var chipClass = "inline-flex items-center rounded-full px-3 py-1.5 text-[11px] font-bold leading-none";
+    var pillClass = "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-5 text-sm font-bold no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink";
+    var moveClass = "inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-solid border-cinema-ink/20 bg-transparent p-0 text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink disabled:cursor-default disabled:opacity-30";
+}
+
+@section TopBanner {
+    @await Html.PartialAsync("_CinemaMarquee")
+}
+
+<section class="min-h-screen overflow-x-clip bg-cinema-paper pb-16 pt-32 font-sans text-cinema-ink md:pb-24 md:pt-40" aria-labelledby="admin-promotions-title">
+    @await Html.PartialAsync("_AdminBar")
+    <div class="mx-auto max-w-[1440px] px-5 md:px-12">
+        @await Html.PartialAsync("_Breadcrumb", new (string, string?)[] { ("Home", "/"), ("Manage promotions", null) })
+        <h1 class="m-0 text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-6xl lg:text-7xl" id="admin-promotions-title">Manage promotions</h1>
+
+        @if (!canEdit)
+        {
+            <p class="mb-0 mt-8 rounded-2xl bg-cinema-ink/[0.04] px-5 py-4 text-sm leading-relaxed text-cinema-ink/70">Promotions can only be edited once the Cloudflare D1 database is configured. Until then the site shows its four launch banners.</p>
+        }
+
+        @if (Model.Count == 0)
+        {
+            <div class="mt-8 grid justify-items-start gap-4 rounded-[28px] border border-dashed border-cinema-ink/25 p-8">
+                <p class="m-0 text-lg font-extrabold">No banners yet</p>
+                <p class="m-0 text-sm text-cinema-ink/60">With no banners the promotions carousel is hidden from the home page. Add a 16:9 banner image to bring it back.</p>
+                @if (canEdit)
+                {
+                    <a class="@pillClass bg-cinema-ink text-cinema-cream" href="/Admin/Promotions/New">Add banner</a>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="mb-0 mt-4 text-sm leading-relaxed text-cinema-ink/60">@Model.Count of @IPromotionRepository.MaxPromotions banners, @live shown on the home page. They appear in the order listed here; hidden banners stay saved but are not shown.</p>
+
+            <ul class="m-0 mt-8 grid list-none gap-4 p-0">
+                @for (var i = 0; i < Model.Count; i++)
+                {
+                    var row = Model[i];
+                    <li class="grid gap-4 rounded-[28px] bg-white p-4 shadow-clay sm:grid-cols-[14rem_minmax(0,1fr)] sm:items-center sm:p-5 lg:grid-cols-[14rem_minmax(0,1fr)_auto]">
+                        <span class="block aspect-video overflow-hidden rounded-2xl bg-cinema-ink/10">
+                            <img class="size-full object-cover" src="@row.ImageUrl" alt="" width="448" height="252" loading="lazy" />
+                        </span>
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-cinema-ink/60">Position @(i + 1)</span>
+                                @if (row.IsActive)
+                                {
+                                    <span class="@chipClass bg-cinema-logo text-white shadow-clay-pill">Shown</span>
+                                }
+                                else
+                                {
+                                    <span class="@chipClass border border-solid border-cinema-ink/40 text-cinema-ink/70">Hidden</span>
+                                }
+                            </div>
+                            <p class="m-0 mt-2 break-words text-sm leading-relaxed text-cinema-ink/70">@row.Alt</p>
+                        </div>
+                        @if (canEdit)
+                        {
+                            <div class="flex flex-wrap items-center gap-2 sm:col-span-2 lg:col-span-1 lg:justify-end">
+                                <form class="m-0 flex gap-2" method="post" asp-action="Move">
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button class="@moveClass" type="submit" name="direction" value="-1" disabled="@(i == 0)" aria-label="Move banner @(i + 1) earlier">
+                                        <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5-5 5 5" /></svg>
+                                    </button>
+                                    <button class="@moveClass" type="submit" name="direction" value="1" disabled="@(i == Model.Count - 1)" aria-label="Move banner @(i + 1) later">
+                                        <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 8 5 5 5-5" /></svg>
+                                    </button>
+                                </form>
+                                <a class="@pillClass bg-cinema-ink text-cinema-cream" href="/Admin/Promotions/@row.Id/Edit" aria-label="Edit banner @(i + 1)">Edit</a>
+                                <button class="@pillClass border-0 bg-cinema-brick text-cinema-cream" type="button" data-admin-promo-delete data-admin-promo-id="@row.Id" data-admin-promo-position="@(i + 1)" aria-label="Delete banner @(i + 1)">Delete</button>
+                            </div>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <dialog class="m-auto w-[min(92vw,26rem)] rounded-[28px] border-0 bg-cinema-paper p-0 font-sans text-cinema-ink shadow-clay backdrop:bg-black/50 backdrop:backdrop-blur-sm" aria-labelledby="delete-promo-title" data-admin-promo-delete-dialog>
+        <form class="grid gap-5 p-7" method="post" asp-controller="AdminPromotions" asp-action="Delete">
+            <input type="hidden" name="id" data-admin-promo-delete-id />
+            <div>
+                <h2 class="m-0 text-2xl font-black leading-tight tracking-tight" id="delete-promo-title">Delete this banner?</h2>
+                <p class="mb-0 mt-2 text-sm leading-relaxed text-cinema-ink/70"><strong data-admin-promo-delete-name>This banner</strong> will be removed from the site for good. To hide it for now, edit it and untick Shown on the home page instead.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button class="min-h-11 cursor-pointer rounded-full border border-solid border-cinema-ink/20 bg-white px-5 text-sm font-bold text-cinema-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-ink" type="button" data-admin-promo-delete-cancel autofocus>Keep it</button>
+                <button class="min-h-11 cursor-pointer rounded-full border-0 bg-cinema-brick px-5 text-sm font-bold text-cinema-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cinema-brick" type="submit">Yes, delete</button>
+            </div>
+        </form>
+    </dialog>
+</section>
